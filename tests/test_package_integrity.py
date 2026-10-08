@@ -32,6 +32,11 @@ class PackageIntegrityTests(unittest.TestCase):
         (self.root / ".git/config").write_text("Git metadata fixture")
         self.assertEqual(check.verify(self.root), [])
 
+    def test_claude_runtime_markers_do_not_break_verification(self):
+        (self.root / ".in_use").mkdir()
+        (self.root / ".in_use/12345").write_text("Host runtime marker")
+        self.assertEqual(check.verify(self.root), [])
+
     def test_worktree_git_file_does_not_break_verification(self):
         (self.root / ".git").write_text("gitdir: fixture")
         self.assertEqual(check.verify(self.root), [])

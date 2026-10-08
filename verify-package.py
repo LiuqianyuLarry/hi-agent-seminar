@@ -12,6 +12,8 @@ COMMANDS = {"menu.md", "start.md", "status.md", "review.md", "help.md"}
 def package_files(root):
     for base, dirs, files in os.walk(root):
         dirs[:] = sorted(d for d in dirs if d not in {".git", "__pycache__"})
+        if Path(base) == root:
+            dirs[:] = [d for d in dirs if d != ".in_use"]
         for name in sorted(files):
             path = Path(base, name)
             if path == root / "SHA256SUMS.json" or path == root / ".git":

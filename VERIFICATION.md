@@ -1,6 +1,6 @@
 # Version 2 verification
 
-Date: 9 October 2026. Plugin version: 2.0.3. Fixed storage namespace/schema: v2 / 2.
+Date: 9 October 2026. Plugin version: 2.0.4. Fixed storage namespace/schema: v2 / 2.
 
 ## Checks performed
 
@@ -22,10 +22,15 @@ Date: 9 October 2026. Plugin version: 2.0.3. Fixed storage namespace/schema: v2 
   discovery, legacy-only protection, incompatible schemas/lessons, corrupt
   snapshots, and retained optional results and completed reflection reports.
   No real student records were modified by these tests; all use temporary workspaces.
-- Five distribution tests verify that Git directory/worktree metadata is ignored,
-  while missing, changed and extra command files are reported. Total: 43 tests.
+- Six distribution tests verify that Git directory/worktree metadata and Claude
+  runtime markers are ignored, while missing, changed and extra commands are
+  reported. Total: 44 tests.
   GitHub installation/update instructions and release auditing were added in 2.0.3;
   the teaching helper and classroom examples are unchanged from 2.0.2.
+- A clean GitHub clone passed the hash check and tests. The actual GitHub marketplace
+  add/install commands succeeded in an isolated temporary Claude configuration;
+  version 2.0.3 installed as enabled with all five commands. That test exposed the
+  host-created .in_use marker directory, now excluded from verification in 2.0.4.
 - The original classroom resources are unchanged from the v2.0.0 build, which
   passed 31 classroom-code tests using mocked HTTP responses. No live DeepSeek
   requests were made in this release check.

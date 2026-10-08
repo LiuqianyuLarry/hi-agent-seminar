@@ -1,4 +1,4 @@
-# hi-agent-seminar 2.0.3
+# hi-agent-seminar 2.0.4
 
 An English EEEE4149 teaching plugin for Claude Code. Mentor Liu explains the code
 and terms before asking questions, runs the prepared experiments, and helps students
@@ -115,7 +115,7 @@ claude plugin update hi-agent-seminar@hi-agent-seminar-marketplace
 If it points to another folder, inspect `claude plugin marketplace list` and update
 that source or use the explicit --plugin-dir loading method above. Do not assume
 editing source files changes an already installed cache. Restart the Claude Code
-session after an update. Confirm version 2.0.3 with `claude plugin list`.
+session after an update. Confirm version 2.0.4 with `claude plugin list`.
 
 Replace the whole plugin source folder with the extracted release folder, including
 the hidden .claude-plugin directory. Do not merge it into an old commands folder:
@@ -157,7 +157,7 @@ API calls. Optional progress does not change the core percentage.
 Confirmed learning steps save automatically. Ask Mentor Liu in chat to save a
 pause note or export an existing learning report; no extra slash command is needed.
 The review command always means three reflections plus a code snapshot.
-Version 2.0.3 resumes existing v2 progress in the same workspace; it does not reset it.
+Version 2.0.4 resumes existing v2 progress in the same workspace; it does not reset it.
 
 Course selection and multiple-choice checks use genuine AskUserQuestion selectors
 when available in the host. Open questions and reflections remain ordinary typed

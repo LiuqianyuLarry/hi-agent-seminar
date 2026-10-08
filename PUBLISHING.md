@@ -31,7 +31,8 @@ git status --short
 git diff --stat
 ```
 
-The release script ignores only Git metadata and Python bytecode caches. It rejects
+The release script ignores Git metadata, Python bytecode caches and Claude Code's
+root .in_use runtime-marker directory. It rejects
 known private/generated paths, symlinks and common secret patterns rather than
 silently publishing them. This is a guardrail, not a guarantee: inspect the proposed
 Git commit for private content before pushing. Never distribute real .env files,
@@ -41,7 +42,8 @@ An empty .env.example is intended for distribution.
 The inventory detects accidental file changes; it is not a cryptographic signature
 from a separate trusted party. .gitattributes prevents Git from changing line
 endings, so a fresh Windows or Unix checkout can match the same file hashes.
-Git metadata and Python bytecode caches are excluded from verification.
+Git metadata, Python bytecode caches and Claude Code's root .in_use runtime markers
+are excluded from verification; those markers are not plugin source files.
 
 Students update with:
 

@@ -1,0 +1,15 @@
+{
+  "equipment_id": "CONV-3",
+  "source_facts": [
+    "Temperature is 97 degrees C; the stated limit is below 85 degrees C.",
+    "Alarm record: overcurrent trip at 14:32."
+  ],
+  "required_observations": [
+    "Temperature is 97 degrees C; the stated limit is below 85 degrees C.",
+    "Alarm record: overcurrent trip at 14:32."
+  ],
+  "required_missing": [
+    "Cooling and load check results"
+  ],
+  "source_note": "Synthetic sensor log plus the simulated alarm lookup and manual passage from PPT slides 14-15."
+}

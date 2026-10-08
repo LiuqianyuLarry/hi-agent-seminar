@@ -1,0 +1,3 @@
+[STUDENT_TASK: describe the report you want]
+[EVIDENCE_RULE: say how to use the supplied log and handle unknowns]
+[OUTPUT_STRUCTURE: specify two known facts and one item to confirm]

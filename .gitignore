@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+outputs/
+.hi-agent-seminar/
+hi-agent-seminar-work/
+.pytest_cache/
+dist/

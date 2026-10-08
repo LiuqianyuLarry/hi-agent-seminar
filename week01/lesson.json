@@ -1,0 +1,699 @@
+{
+  "id": "week01",
+  "version": 2,
+  "title": "From LLM calls to reliable engineering outputs",
+  "language": "English; translate only on explicit student request",
+  "tasks": [
+    {
+      "id": "t01",
+      "title": "Get ready with Mentor Liu",
+      "minutes": 8,
+      "weight": 8,
+      "session": 1,
+      "recap": "A model is a service. Our Python program sends a request through an SDK. The SDK is a code library, not the model itself.",
+      "purpose": "Let Mentor Liu prepare Python, then configure your API key privately.",
+      "steps": [
+        "Mentor Liu explains the local Python program and hosted model in plain English.",
+        "Mentor runs setup to create a venv, install into that venv and check imports.",
+        "The student runs only the returned configure command and enters their key in their own terminal.",
+        "Mentor records local key setup, explains the setup results and moves directly to the evidence lesson."
+      ],
+      "prediction": null,
+      "commands": [],
+      "planned_calls": 0,
+      "output_guide": "The setup receipt records the venv Python path, each installation/import step and its return code. Imports OK means the libraries can load. A local .env existence check does not prove the key is valid; the first API call later checks the service.",
+      "questions": [],
+      "requires_teaching": true,
+      "requires_prediction": false,
+      "requires_setup": true,
+      "requires_prompt": false,
+      "terms": {
+        "SDK": "A code library that helps our Python program call the model service.",
+        "Virtual environment": "A folder containing the Python interpreter and packages used for this course."
+      },
+      "code_refs": []
+    },
+    {
+      "id": "t02",
+      "title": "Recall the engineering problem",
+      "minutes": 7,
+      "weight": 7,
+      "session": 1,
+      "recap": "CONV-3 warms from 68 to 97 degrees C. The stated limit is below 85 degrees C. Current rises 18%, the fan runs, and no unusual vibration is recorded. An observation is not a confirmed cause.",
+      "purpose": "Separate evidence, a model, an application, and an agent before calling anything.",
+      "steps": [
+        "Ask the student for two known facts and one thing that is still unknown.",
+        "Review: a fixed workflow follows code-defined steps; an agent lets the model choose a next action within limits."
+      ],
+      "prediction": "Does high temperature alone prove that a bearing failed? What extra evidence would you want?",
+      "commands": [],
+      "planned_calls": 0,
+      "output_guide": "This task produces a short evidence summary, not a model response. Keep known readings separate from possible causes and missing records.",
+      "questions": [
+        {
+          "id": "evidence",
+          "type": "mcq",
+          "prompt": "Which statement is supported by the supplied readings?",
+          "options": {
+            "A": "The bearing definitely failed.",
+            "B": "Temperature reached 97 degrees C; the cause is not confirmed.",
+            "C": "The fan stopped.",
+            "D": "No further checks are needed."
+          },
+          "correct": "B",
+          "feedback": "The record supports the temperature reading. It does not confirm a cause; it says the fan is running."
+        }
+      ],
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": false,
+      "requires_prompt": false,
+      "terms": {
+        "Observation": "A reading or event actually reported in the supplied record.",
+        "Cause": "An explanation of why the event happened; it needs supporting evidence.",
+        "Workflow": "Steps whose order is chosen by the program.",
+        "Agent": "A program in which a model may choose the next allowed action."
+      },
+      "code_refs": []
+    },
+    {
+      "id": "t03",
+      "title": "Make and inspect a real API call",
+      "minutes": 15,
+      "weight": 15,
+      "session": 1,
+      "recap": "A request carries instructions and input. The response has a content string plus service information such as model, token use and finish reason. Changing a request does not retrain the model.",
+      "purpose": "Trace input to output and read the response as structured data, not just chat text.",
+      "steps": [
+        "Define evidence, metadata and list indexing. Show the SDK and saved-file response trees in TEACHING.md.",
+        "Read the numbered run_api, request_text and public_response snippets. Point out that the saved-file shape is visible in the return dictionary before any call runs.",
+        "Ask the code-reading prediction, then make the approved API call.",
+        "Read the actual api_exchange and api records. Display one real JSON fragment and explain its fields before the trace question."
+      ],
+      "prediction": "Read the public_response return dictionary shown above; no run is needed yet. When its result is saved under response, will the reply text be at response.choices[0].content or response.choices[0].message.content? Which one is the SDK path instead?",
+      "commands": [
+        [
+          "week1_demo.py",
+          "--demo",
+          "api"
+        ]
+      ],
+      "planned_calls": 1,
+      "output_guide": "The exchange has request, response and metadata. request.messages contains system/user messages. response.choices[0].content is the saved answer string. The live SDK field is choices[0].message.content. metadata includes request_id, usage, elapsed_seconds and finish_reason. The task record has instructions, input, output and metadata. Do not confuse service metadata with sensor evidence. PPT Responses fields map as follows: instructions -> system message; input -> user message; output_text -> choices[0].message.content.",
+      "questions": [
+        {
+          "id": "trace",
+          "type": "open",
+          "prompt": "Look at the api_exchange JSON and api record shown for this task. (1) Which request message contains the instructions, and which contains the log? (2) Point to response.choices[0].content in the saved file. (3) Pick one metadata field and explain what it says about the call. Is that field a reading about CONV-3?",
+          "rubric": "Require concrete observed fields/values for all four, correct system/user roles, and recognition that metadata describes the service call rather than proving a diagnosis. Accept saved exchange content versus SDK message.content with the distinction explained."
+        }
+      ],
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": false,
+      "requires_prompt": false,
+      "terms": {
+        "Engineering evidence": "Supplied sensor readings, logs and manual text that can support a statement about the equipment.",
+        "Metadata": "Information about the API call, such as its model name, token count or time taken.",
+        "List": "An ordered collection; [0] selects its first item.",
+        "Content": "The text of the model reply."
+      },
+      "code_refs": [
+        [
+          "week1_demo.py",
+          "run_api"
+        ],
+        [
+          "live_client.py",
+          "request_text"
+        ],
+        [
+          "live_client.py",
+          "public_response"
+        ]
+      ]
+    },
+    {
+      "id": "t04",
+      "title": "Change the prompt, keep the evidence",
+      "minutes": 10,
+      "weight": 10,
+      "session": 1,
+      "recap": "A useful prompt says what to do, what evidence to use and how to format the result. A prompt is an inference-time input, not a training update.",
+      "purpose": "Write a bounded prompt in chat, compare its output with the built-in prompt, and inspect actual token use.",
+      "steps": [
+        "Show the current instructions.txt scaffold and the numbered run_prompt function. Explain exactly which parts the student will supply: task, evidence rule, and output structure.",
+        "Ask the student to write an English prompt in chat that uses only the log and requests two known facts plus one item to confirm. Give a partial scaffold and explain the requirements; do not compose their full answer.",
+        "Save the student's text with write-prompt, show it back in English, then ask the prediction and run one approved prompt comparison.",
+        "Show both outputs and a table of prompt_tokens, completion_tokens, total_tokens and elapsed_seconds from metadata.usage. Read the actual counts, including an unexpected result. Requested length can affect output tokens; a single pair does not establish a rule."
+      ],
+      "prediction": "Both calls use the same log. The built-in instruction requests a larger report; the saved student prompt requests two facts and one item to confirm. What difference do you expect in the output structure and completion_tokens? Will the model weights change?",
+      "commands": [
+        [
+          "week1_demo.py",
+          "--demo",
+          "prompt",
+          "--instruction-file",
+          "student/instructions.txt"
+        ]
+      ],
+      "planned_calls": 2,
+      "output_guide": "The prompt record has one shared input and two runs. Each run has label, instructions, output and metadata. Show a small real-output excerpt from both, followed by actual usage.prompt_tokens, usage.completion_tokens, usage.total_tokens and metadata.elapsed_seconds. Input and output tokens are different quantities. Requested length and structure can influence output length, but do not guarantee a reduction. Token counts are not currency costs; rates and other provider billing rules also matter. Never say a vague prompt always costs more or that larger requests always produce longer outputs.",
+      "questions": [
+        {
+          "id": "training",
+          "type": "mcq",
+          "prompt": "When we save a new instruction and send the request, what changes?",
+          "options": {
+            "A": "We retrained the model weights.",
+            "B": "We changed the sensor readings.",
+            "C": "We changed the request given to the model at inference time.",
+            "D": "We guaranteed a correct diagnosis."
+          },
+          "correct": "C",
+          "feedback": "The model received a different request. Its weights and the supplied sensor evidence were not changed."
+        },
+        {
+          "id": "prompt-result",
+          "type": "open",
+          "prompt": "Look at the two outputs and token table for this task. (1) Point to one visible difference in output structure. (2) Did the student prompt obtain two facts and one item to confirm? (3) Which response used fewer completion_tokens in this comparison? What does that count measure?",
+          "rubric": "Require a concrete difference grounded in the recorded outputs, an honest assessment of the requested structure, correct comparison of actual completion_tokens, and recognition that it measures generated tokens, not a sensor value. Accept no improvement or unexpected counts. Do not require any prompt to win or infer retraining."
+        }
+      ],
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": false,
+      "requires_prompt": true,
+      "terms": {
+        "Prompt": "The instructions and input sent with a model request.",
+        "prompt_tokens": "Tokens in the request sent to the model.",
+        "completion_tokens": "Tokens generated in the response.",
+        "total_tokens": "The service's reported total for the request and response."
+      },
+      "code_refs": [
+        [
+          "week1_demo.py",
+          "run_prompt"
+        ],
+        [
+          "student/instructions.txt",
+          null
+        ]
+      ]
+    },
+    {
+      "id": "t05",
+      "title": "Test what context the model can see",
+      "minutes": 10,
+      "weight": 10,
+      "session": 1,
+      "recap": "Context is the information included in this request. Reusing a key does not make a new request remember earlier text. A conversation works because the application sends relevant history.",
+      "purpose": "Observe what changes when history is left out or sent again.",
+      "steps": [
+        "Predict the A/B/C test before running it.",
+        "A supplies a new random sample ID. B asks for it without history. C asks with the earlier messages.",
+        "Compare the actual inputs as well as the outputs. Then take the session break."
+      ],
+      "prediction": "Read the A/B/C messages shown in run_context. B receives only the question; C also receives the earlier ID and reply. Which request contains enough information to recover the random sample ID, and why?",
+      "commands": [
+        [
+          "week1_demo.py",
+          "--demo",
+          "context"
+        ]
+      ],
+      "planned_calls": 3,
+      "output_guide": "sample_id is generated by code. A, B and C each store input, output and metadata. B's request omits history. C resends earlier user text and the actual A reply. C is not guaranteed to answer correctly; inspect its response. This tests supplied context, not a permanent memory feature.",
+      "questions": [
+        {
+          "id": "context",
+          "type": "open",
+          "prompt": "Look at the recorded B.input and C.input for this task. Which one includes the earlier sample ID? Explain how that input difference relates to the observed replies. Does reusing the same API key send history automatically?",
+          "rubric": "Require B lacks the earlier ID, C includes history, the API key authenticates rather than carrying conversation content, and no claim that C must always be correct."
+        }
+      ],
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": false,
+      "requires_prompt": false,
+      "terms": {
+        "Context": "Information included in the current request.",
+        "History": "Earlier messages that the application sends again with a later request.",
+        "API key": "A credential used for access; it does not carry the conversation."
+      },
+      "code_refs": [
+        [
+          "week1_demo.py",
+          "run_context"
+        ]
+      ]
+    },
+    {
+      "id": "t06",
+      "title": "Check format, types and evidence",
+      "minutes": 12,
+      "weight": 12,
+      "session": 2,
+      "recap": "JSON is a data format. A schema checks required fields and types. Evidence checks ask whether a claim is supported. These are different questions.",
+      "purpose": "Learn why a neatly formatted answer can still contain an unsupported claim.",
+      "steps": [
+        "Define JSON, schema and evidence checks with the comparison table and example in TEACHING.md. Explain that a string can be valid in shape but unsupported.",
+        "Show the numbered FaultReport and check_report excerpts, then the deliberate mutation code. Ask the specific prediction only after this preparation.",
+        "Run validation and show the actual baseline plus available teacher alterations.",
+        "Display the check-result table. Explain true, false and null for each check and the output's origin before asking the understanding questions."
+      ],
+      "prediction": "In the FaultReport code, diagnosis may be a string or null. If a teaching sample changes it to 'Confirmed bearing failure' but no source confirms that cause, can the schema check pass while the evidence check fails? Explain using the definitions above.",
+      "commands": [
+        [
+          "week1_demo.py",
+          "--demo",
+          "validation"
+        ]
+      ],
+      "planned_calls": 1,
+      "output_guide": "The record has input, instructions, actual_model_output, metadata, deliberate_mutations and checks. FaultReport requires equipment_id (string or null), observations (list of strings), diagnosis (string or null), missing_information (list of strings); extra fields are forbidden. checks reports valid_format, evidence_check_passed and errors/evidence_issues as applicable. null evidence_check_passed means not checked after a format failure. A string diagnosis can be valid in shape but unsupported. Teacher mutations are teaching examples, not naturally occurring model errors. Source-fragment checks are deliberately narrow, not full truth verification.",
+      "questions": [
+        {
+          "id": "schema",
+          "type": "mcq",
+          "prompt": "A report passes Pydantic. What does that establish?",
+          "options": {
+            "A": "The diagnosis is correct.",
+            "B": "The report meets the declared structure and type rules.",
+            "C": "Every source is reliable.",
+            "D": "The machine can safely restart."
+          },
+          "correct": "B",
+          "feedback": "Pydantic checks the declared data contract. Claims and real-world decisions need other checks."
+        },
+        {
+          "id": "validation-result",
+          "type": "open",
+          "prompt": "Look at the results table for this task. (a) Pick one format/type result and one evidence result, and say what each check found. (b) Which outputs are actual model responses, and which are deliberately altered teaching samples?",
+          "rubric": "Require actual checker fields, correct origin labels, and structure versus evidence distinction. If baseline is invalid and evidence results are null/mutations absent, accept an accurate explanation of why evidence was not checked, plus why a valid string need not be supported."
+        }
+      ],
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": false,
+      "requires_prompt": false,
+      "terms": {
+        "JSON": "A text format used to store named values, lists and objects.",
+        "Schema check": "A check of the declared fields and types: required fields, allowed extra fields, lists, strings and null.",
+        "Evidence check": "A check of whether report claims match the supplied sources. This demo uses limited source-fragment rules after the schema check.",
+        "null": "An explicit value meaning no confirmed value is provided here."
+      },
+      "code_refs": [
+        [
+          "lesson_core.py",
+          "FaultReport"
+        ],
+        [
+          "lesson_core.py",
+          "check_report"
+        ],
+        [
+          "week1_demo.py",
+          "mutate_report"
+        ],
+        [
+          "week1_demo.py",
+          "run_validation"
+        ]
+      ]
+    },
+    {
+      "id": "t07",
+      "title": "Handle a failure without guessing",
+      "minutes": 12,
+      "weight": 12,
+      "session": 2,
+      "recap": "A format error may be repaired with a small retry budget. Missing evidence needs new evidence or human review, not unlimited rewriting. A technical API failure is a separate kind of failure.",
+      "purpose": "Use one repair attempt, check the repair and decide when to stop.",
+      "steps": [
+        "Run the bounded repair example after approval.",
+        "Compare the baseline, damaged output and actual repair.",
+        "Write a short failure note: what failed, why, what changed, and what evidence remains missing."
+      ],
+      "prediction": "If a repair produces valid JSON, have we necessarily solved the engineering problem?",
+      "commands": [
+        [
+          "week1_demo.py",
+          "--demo",
+          "failures"
+        ]
+      ],
+      "planned_calls": 2,
+      "output_guide": "actual_baseline and baseline_metadata record the first call. mutation_origin explains how damaged_output was made. actual_repair and repair_metadata come from one real repair call. repair_check tests it. unsupported_mutation_check may be null if the repair is still invalid. Do not describe a teacher-added claim as a natural model mistake. Network retry and content-repair budgets are different.",
+      "questions": [
+        {
+          "id": "failure-note",
+          "type": "open",
+          "prompt": "Look at this task's damaged_output, actual_repair and repair_check. Write a short note: (1) What problem was found, and was it a real model error or a deliberate teaching change? (2) What did the one repair attempt change? (3) If no source confirms a cause, what should the system do next?",
+          "rubric": "Require actual output evidence and its origin, the one-repair limit, a correct distinction between format and missing evidence, and a stop/request-evidence/human-review action rather than inventing a diagnosis. If repair failed, accept a truthful stop decision."
+        }
+      ],
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": false,
+      "requires_prompt": false,
+      "terms": {
+        "Repair": "A new model attempt to correct a reported output problem.",
+        "Repair budget": "The maximum number of content-repair attempts allowed; this example allows one.",
+        "Unsupported claim": "A statement whose supplied evidence does not establish it."
+      },
+      "code_refs": [
+        [
+          "week1_demo.py",
+          "run_failures"
+        ]
+      ]
+    },
+    {
+      "id": "t08",
+      "title": "Compare complete and missing evidence",
+      "minutes": 12,
+      "weight": 12,
+      "session": 2,
+      "recap": "A checked draft can still need human review. Missing information should be visible in the output, not hidden by a confident answer.",
+      "purpose": "Use a small test table to compare outcomes across two cases.",
+      "steps": [
+        "Run complete and missing_evidence cases. Remaining cases are optional.",
+        "Compare case records and CSV columns.",
+        "Explain what an honest system should report when an alarm record is unavailable."
+      ],
+      "prediction": "Should the system fill in a missing alarm result to make the report look complete?",
+      "commands": [
+        [
+          "week1_demo.py",
+          "--demo",
+          "seminar",
+          "--case",
+          "complete"
+        ],
+        [
+          "week1_demo.py",
+          "--demo",
+          "seminar",
+          "--case",
+          "missing_evidence"
+        ]
+      ],
+      "planned_calls": 2,
+      "output_guide": "Each case stores case, input, instructions, actual_model_output, displayed_output, origin, metadata and checks. Each per-command CSV has Case, Valid format, Source checks, Origin and Outcome. Outcomes are needs_format_repair, draft_for_review or needs_source_review. A missing-evidence case can still produce a well-formed honest draft; do not force an expected failure. Compare both command folders. Draft does not mean approved diagnosis.",
+      "questions": [
+        {
+          "id": "cases",
+          "type": "open",
+          "prompt": "Look at the two case JSON records and the CSV table for this task. (1) In each report, find missing_information and count its entries. Compare complete with missing_evidence. (2) What is diagnosis in each report, and why? (3) What does the Outcome column say for each case? What additional evidence would be needed to name a specific cause?",
+          "rubric": "Require actual missing_information field/counts from both displayed reports (or an accurate explanation if a report is malformed), observed diagnosis values and their evidence limits, and actual CSV Outcome values. Do not hardcode counts or require a failure for missing_evidence. Naming a cause needs supporting source evidence and human review, not invented alarm results."
+        }
+      ],
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": false,
+      "requires_prompt": false,
+      "terms": {
+        "Missing information": "Facts or records still needed; the report lists them in missing_information.",
+        "Draft for review": "A report that passed the demo's checks and still needs human review."
+      },
+      "code_refs": [
+        [
+          "week1_demo.py",
+          "run_seminar"
+        ],
+        [
+          "lesson_core.py",
+          "report_input"
+        ]
+      ]
+    },
+    {
+      "id": "t09",
+      "title": "Preview the ideas we will use later",
+      "minutes": 7,
+      "weight": 7,
+      "session": 2,
+      "recap": "Sampling chooses among possible next tokens; repeated answers can be identical. Memory is information stored by the application and later put into context. RAG retrieves relevant source text before generation. In a fixed workflow, code chooses the sequence; in an agent loop, the model may choose an allowed next action. Code still checks and runs tools.",
+      "purpose": "Connect today's call/context/checking skills to later seminars without building the full system now.",
+      "steps": [
+        "Briefly explain sampling, external memory, RAG and workflow versus agent using CONV-3.",
+        "Use examples: repeating a summary; loading a report preference; finding the correct current manual; choosing an alarm lookup.",
+        "Explain that optional live experiments are available, but none is required now."
+      ],
+      "prediction": "If we save a preference to a file, does the model see it automatically on the next call?",
+      "commands": [],
+      "planned_calls": 0,
+      "output_guide": "The result is a four-part concept map in words: sampling -> how a response is chosen; memory -> store/load useful information; RAG -> retrieve checked sources into context; agent -> choose actions within a checked loop. Stored data must be loaded and supplied. Retrieved text can be wrong/outdated. Tool choice is not execution permission.",
+      "questions": [
+        {
+          "id": "future",
+          "type": "open",
+          "prompt": "Describe one concrete scenario for each of sampling, memory and RAG, in one sentence each. No code needs to run. Sampling: describe repeating the same request. Memory: describe something the application stores and later adds to context. RAG: describe source text retrieved before an answer is generated. Then explain which part chooses a tool and which part executes it in an agent.",
+          "rubric": "Require sensible examples for all three; stored memory must be loaded into context, RAG retrieves sources rather than retrains weights, sampling does not guarantee different answers. Model proposes the next tool; application code validates and executes it."
+        }
+      ],
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": false,
+      "requires_prompt": false,
+      "terms": {
+        "Sampling": "Choosing a possible next token; repeated requests may produce different words or the same words.",
+        "Memory": "Information stored by the application, then loaded into a later request.",
+        "RAG": "Retrieving source text and supplying it before generation.",
+        "Tool call": "A model's proposal to invoke a function; code checks it and executes an allowed action."
+      },
+      "code_refs": []
+    },
+    {
+      "id": "t10",
+      "title": "Exit check and personal recap",
+      "minutes": 7,
+      "weight": 7,
+      "session": 2,
+      "recap": "We sent a real request, changed its prompt, controlled its context, checked its output, and handled a failure. We kept observations separate from diagnosis and did not treat a formatted answer as proof.",
+      "purpose": "Check the main ideas and save a clear next step for future study.",
+      "steps": [
+        "Ask the five short questions one at a time.",
+        "Give focused feedback, revisiting mistakes from earlier tasks.",
+        "After completion, export the local report and offer optional extensions."
+      ],
+      "prediction": "Which part of this lesson would you check most carefully before trusting an engineering report?",
+      "commands": [],
+      "planned_calls": 0,
+      "output_guide": "The exit record contains the five student answers and mentor feedback. The exported review includes completed tasks, progress, attempts, run outcomes and a next step. It is a learning record, not certification of engineering safety.",
+      "questions": [
+        {
+          "id": "exit1",
+          "type": "open",
+          "prompt": "Did changing the prompt retrain the model?",
+          "rubric": "No. It changed inference-time input, not model weights."
+        },
+        {
+          "id": "exit2",
+          "type": "open",
+          "prompt": "In an agent run, who chooses the next action and who executes the function?",
+          "rubric": "Model chooses/proposes; application code validates permissions/arguments and executes the allowed function."
+        },
+        {
+          "id": "exit3",
+          "type": "open",
+          "prompt": "If a tool returns record unavailable, what should the system do?",
+          "rubric": "State the limitation, request evidence or human review, and stop/pause as needed; never fabricate the record."
+        },
+        {
+          "id": "exit4",
+          "type": "open",
+          "prompt": "Does a Pydantic pass prove that a diagnosis is supported?",
+          "rubric": "No. It proves conformance to the declared schema, not factual support or safety."
+        },
+        {
+          "id": "exit5",
+          "type": "open",
+          "prompt": "When can one model call or a fixed workflow be sufficient?",
+          "rubric": "When the task and evidence are bounded and the required steps are known; a full autonomous loop is unnecessary. Use a CONV-3 summary or fixed lookup-and-report example."
+        }
+      ],
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": false,
+      "requires_prompt": false,
+      "terms": {
+        "Bounded task": "A task with a clear goal, supplied evidence and known limits."
+      },
+      "code_refs": []
+    }
+  ],
+  "extensions": [
+    {
+      "id": "sampling",
+      "title": "Repeat the same request",
+      "purpose": "See whether outputs vary without assuming they must differ.",
+      "prediction": "Will the same prompt always give different wording?",
+      "planned_calls": 2,
+      "commands": [
+        [
+          "week1_demo.py",
+          "--demo",
+          "sampling"
+        ]
+      ],
+      "output_guide": "Compare runs, temperature and identical_text. Two samples cannot establish a reliable probability or accuracy claim.",
+      "code_refs": [
+        [
+          "week1_demo.py",
+          "run_sampling"
+        ]
+      ]
+    },
+    {
+      "id": "reasoning",
+      "title": "Check a small calculation",
+      "purpose": "Compare a source-based explanation with the deterministic calculation 97 - 85 = 12.",
+      "prediction": "Does a longer explanation guarantee a correct calculation?",
+      "planned_calls": 1,
+      "commands": [
+        [
+          "week1_demo.py",
+          "--demo",
+          "reasoning"
+        ]
+      ],
+      "output_guide": "Read evidence, output, python_difference_c and metadata. Check source IDs and the number; do not ask for hidden chain-of-thought.",
+      "code_refs": [
+        [
+          "week1_demo.py",
+          "run_reasoning"
+        ]
+      ]
+    },
+    {
+      "id": "memory",
+      "title": "Load an external preference",
+      "purpose": "See application-stored information being inserted into a new request.",
+      "prediction": "Can the model read a local file that the program never loads?",
+      "planned_calls": 1,
+      "commands": [
+        [
+          "week1_demo.py",
+          "--demo",
+          "memory"
+        ]
+      ],
+      "output_guide": "memory is loaded by Python; instructions include it; evidence is separate. output is the real reply. This demonstrates loading stored memory, not memory inside the model or automatic persistence across isolated run folders.",
+      "code_refs": [
+        [
+          "week1_demo.py",
+          "run_memory"
+        ]
+      ]
+    },
+    {
+      "id": "rag",
+      "title": "Retrieve and check a manual",
+      "purpose": "Compare a relevant current source with a rejected source before generation.",
+      "prediction": "Should a manual for another machine be passed to the model?",
+      "planned_calls": 1,
+      "commands": [
+        [
+          "week1_demo.py",
+          "--demo",
+          "rag",
+          "--retrieval-case",
+          "correct"
+        ],
+        [
+          "week1_demo.py",
+          "--demo",
+          "rag",
+          "--retrieval-case",
+          "wrong-equipment"
+        ]
+      ],
+      "output_guide": "Inspect retrieved source metadata and the gate result. The wrong-equipment branch is blocked_before_generation with model_calls 0; this is an intentional safe stop, not a failed API.",
+      "code_refs": [
+        [
+          "week1_demo.py",
+          "run_rag"
+        ],
+        [
+          "week1_demo.py",
+          "check_retrieval"
+        ]
+      ]
+    },
+    {
+      "id": "agent",
+      "title": "Compare a workflow and an agent",
+      "purpose": "Observe code-fixed order versus model-selected actions under a bounded tool policy.",
+      "prediction": "Does a proposed tool call mean it has already executed?",
+      "planned_calls": "Workflow: 1; agent: up to 5 generations",
+      "commands": [
+        [
+          "preview_agent.py",
+          "--mode",
+          "workflow",
+          "--scenario",
+          "normal"
+        ],
+        [
+          "preview_agent.py",
+          "--mode",
+          "agent",
+          "--scenario",
+          "normal",
+          "--max-steps",
+          "5"
+        ]
+      ],
+      "output_guide": "Inspect each trace for messages, model choices, tool arguments/results and final status. Compare tool-call IDs and checked execution. A budget stop is a valid outcome. A human-pause record here is not a durable graph runtime.",
+      "code_refs": [
+        [
+          "preview_agent.py",
+          "run_workflow"
+        ],
+        [
+          "preview_agent.py",
+          "run_loop"
+        ]
+      ]
+    },
+    {
+      "id": "cases",
+      "title": "Try the remaining test cases",
+      "purpose": "Inspect contradictory data, ambiguous data and a deliberately damaged format.",
+      "prediction": "Should conflicting readings be silently merged?",
+      "planned_calls": 3,
+      "commands": [
+        [
+          "week1_demo.py",
+          "--demo",
+          "seminar",
+          "--case",
+          "contradictory"
+        ],
+        [
+          "week1_demo.py",
+          "--demo",
+          "seminar",
+          "--case",
+          "ambiguous"
+        ],
+        [
+          "week1_demo.py",
+          "--demo",
+          "seminar",
+          "--case",
+          "invalid_format"
+        ]
+      ],
+      "output_guide": "Compare case records and CSV outcomes. invalid_format normally changes an actual response on purpose; inspect origin. Extend the failure note to 300-500 words using student/failure_log_template.md if useful.",
+      "code_refs": [
+        [
+          "week1_demo.py",
+          "run_seminar"
+        ]
+      ]
+    }
+  ]
+}

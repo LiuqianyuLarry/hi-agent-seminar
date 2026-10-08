@@ -1,0 +1,60 @@
+[
+  {
+    "source_id": "CONV-3-R2-7.4",
+    "equipment_id": "CONV-3",
+    "revision": "R2",
+    "current": true,
+    "section": "7.4",
+    "keywords": [
+      "overcurrent",
+      "cooling",
+      "load"
+    ],
+    "text": "After an overcurrent trip, inspect the cooling path and load conditions. The trip alone does not identify a failed component."
+  },
+  {
+    "source_id": "CONV-3-R2-3.2",
+    "equipment_id": "CONV-3",
+    "revision": "R2",
+    "current": true,
+    "section": "3.2",
+    "keywords": [
+      "temperature",
+      "overheating"
+    ],
+    "text": "The stated operating temperature limit for this teaching case is below 85 degrees C."
+  },
+  {
+    "source_id": "M13-R1-7.4",
+    "equipment_id": "M13",
+    "revision": "R1",
+    "current": true,
+    "section": "7.4",
+    "keywords": [
+      "overcurrent"
+    ],
+    "text": "This passage belongs to a different equipment model. Do not use it as evidence for CONV-3."
+  },
+  {
+    "source_id": "CONV-3-R1-7.4",
+    "equipment_id": "CONV-3",
+    "revision": "R1",
+    "current": false,
+    "section": "7.4",
+    "keywords": [
+      "overcurrent"
+    ],
+    "text": "Superseded teaching manual revision. Its procedure is not approved for the current case."
+  },
+  {
+    "source_id": "CONV-3-R2-12.1",
+    "equipment_id": "CONV-3",
+    "revision": "R2",
+    "current": true,
+    "section": "12.1",
+    "keywords": [
+      "packaging"
+    ],
+    "text": "Instructions for transport packaging. This is irrelevant to the overcurrent review."
+  }
+]

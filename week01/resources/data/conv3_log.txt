@@ -1,0 +1,6 @@
+L1: Three-phase induction motor CONV-3 drives conveyor line 3.
+L2: Temperature rose from 68 degrees C to 97 degrees C in 30 minutes.
+L3: The stated temperature limit is below 85 degrees C.
+L4: Current is approximately 18 percent above the baseline.
+L5: No abnormal vibration was reported.
+L6: The cooling fan is operational.

@@ -1,0 +1,11 @@
+{
+  "equipment_id": "CONV-3",
+  "time_window": "last 24 h",
+  "records": [
+    {
+      "time": "14:32",
+      "event": "overcurrent trip",
+      "source_id": "ALARM-CONV-3-14:32"
+    }
+  ]
+}

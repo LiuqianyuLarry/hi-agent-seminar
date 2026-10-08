@@ -1,0 +1,6 @@
+{
+  "name": "hi-agent-seminar-marketplace",
+  "owner": {"name": "EEEE4149 Teaching Team"},
+  "metadata": {"description": "English engineering seminars with Mentor Liu, distributed through GitHub."},
+  "plugins": [{"name": "hi-agent-seminar", "source": "./", "description": "Interactive English EEEE4149 seminars with Mentor Liu."}]
+}

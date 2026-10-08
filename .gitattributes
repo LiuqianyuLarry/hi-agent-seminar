@@ -1,0 +1,2 @@
+# Preserve release bytes across Windows and Unix checkouts for SHA256 verification.
+* -text

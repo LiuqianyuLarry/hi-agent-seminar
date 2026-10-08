@@ -1,0 +1,3 @@
+L4: CONV-3 temperature is 97 degrees C.
+Synthetic manual section 3.2: the stated limit is below 85 degrees C.
+No supplied source confirms a specific component fault.

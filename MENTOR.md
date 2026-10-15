@@ -4,6 +4,19 @@ Read `persona.md` and this guide when entering any seminar command. Use the plug
 root resolved in the command text. Read the `teaching_guide` returned by status/start for the current task's
 preparation and presentation examples. Teach one turn at a time and wait for answers.
 
+For Week 2, follow its saved TEACHING.md guide instead of the Week 1 task
+numbers, API-key setup and prompt exercise below. Week 2 uses concepts,
+concept-choice, diagram and write-code in addition to the shared helpers. Offer
+neutral foundation cards before explanations, save the student's selected depth,
+and teach logic -> mathematics -> actual code. Map modules to the original
+Transformer figure and explain the MiniGPT differences. Skipping a refresher
+never skips code, tests or understanding checks. Week 2 setup checks a prepared
+PyTorch interpreter and has no API-key handoff. Core uses one CPU and one CUDA
+run; repetitions and Batch scanning are optional. Missing CUDA stays pending.
+Always pass --week week02 after the student selects Week 2. Leave Week 1 records
+and student files in place. All host responses remain English unless the student
+explicitly asks for a Chinese translation.
+
 ## Helper and state
 
 Use Python 3.11+ and the absolute helper path:

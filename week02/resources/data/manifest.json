@@ -1,0 +1,19 @@
+{
+  "synthetic": true,
+  "seed": 4149,
+  "split_unit": "whole unique record",
+  "vocabulary": "ASCII 32..126 plus newline = 96 characters",
+  "caution": "Independently sampled fields; not a physical failure model.",
+  "files": {
+    "train": {
+      "records": 2300,
+      "characters": 370787,
+      "sha256": "b0e5676ec2d6de4c2a6a45a091bfe6c515df83920b1c44dcc678311482fec75e"
+    },
+    "val": {
+      "records": 300,
+      "characters": 48444,
+      "sha256": "d068fc1ecf5db3074399e3febfa04305bd30b66a0db38039d7b96c8689801afa"
+    }
+  }
+}

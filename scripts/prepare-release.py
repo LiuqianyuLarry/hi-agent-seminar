@@ -13,6 +13,8 @@ spec.loader.exec_module(check)
 files = sorted(check.package_files(ROOT))
 blocked = {".venv", "node_modules", "outputs", ".hi-agent-seminar", "hi-agent-seminar-work", ".archive"}
 errors = []
+approved_binary = {"week02/resources/assets/transformer-original.png":
+                   "6d82cf140193daf9e1c95baab59017754e36c2f9548cfec9db86b2bd8d7d27ed"}
 for path in files:
     relative = path.relative_to(ROOT)
     if path.is_symlink() or not path.resolve().is_relative_to(ROOT):
@@ -20,6 +22,10 @@ for path in files:
         continue
     if any(part in blocked for part in relative.parts) or (path.name.startswith(".env") and path.name != ".env.example") or path.name.lower() in {"credentials.json", "secrets.json"}:
         errors.append(f"Private/generated file: {relative}")
+        continue
+    if relative.as_posix() in approved_binary:
+        if hashlib.sha256(path.read_bytes()).hexdigest() != approved_binary[relative.as_posix()]:
+            errors.append(f"Supplied figure differs from reviewed source: {relative}")
         continue
     try:
         text = path.read_text(encoding="utf-8")

@@ -1,4 +1,4 @@
-# hi-agent-seminar 2.0.4
+# hi-agent-seminar 2.1.0
 
 An English EEEE4149 teaching plugin for Claude Code. Mentor Liu explains the code
 and terms before asking questions, runs the prepared experiments, and helps students
@@ -8,8 +8,9 @@ Chinese appears only when a student explicitly requests a Chinese translation.
 ## Install from GitHub
 
 Install Git, Python 3.11+ and Claude Code, and make sure you can sign in to Claude
-Code and access GitHub. The classroom experiments use a separate DeepSeek API key
-and may incur API charges. Never put your key in chat, this repository or a GitHub issue.
+Code and access GitHub. Week 1 experiments use a separate DeepSeek API key and may
+incur API charges. Week 2 uses local PyTorch, requires no API key, and needs its
+packages prepared before class. Never put a key in chat or a GitHub issue.
 
 Run these commands in your terminal (PowerShell on Windows), not in Claude chat:
 
@@ -26,8 +27,35 @@ outside the plugin/repository, launch Claude Code there, and enter this in chat:
 /hi-agent-seminar:menu
 ```
 
-The menu offers core lessons and optional topics. Only Week 1 is currently
-published; Week 2 is a placeholder. Use the same student folder every time to resume.
+The menu offers Week 1 and Week 2 with separate progress and optional topics.
+Use the same student folder every time to resume either week.
+
+## Week 2: inside the model
+
+```text
+/hi-agent-seminar:start week02
+```
+
+Two 50-minute core sessions guide you through character inputs, numerical attention,
+four MiniGPT forward-method exercises, eleven model tests, a CPU/CUDA comparison,
+actual output interpretation and two deliberately injected faults. You can write
+small code attempts in chat; Mentor Liu saves your wording in your student copy.
+
+Before basic concept explanations, choose I understand - continue, Explain briefly,
+or Show an example. Choices save and resume. The lesson links the original
+Transformer figure to logic, equations and actual code, and explains the original
+encoder-decoder figure's differences from this Pre-LN MiniGPT. Open the supplied
+local transformer-map.html when your chat host cannot display the figure inline.
+
+Prepare a Week 2 PyTorch environment before class; see week02/resources/SETUP.md.
+Core measurement uses ONE run per device, ten warm-up updates and 200 timed
+updates. Three repeats and the full Batch sweep are optional in the Week 2 menu.
+Missing CUDA is recorded as unavailable and the device comparison stays pending;
+you need an actual CUDA run to complete it. No GPU result or speedup is invented.
+
+The progress paths stay at .hi-agent-seminar/v2/week01 and /week02 respectively.
+Starting Week 2 does not reset or replace Week 1's code, answers or measurements.
+No live mentor conversation or classroom CUDA hardware is implied by software tests.
 
 ## Update from GitHub
 
@@ -115,7 +143,7 @@ claude plugin update hi-agent-seminar@hi-agent-seminar-marketplace
 If it points to another folder, inspect `claude plugin marketplace list` and update
 that source or use the explicit --plugin-dir loading method above. Do not assume
 editing source files changes an already installed cache. Restart the Claude Code
-session after an update. Confirm version 2.0.4 with `claude plugin list`.
+session after an update. Confirm version 2.1.0 with `claude plugin list`.
 
 Replace the whole plugin source folder with the extracted release folder, including
 the hidden .claude-plugin directory. Do not merge it into an old commands folder:
@@ -151,13 +179,14 @@ All commands begin with `/hi-agent-seminar:`.
 In menu, choose a week, then Optional topics for sampling, reasoning, Memory, RAG,
 workflow/Agent comparison and extra cases. Each topic shows its own saved status.
 Browsing and short concept recaps do not start experiments or change progress.
-Live practice requires environment/key setup, your prediction and approval for
-API calls. Optional progress does not change the core percentage.
+Practice requires the selected week's environment and your prediction and approval.
+Week 1 also needs private API-key setup; Week 2 runs locally. Optional progress
+does not change the core percentage.
 
 Confirmed learning steps save automatically. Ask Mentor Liu in chat to save a
 pause note or export an existing learning report; no extra slash command is needed.
 The review command always means three reflections plus a code snapshot.
-Version 2.0.4 resumes existing v2 progress in the same workspace; it does not reset it.
+Version 2.1.0 resumes existing v2 progress in the same workspace; it does not reset it.
 
 Course selection and multiple-choice checks use genuine AskUserQuestion selectors
 when available in the host. Open questions and reflections remain ordinary typed
@@ -210,7 +239,9 @@ cloud sync. You can pause midway through a task or a reflection review.
 - `week01/TEACHING.md`: response trees, explanations and practical teaching notes.
 - `week01/INSTRUCTOR.md`: 2 x 50-minute timing and classroom guidance.
 - `week01/SOURCES.md`: slide/handout/code alignment.
-- `week02/README.md`: instructions for adding future weeks.
+- `week02/TEACHING.md`: beginner concept cards, diagram mapping and two-session guide.
+- `week02/lesson.json`: Week 2 tasks, code targets, questions and optional topics.
+- `week02/resources/`: student TODOs, data, tests, local adapter and visual guide.
 - `FEEDBACK_CHANGES.md`: mapping from the supplied test feedback to changes.
 - `VERIFICATION.md`: performed checks and remaining host-interaction limits.
 - `PUBLISHING.md`: release checklist, version bumps and integrity checks.

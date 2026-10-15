@@ -37,7 +37,8 @@ and learning guide without starting the course. Offer a short concept recap firs
 browsing or recapping alone must not mark an experiment as finished.
 
 For live practice, check optional_practice_ready from list. If it is false, explain
-that local environment and private API-key setup must be completed first. Offer
+that the selected week's environment must be completed first (Week 1 also needs
+private API-key setup; Week 2 needs PyTorch and no key). Offer
 Start/Continue core to finish setup, or Back. Do not install packages, start the
 course or run a model call solely because the student browsed a topic.
 
@@ -52,3 +53,10 @@ rerunning it. If a run is pending, follow recovery guidance; do not duplicate it
 A previously discussed topic can be revisited; new live calls require approval.
 Offer Back to optional topics, Continue core, or Finish for now after discussion.
 Keep the saved core percentage unchanged throughout optional practice.
+
+For Week 2, begin with its saved teaching guide and concept cards. Offer
+I understand - continue / Explain briefly / Show an example and save the real
+choice with concept-choice. Use diagram for the original Transformer module map,
+then teach logic, mathematics and source code in that order. Use write-code for
+the student's forward-method body. Week 2 has zero model API calls. Its measured
+local CPU/CUDA work still needs the student's approval before execution.

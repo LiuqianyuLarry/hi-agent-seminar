@@ -39,9 +39,10 @@ def fingerprint(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def resource_files(root):
+def resource_files(root, include_tests=False, include_visuals=False):
+    excluded = EXCLUDED - ({"tests"} if include_tests else set())
     for base, dirs, files in os.walk(root):
-        dirs[:] = sorted(d for d in dirs if d not in EXCLUDED and not d.startswith(".")
+        dirs[:] = sorted(d for d in dirs if d not in excluded and not d.startswith(".")
                          and Path(base, d).resolve().is_relative_to(root.resolve())
                          and not Path(base, d).is_symlink())
         for name in sorted(files):
@@ -50,7 +51,7 @@ def resource_files(root):
                 continue
             if name.lower().startswith(".env") or name.lower() in {"reference.md", "lesson.json", "progress.json", "credentials.json", "secrets.json"}:
                 continue
-            if path.suffix.lower() in {".py", ".md", ".txt", ".json"}:
+            if path.suffix.lower() in ({".py", ".md", ".txt", ".json"} | ({".png", ".html"} if include_visuals else set())):
                 yield path
 
 
@@ -61,7 +62,7 @@ def catalog(workspace, root=ROOT):
     weeks.update(p.parent.name for p in (Path(workspace) / ".hi-agent-seminar").glob("week[0-9][0-9]/progress.json"))
     for week in sorted(weeks):
         try:
-            seminar = Seminar(workspace, week, root=root)
+            seminar = seminar_for(workspace, week, root=root)
         except ValueError as exc:
             courses.append({"id":week, "title":week, "started":False,
                             "core_percent":None, "updated_at":"", "error":str(exc),
@@ -87,7 +88,7 @@ def catalog(workspace, root=ROOT):
         if state is not None:
             env = state["environment"]
             entry["optional_practice_ready"] = bool(
-                env.get("status") == "ready" and env.get("key_configured")
+                env.get("status") == "ready" and (lesson.get("requires_api_key", True) is False or env.get("key_configured"))
                 and Path(env.get("python", "")).is_file())
         for topic in lesson.get("extensions", []):
             record = state["extensions"].get(topic["id"], {}) if state is not None else {}
@@ -100,7 +101,7 @@ def catalog(workspace, root=ROOT):
                 status = "Progress unavailable"
             elif latest:
                 status = {"running":"Run pending", "failed":"Run failed",
-                          "interrupted":"Run interrupted"}.get(latest["status"], "Inspect saved run")
+                          "interrupted":"Run interrupted", "awaiting_gpu":"Awaiting real CUDA measurement"}.get(latest["status"], "Inspect saved run")
                 if latest["status"] == "success":
                     status = "Discussed" if discussed else "Awaiting explanation"
             entry["optional_topics"].append({
@@ -262,7 +263,7 @@ class Seminar:
                     "Student files exist without progress. Use a new workspace; these files were not overwritten.")
             source = child(self.root, self.week, "resources")
             require(source.is_dir(), "This lesson has no resource pack.")
-            files = list(resource_files(source))
+            files = list(resource_files(source, include_tests=self.week == "week02", include_visuals=self.week == "week02"))
             require(files, "Resource pack is empty.")
             self.resources.parent.mkdir(parents=True, exist_ok=True)
             ignore = child(self.base, ".gitignore")
@@ -365,7 +366,12 @@ class Seminar:
             lines = path.read_text(encoding="utf-8").splitlines()
             start, end = 1, len(lines)
             if symbol:
-                nodes = [n for n in ast.parse("\n".join(lines)).body if getattr(n, "name", None) == symbol]
+                nodes = ast.parse("\n".join(lines)).body
+                for component in symbol.split("."):
+                    nodes = [n for n in nodes if getattr(n, "name", None) == component]
+                    require(nodes, f"Source symbol {symbol} was not found in {filename}. Read the edited file before teaching it.")
+                    if component != symbol.split(".")[-1]:
+                        nodes = nodes[0].body
                 require(nodes, f"Source symbol {symbol} was not found in {filename}. Read the edited file before teaching it.")
                 start, end = nodes[0].lineno, nodes[0].end_lineno
             # Keep full source location, while limiting a single displayed excerpt.
@@ -726,9 +732,22 @@ class Seminar:
         return {"report":str(target), "status":status}
 
 
+# Week 2 adds local PyTorch teaching without changing Week 1's saved schema.
+sys.modules.setdefault("tutor", sys.modules[__name__])
+from week02_support import Week2Mixin
+
+
+class Week2Seminar(Week2Mixin, Seminar):
+    pass
+
+
+def seminar_for(workspace, week="week01", root=ROOT):
+    return (Week2Seminar if week == "week02" else Seminar)(workspace, week, root=root)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["list", "start", "status", "task", "code", "teach", "predict", "setup", "key-ready", "write-prompt", "run", "results", "explain", "answer", "assess", "complete", "save", "recover", "export", "review-questions", "review-answer", "review", "extension", "run-extension", "explain-extension"])
+    parser.add_argument("action", choices=["list", "start", "status", "task", "code", "teach", "predict", "setup", "key-ready", "write-prompt", "run", "results", "explain", "answer", "assess", "complete", "save", "recover", "export", "review-questions", "review-answer", "review", "extension", "run-extension", "explain-extension", "concepts", "concept-choice", "diagram", "write-code"])
     parser.add_argument("--workspace", default=str(Path.cwd()))
     parser.add_argument("--week")
     parser.add_argument("--text", default="")
@@ -740,13 +759,16 @@ def main():
     parser.add_argument("--intro", default="")
     parser.add_argument("--prediction", default="")
     parser.add_argument("--python")
+    parser.add_argument("--install", choices=["cpu"])
+    parser.add_argument("--choice", choices=["understand", "brief", "example"])
+    parser.add_argument("--task-id")
     args = parser.parse_args()
     try:
         if args.action == "list":
             result = catalog(args.workspace)
         else:
             week = args.week or catalog(args.workspace)["active_week"] or "week01"
-            seminar = Seminar(args.workspace, week)
+            seminar = seminar_for(args.workspace, week)
             if args.input_file:
                 require(args.input_file.suffix.lower() in (".txt", ".md") and not args.input_file.name.startswith(".env"),
                         "Use a response-only .txt or .md file, not a credential or state file.")
@@ -759,9 +781,18 @@ def main():
             elif args.action == "write-prompt":
                 result = seminar.write_prompt(args.text)
             elif args.action == "setup":
-                result = seminar.setup(args.python or sys.executable)
+                result = seminar.setup(args.python or sys.executable, install=args.install) if week == "week02" else seminar.setup(args.python or sys.executable)
+            elif args.action in ("concepts", "diagram"):
+                require(week == "week02", "This action belongs to Week 2.")
+                result = getattr(seminar, args.action)()
+            elif args.action == "concept-choice":
+                require(week == "week02", "Concept choices belong to Week 2.")
+                result = seminar.concept_choice(args.name, args.choice)
+            elif args.action == "write-code":
+                require(week == "week02", "Code exercises belong to Week 2.")
+                result = seminar.write_code(args.name, args.text)
             elif args.action in ("code", "results"):
-                result = getattr(seminar, args.action)(args.name)
+                result = seminar.results(args.name, args.task_id) if week == "week02" and args.action == "results" else getattr(seminar, args.action)(args.name)
             elif args.action == "extension":
                 result = seminar.extension(args.name)
             elif args.action in ("run", "run-extension"):
@@ -771,7 +802,7 @@ def main():
                 result = seminar.mutate(args.action, args.text, args.question, args.verdict, args.run_id, args.name)
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0
-    except (ValueError, OSError, json.JSONDecodeError) as exc:
+    except (ValueError, OSError, json.JSONDecodeError, SyntaxError) as exc:
         print(json.dumps({"error":redact(str(exc)), "progress_not_reset":True}, ensure_ascii=False), file=sys.stderr)
         return 1
 

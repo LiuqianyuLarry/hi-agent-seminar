@@ -1,6 +1,6 @@
 ---
 description: Answer three reflection questions and save a local code snapshot
-argument-hint: "[week01]"
+argument-hint: "[week01|week02]"
 ---
 
 Read `${CLAUDE_PLUGIN_ROOT}/persona.md` and `${CLAUDE_PLUGIN_ROOT}/MENTOR.md`.

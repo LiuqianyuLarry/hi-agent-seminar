@@ -1,8 +1,48 @@
-# Version 2 verification
+# Release verification
 
-Date: 9 October 2026. Plugin version: 2.0.4. Fixed storage namespace/schema: v2 / 2.
+Date: 15 October 2026. Plugin version: 2.1.0. Fixed storage namespace/schema: v2 / 2.
 
-## Checks performed
+## Week 2 checks performed
+
+- All 60 plugin workflow/distribution tests passed, including real local PyTorch
+  integration with WEEK02_TEST_PYTHON set. Standard-library-only runs explicitly
+  skip that integration when no test interpreter is supplied.
+- Actual torch 2.10.0+cpu/Python 3.12 validation ran the three starter tests,
+  numerical attention, student-code patching, head/multihead/FFN/block checks,
+  all eleven original model tests and the thirty-update fixed-batch probe.
+- A separate recorded CPU benchmark used B=16, T=64, d=128, h=4, L=2, FP32,
+  ten warm-up updates, 200 measured steps and one repetition. Measured time was
+  4.2313 seconds (about 48,401 training positions/s); final train-side evaluation
+  loss was 0.83464 and validation loss 0.86944. Actual parameter count: 428,800.
+  These are this validation machine's measurements, not classroom performance promises.
+- CUDA was unavailable to the CPU-only validation interpreter. Its record remained
+  unavailable and the comparison awaiting_gpu at 68% core completion. There are
+  no fabricated GPU timings, memory numbers or speedup. Live CUDA needs lab testing.
+- Both actual injected-failure demos detected the deliberate faults: causal prefix
+  max difference was 0 with the mask and about 0.06984 after removing it; omitting
+  optimizer.step kept fixed-batch loss at about 4.41224. This is injected evidence,
+  not a report of naturally occurring hardware failure.
+- Actual CPU Batch sweep completed B=1,8,16 at fifty measured steps each. Context
+  arithmetic and the KV/architecture concept adapters completed with correct labels.
+  The optional three-repetition adapter also completed three actual CPU runs and
+  retained CUDA unavailable. It remained awaiting_gpu; this release does not claim
+  a real three-repeat CPU/CUDA comparison.
+- Temporary-workspace tests verify saved concept depth, code before-files, wrong
+  attempts, model/test hash matching, failed setup receipts, missing-GPU gates,
+  full 0-to-100 mock workflow, separate optional progress, output reuse, reflections,
+  Week 2 snapshot upgrades and byte-preserved Week 1 records/student files.
+- The original Transformer PNG matches its reviewed source hash. The local HTML
+  guide loaded that image, displayed fourteen module sections and passed desktop
+  overflow checks. Top and selected Add & Norm views were visually inspected.
+  The guide explicitly distinguishes encoder-decoder/Post-LN/ReLU/sinusoidal
+  positions from this decoder-only Pre-LN/GELU/learned-position implementation.
+
+The real-compute validation harness used explicit instructor answer/code fixtures;
+it was not a live student or mentor conversation. Clickable concept cards and the
+quality of each live mentor explanation still need observation in the classroom
+host. No paid model API requests were made. No real student records were modified.
+
+## Earlier Week 1 and distribution checks
 
 - 38 workflow regression tests passed with mocked process calls: fresh state,
   restart/resume, empty leftover directories, nonempty student file preservation,

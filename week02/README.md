@@ -1,25 +1,20 @@
-# Week 2: reserved for the next seminar
+# Week 2 inside the model
 
-No lesson is published here yet, so the chooser does not offer an empty course.
+Start with /hi-agent-seminar:start week02 or choose Week 2 in the course menu.
+The core lasts 2 x 50 minutes. Beginner concept cards let learners continue, request
+a brief explanation or see an example. The mentor teaches logic, mathematics and
+actual code, maps the original Transformer figure to the MiniGPT implementation,
+and saves student code attempts before running real tests.
 
-To add a week, create lesson.json with its own week ID, version, tasks and optional
-extensions; add a clean resources directory and English teaching/source notes.
-Core task weights must total 100. Use the Week 1 task schema, including terms,
-code_refs, requires_teaching, requires_prediction, requires_setup and requires_prompt.
-Questions use mcq options/correct/feedback or open prompt/rubric. Private rubrics
-must not be displayed to students. A function code reference is [file, symbol];
-a whole short text reference uses [file, null].
+See TEACHING.md for the turn-by-turn guide, INSTRUCTOR.md for timing and hardware
+requirements, SOURCES.md for source alignment, and resources/SETUP.md for pre-class
+environment preparation. Core CPU/CUDA uses one repetition per device; repeat3,
+Batch scanning, context cost, KV-cache concepts and architecture review are optional.
 
-Each course uses its own v2 state and student resource paths. Current runner entry
-scripts are explicitly limited to week1_demo.py and preview_agent.py; extend that
-allowlist when a later course needs another script. Experiment scripts must accept
---output-dir and must not print credentials. Revisit setup/prompt requirements when
-designing a different course. Give every prediction and check sufficient teaching
-context. Add meaningful regression coverage for the new behaviour.
+Progress uses the existing fixed v2 storage namespace with a separate week02 folder.
+Week 1 remains intact. Existing courses keep saved lesson snapshots after updates.
 
-Update the plugin version for distribution, never the fixed PROGRESS_NAMESPACE.
-Existing students continue their saved lesson/teaching snapshots and resource copy.
-Keep the helper backward-compatible with those definitions and script entry points.
-Use stable week/task IDs. A breaking record schema change needs an explicit tested,
-backup-first migration; it must not reset progress or silently remap old answers.
-New lesson versions apply to new learners, not already-started courses.
+To maintain the lesson, edit scripts/build-week02.py, regenerate lesson.json and
+the local visual guide, then run the upgrade/workflow tests and release audit.
+Do not move completed test-fixture implementations into learner resources. Future
+weeks need their own tested runtime adapters; do not copy Week 2 hardware assumptions.

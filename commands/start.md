@@ -1,6 +1,6 @@
 ---
-description: Start or resume a selected week with Mentor Liu
-argument-hint: "[week01]"
+description: Start or resume Week 1 or Week 2 with Mentor Liu
+argument-hint: "[week01|week02]"
 ---
 
 Read `${CLAUDE_PLUGIN_ROOT}/persona.md` and `${CLAUDE_PLUGIN_ROOT}/MENTOR.md`.

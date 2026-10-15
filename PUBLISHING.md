@@ -9,6 +9,9 @@ Do not upload only a ZIP or wrap the files in another hi-agent-seminar directory
 ## Release checklist
 
 1. Edit plugin/course files and update English documentation.
+   For Week 2, edit scripts/build-week02.py and run it to rebuild lesson.json and
+   transformer-map.html. The supplied original Transformer PNG is an explicitly
+   reviewed binary asset with a pinned hash and attribution in week02/SOURCES.md.
 2. Increment .claude-plugin/plugin.json version for each distributed change.
    Keep the plugin name and marketplace name stable.
 3. Keep PROGRESS_NAMESPACE and existing record formats backward-compatible.
@@ -30,6 +33,13 @@ python -B verify-package.py
 git status --short
 git diff --stat
 ```
+
+For real Week 2 CPU integration, prepare a dedicated interpreter using
+week02/resources/requirements-cpu.txt. Set WEEK02_TEST_PYTHON to its absolute
+Python path and run the same unittest discovery command. Without that variable,
+the real-PyTorch integration test is explicitly skipped; mock workflow tests alone
+do not prove that training works. Validate CUDA separately on actual lab hardware.
+Never publish local validation workspaces, environments or completed student copies.
 
 The release script ignores Git metadata, Python bytecode caches and Claude Code's
 root .in_use runtime-marker directory. It rejects

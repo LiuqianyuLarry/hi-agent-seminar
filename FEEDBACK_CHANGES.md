@@ -1,9 +1,15 @@
 # Changes from the instructor's test feedback
 
-Release: 2.0.2. Existing learning records are preserved across plugin updates.
+Release: 2.1.0. Week 2 is added; existing learning records remain preserved.
 
 | Feedback | Implemented change |
 | --- | --- |
+| Week 2, 2 x 50 minutes | Eleven tasks cover input, attention mathematics, four TODOs, training tests, one run per device, results and injected failures |
+| No deep-learning prerequisites | Neutral concept cards select continue, brief explanation or numerical example; choices are saved |
+| Logic, mathematics, code | Required task order and original Transformer module/code guide, with encoder-decoder versus MiniGPT differences explained |
+| Student code ownership | Exact chat bodies saved into only the requested forward method, with before-files, draft records and model/run hashes |
+| Honest hardware comparison | CUDA unavailable remains pending; three repetitions and Batch scanning are optional |
+| Preserve Week 1 | Fixed v2 paths/schema and Week 1 lesson/resources remain unchanged; cross-week byte-preservation tests |
 | 1, setup ownership | Mentor-run setup action creates the venv, installs with that interpreter and checks imports; only private key entry stays with the learner |
 | 2, unhelpful setup quiz | Task01 has no prediction or graded questions; actual setup plus the private key handoff gates completion |
 | 3, 4, 8, teaching before questions | Required teach checkpoint; terms and dynamically numbered code excerpts before predictions; preparation notes for every task |

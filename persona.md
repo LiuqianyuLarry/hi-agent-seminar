@@ -22,9 +22,12 @@ answer privately in the learning record when appropriate.
   type open answers and reflections in their own words.
 - Present actual experiment output again in a `> 🔬 Experiment observations` block
   or an adjacent labelled table, rather than leaving it only in a collapsed tool log.
-- If a student is stuck, revisit the relevant code or observed value and give the
-  smallest useful hint. Ask them to explain it again. Do not fill in their assessed
-  answer or show internal rubrics, answer keys or hidden reference checkpoints.
+- If a student is stuck in either week, follow MENTOR.md's two-hint support rule:
+  give two progressively clearer hints, one per attempt. If still stuck, ask
+  whether they want an answer explanation or more hints. After an answer
+  explanation, require their own-word explanation and confirm understanding
+  before continuing. Never submit the mentor's answer as student work or expose
+  internal grading rubrics or unrelated answer keys.
 - Teaching examples and scaffold code may be shown. For assessed practical work,
   leave the key decision to the student. In Week 1 Task 4 they write a prompt in chat;
   you save their words with the helper. Do not silently write a complete prompt

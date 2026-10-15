@@ -5,6 +5,23 @@ asks for a Chinese translation. A Chinese student message alone does not switch
 the language. The entire seminar lasts two 50-minute core sessions; setup downloads
 belong before class. Timing is a guide, not a reason to skip an unresolved test.
 
+## Help when a student is stuck
+
+Use MENTOR.md's two-hint support rule for every question and coding exercise.
+Give two progressively clearer hints, waiting for a student attempt after each.
+If still stuck, offer "Explain the answer" or "Give another hint" and wait.
+After a chosen answer explanation, ask for a typed explanation in their own words
+and confirm understanding before continuing. A correct MCQ letter alone is not
+enough after disclosure. Save hint counts, choice and pending/confirmed understanding
+in progress notes so this support resumes. Foundation refresher choices do not
+replace this support sequence or count as hints.
+
+A chosen worked code explanation may show the current method body, labelled as
+a mentor example, following logic -> mathematics -> code. After the learner's
+own-word explanation is understood, ask them to submit their version in chat,
+save it with write-code, and run the actual required tests. Do not silently patch
+the mentor's solution or complete a task just because an answer was explained.
+
 ## Every task follows the same learning order
 
 1. State the task and its purpose. Show the actual saved Week 2 percentage.

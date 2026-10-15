@@ -1,6 +1,15 @@
 # Release verification
 
-Date: 15 October 2026. Plugin version: 2.1.0. Fixed storage namespace/schema: v2 / 2.
+Date: 15 October 2026. Plugin version: 2.1.1. Fixed storage namespace/schema: v2 / 2.
+
+## Version 2.1.1 support-policy checks
+
+Reviewed shared persona/mentor instructions and both weekly teaching guides for
+the two-hint, learner-choice and own-word explanation sequence. Standard workflow
+tests passed (59 passed, one optional PyTorch integration skipped). Package audit
+and hash checks passed. No runtime code, lesson schema or student records changed.
+This is an instruction-level policy; a live mentor conversation was not replayed.
+The Week 2 execution evidence below was collected for 2.1.0 and remains historical.
 
 ## Week 2 checks performed
 

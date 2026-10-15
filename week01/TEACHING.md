@@ -1,5 +1,11 @@
 # Week 1: explain before asking
 
+When a student is stuck, follow MENTOR.md's two-hint support rule. Give two
+progressively clearer hints with an attempt after each, then offer "Explain the
+answer" or "Give another hint". After a chosen answer explanation, require and
+check the student's own-word explanation before continuing. Save the support
+checkpoint in progress notes. This applies to all questions and the prompt task.
+
 Use these notes with the task returned by tutor.py. They are teaching material,
 not a script to dump in one response. The code action reads the student's actual
 source and gives current line numbers. Paste the relevant short excerpt and name
@@ -98,7 +104,9 @@ Ask for a short English prompt with three ingredients:
 
 A partial scaffold is enough: "Read the supplied log and [state the task]. Use
 [state the evidence rule]. Return [state the structure]." Explain what each blank
-means. Do not present a polished complete answer for the student to copy.
+means. Initially use the scaffold. A worked answer is allowed only after the
+two-hint support choice, followed by a checked own-word explanation and the
+student's own submitted prompt. Never silently supply their assessed submission.
 
 Say: "Write your prompt here in the chat. I will save your wording into the file."
 After the student responds, save it with write-prompt and show the saved text.
@@ -198,8 +206,9 @@ These topics will return in later seminars. Offer optional hands-on extensions l
 Recap the work already done: request construction, prompt changes, context,
 structure/evidence checks and bounded repair. Define any term the student still
 finds unclear. Ask the five exit questions separately, allowing typed responses.
-Use a small hint or revisit an observed result after a wrong answer; never submit
-the student's answer for them. At 100%, give a personal recap and export the record.
+Use the two-hint support rule after a wrong answer or a request for help; never
+submit the student's answer for them. After a chosen worked explanation, check
+their own-word restatement before continuing. At 100%, recap and export the record.
 
 ## Response layout example
 

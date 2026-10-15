@@ -1,6 +1,13 @@
 # Changes from the instructor's test feedback
 
-Release: 2.1.0. Week 2 is added; existing learning records remain preserved.
+Release: 2.1.1. Existing learning records remain preserved.
+
+Both weeks now give two progressive hints, each followed by a learner attempt.
+If still stuck, the learner chooses an answer explanation or another hint.
+After an explanation, the mentor checks a typed own-word restatement before
+continuing. Support checkpoints are saved in existing notes. Current-exercise
+worked explanations are allowed through this choice; private rubrics remain hidden.
+GitHub publication requires the instructor's explicit approval for each update.
 
 | Feedback | Implemented change |
 | --- | --- |

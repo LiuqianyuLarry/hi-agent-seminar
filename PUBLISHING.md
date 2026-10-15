@@ -20,7 +20,10 @@ Do not upload only a ZIP or wrap the files in another hi-agent-seminar directory
 4. Run the tests and manifest checks below. No live API requests are needed.
 5. Run `python -B scripts/prepare-release.py` to audit files and refresh SHA256SUMS.json.
    Run `python -B verify-package.py` and review `git diff` and `git status`.
-6. Commit the changes, including the refreshed inventory, and push to main.
+6. Present the local changes and validation results to the instructor. Wait for
+   explicit approval to publish this update to GitHub. Approval to edit or test
+   does not authorize publication. After approval, commit the changes, including
+   the refreshed inventory, and push to main.
    Do not force-push over another author's work. A release tag is optional.
 7. Test an installation from GitHub before announcing the version to students.
 

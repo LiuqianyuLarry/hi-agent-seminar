@@ -37,7 +37,10 @@ Do not ask students to edit a file or install packages during the normal sequenc
 For Task04 they write the prompt in chat. The helper writes those words into the
 working copy, remembers the draft and associates its hash with the resulting run.
 The bundled file is a scaffold, so the activity is no longer an edit of an already
-finished answer. Give a partial example, not a complete response to copy.
+finished answer. Begin with a partial example. Follow MENTOR.md's two-hint support
+rule if the student is stuck: two progressive hints, then a choice of more hints
+or an answer explanation. After explanation, verify their own-word understanding
+before continuing; keep their submitted prompt and required experiment separate.
 
 Show actual experiments in an Experiment observations block. Read field names and
 values before asking students to locate them. Multiple-choice checks use the host's

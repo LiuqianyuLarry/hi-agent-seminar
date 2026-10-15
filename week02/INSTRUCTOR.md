@@ -1,5 +1,10 @@
 # Week 2 instructor guide
 
+For struggling learners, use MENTOR.md's two-hint support rule: two progressive
+hints with separate attempts, then a choice of answer explanation or further hints.
+After explanation, require and assess a restatement in the student's own words
+before continuing. Record assistance honestly and retain all required code tests.
+
 Two core sessions of 50 minutes. Environment downloads are pre-class preparation.
 No deep-learning background is assumed. Offer neutral concept cards and save the
 chosen refresher depth. Skipping a refresher never removes code/test/check gates.

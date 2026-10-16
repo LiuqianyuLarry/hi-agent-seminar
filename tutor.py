@@ -76,9 +76,11 @@ def catalog(workspace, root=ROOT):
         if seminar.path.is_file():
             try:
                 state = seminar.load()
-                summary = seminar.status(state)
-                entry.update(started=True, core_percent=summary["core_percent"],
-                             current_task=summary["current_task"], updated_at=state["updated_at"])
+                current = seminar.current(state)
+                entry.update(started=True,
+                             core_percent=sum(t["weight"] for t in lesson["tasks"] if state["tasks"][t["id"]]["complete"]),
+                             current_task=current["id"] if current else None,
+                             session=seminar.session, updated_at=state["updated_at"])
             except ValueError as exc:
                 state = None
                 entry["error"] = str(exc)
@@ -162,18 +164,29 @@ def atomic_json(path, data):
 
 
 class Seminar:
-    def __init__(self, workspace, week="week01", root=ROOT):
+    def __init__(self, workspace, week="week01", root=ROOT, session=None):
         require(re.fullmatch(r"week\d{2}", week), "Use a week ID such as week01.")
         self.root = Path(root).resolve()
         self.workspace = Path(workspace).expanduser().resolve()
         require(self.workspace.is_dir(), "The student workspace must already exist.")
         require(not self.workspace.is_relative_to(self.root), "Choose a student workspace outside the plugin.")
         self.week = week
-        self.base = child(self.workspace, ".hi-agent-seminar", PROGRESS_NAMESPACE, week)
+        self.week_base = child(self.workspace, ".hi-agent-seminar", PROGRESS_NAMESPACE, week)
+        self.session_pointer = child(self.week_base, "active-session.json")
+        if session is None:
+            try:
+                session = json.loads(self.session_pointer.read_text(encoding="utf-8"))["session"] if self.session_pointer.exists() else "original"
+            except (ValueError, KeyError, TypeError) as exc:
+                raise ValueError("Active session selection is unreadable. Preserve it for recovery.") from exc
+        require(isinstance(session, str) and (session == "original" or re.fullmatch(r"replay-[a-f0-9]{32}", session)), "Invalid learning session. Records were preserved.")
+        self.session = session
+        self.base = self.week_base if session == "original" else child(self.week_base, "sessions", session)
         self.path = child(self.base, "progress.json")
         self.legacy_path = child(self.workspace, ".hi-agent-seminar", week, "progress.json")
         self.snapshot = child(self.base, "lesson.snapshot.json")
         self.resources = child(self.workspace, "hi-agent-seminar-work", PROGRESS_NAMESPACE, week, "resources")
+        if session != "original":
+            self.resources = child(self.workspace, "hi-agent-seminar-work", PROGRESS_NAMESPACE, week, "sessions", session, "resources")
         lesson_path = child(self.root, week, "lesson.json")
         if self.path.is_file() and self.snapshot.is_file():
             lesson_path = self.snapshot
@@ -206,12 +219,50 @@ class Seminar:
             if matches:
                 shutil.copy2(source, guide)
 
+    def sessions(self):
+        result = []
+        ids = ["original"] + sorted(p.name for p in child(self.week_base, "sessions").glob("replay-*") if p.is_dir())
+        for session in ids:
+            course = seminar_for(self.workspace, self.week, self.root, session=session)
+            if not course.path.exists():
+                continue
+            state = course.load()
+            result.append({"session":session, "active":session == self.session,
+                           "started_at":state["started_at"], "updated_at":state["updated_at"],
+                           "core_percent":sum(t["weight"] for t in course.lesson["tasks"] if state["tasks"][t["id"]]["complete"])})
+        return {"week":self.week, "sessions":result}
+
+    def select_session(self, session=None, fresh=False):
+        # The original lock coordinates session selection with legacy sessions.
+        coordinator = seminar_for(self.workspace, self.week, self.root, session="original")
+        with coordinator.lock(check_active=False):
+            active = seminar_for(self.workspace, self.week, self.root)
+            require(active.session == self.session, "Active session changed; reload before selecting.")
+            if active.base != coordinator.base:
+                require(not child(active.base, "progress.lock").exists(), "Active session is busy. Try again later.")
+            if active.path.exists():
+                state = active.load()
+                records = list(state["tasks"].values()) + list(state["extensions"].values())
+                require(not any(r["status"] == "running" for record in records for r in record.get("runs", [])),
+                        "An experiment is pending. Recover or finish it before changing sessions.")
+            target_id = "replay-" + uuid.uuid4().hex if fresh else session
+            require(target_id, "Select a saved session.")
+            target = seminar_for(self.workspace, self.week, self.root, session=target_id)
+            if fresh:
+                require(not active.legacy_path.exists(), "Older records require recovery before a new session.")
+                result = target.start()
+            else:
+                require(target.path.exists() and target.resources.is_dir(), "Saved session or student files are missing.")
+                result = target.status()
+            atomic_json(self.session_pointer, {"session":target_id})
+            return result
+
     def teaching_guide(self):
         saved = child(self.base, "TEACHING.snapshot.md")
         return str(saved) if saved.is_file() else None
 
     @contextmanager
-    def lock(self):
+    def lock(self, check_active=True):
         self.base.mkdir(parents=True, exist_ok=True)
         lockpath = child(self.base, "progress.lock")
         try:
@@ -221,6 +272,9 @@ class Seminar:
         try:
             with os.fdopen(fd, "w") as stream:
                 stream.write(str(os.getpid()))
+            if check_active and self.path.exists():
+                selected = seminar_for(self.workspace, self.week, self.root)
+                require(selected.session == self.session, "Active session changed; reload before writing.")
             yield
         finally:
             lockpath.unlink(missing_ok=True)
@@ -326,7 +380,7 @@ class Seminar:
         all_runs = [r for t in state["tasks"].values() for r in t["runs"]]
         all_runs += [r for t in state["extensions"].values() for r in t["runs"]]
         missing = self.missing(current, state["tasks"][current["id"]]) if current else []
-        return {"week": self.week, "title": self.lesson["title"], "core_percent": percent,
+        return {"week": self.week, "session":self.session, "title": self.lesson["title"], "core_percent": percent,
                 "current_task": current["id"] if current else None,
                 "task_number": self.lesson["tasks"].index(current) + 1 if current else len(self.lesson["tasks"]),
                 "total_tasks": len(self.lesson["tasks"]), "next": missing[0] if missing else ("complete task" if current else "export review or choose an extension"),
@@ -741,13 +795,31 @@ class Week2Seminar(Week2Mixin, Seminar):
     pass
 
 
-def seminar_for(workspace, week="week01", root=ROOT):
-    return (Week2Seminar if week == "week02" else Seminar)(workspace, week, root=root)
+def seminar_for(workspace, week="week01", root=ROOT, session=None):
+    return (Week2Seminar if week == "week02" else Seminar)(workspace, week, root=root, session=session)
+
+
+def compact_output(value):
+    """Bound routine status output without changing stored evidence or Python APIs."""
+    if isinstance(value, dict):
+        result = {k:compact_output(v) for k,v in value.items()}
+        if "core_percent" in result and "progress_file" in result:
+            result["extensions"] = {name:{"run_count":len(record.get("runs", [])),
+                "explanation_count":len(record.get("explanations", []))}
+                for name,record in value.get("extensions", {}).items()}
+            for key in ("recent_runs", "running"):
+                result[key] = [{k:r[k] for k in ("id", "status", "started_at", "folder") if k in r}
+                               for r in value.get(key, [])]
+        return result
+    if isinstance(value, list):
+        return [compact_output(v) for v in value]
+    return value
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["list", "start", "status", "task", "code", "teach", "predict", "setup", "key-ready", "write-prompt", "run", "results", "explain", "answer", "assess", "complete", "save", "recover", "export", "review-questions", "review-answer", "review", "extension", "run-extension", "explain-extension", "concepts", "concept-choice", "diagram", "write-code"])
+    parser.add_argument("action", choices=["list", "start", "restart", "sessions", "select-session", "status", "task", "code", "teach", "predict", "setup", "key-ready", "write-prompt", "run", "results", "explain", "answer", "assess", "complete", "save", "recover", "export", "review-questions", "review-answer", "review", "extension", "run-extension", "explain-extension", "concepts", "concept-choice", "diagram", "write-code"])
+    parser.add_argument("--session")
     parser.add_argument("--workspace", default=str(Path.cwd()))
     parser.add_argument("--week")
     parser.add_argument("--text", default="")
@@ -774,7 +846,11 @@ def main():
                         "Use a response-only .txt or .md file, not a credential or state file.")
                 require(args.input_file.stat().st_size <= 80000, "Response file is too large.")
                 args.text = args.input_file.read_text(encoding="utf-8")
-            if args.action in ("start", "status", "task", "export", "review"):
+            if args.action == "restart":
+                result = seminar.select_session(fresh=True)
+            elif args.action == "select-session":
+                result = seminar.select_session(args.session)
+            elif args.action in ("start", "status", "task", "export", "review", "sessions"):
                 result = getattr(seminar, args.action)()
             elif args.action == "review-questions":
                 result = seminar.review_questions()
@@ -800,7 +876,7 @@ def main():
                 result = seminar.run(args.python, args.intro, args.name if args.action == "run-extension" else None, args.prediction)
             else:
                 result = seminar.mutate(args.action, args.text, args.question, args.verdict, args.run_id, args.name)
-        print(json.dumps(result, ensure_ascii=False, indent=2))
+        print(json.dumps(compact_output(result), ensure_ascii=False, indent=2))
         return 0
     except (ValueError, OSError, json.JSONDecodeError, SyntaxError) as exc:
         print(json.dumps({"error":redact(str(exc)), "progress_not_reset":True}, ensure_ascii=False), file=sys.stderr)

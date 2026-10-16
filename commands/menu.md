@@ -2,7 +2,8 @@
 description: Browse seminar weeks, continue learning, or choose optional topics
 ---
 
-Read `${CLAUDE_PLUGIN_ROOT}/persona.md` and `${CLAUDE_PLUGIN_ROOT}/MENTOR.md`.
+Read `${CLAUDE_PLUGIN_ROOT}/persona.md`. Read MENTOR.md only after the student
+chooses learning or practice. Reuse unchanged instructions already in context.
 Use `${CLAUDE_PLUGIN_ROOT}/tutor.py` with Python 3.11+, the student's current
 project directory as --workspace, and an explicitly selected --week when needed.
 All student-facing content is English; Chinese is allowed only for an explicitly
@@ -21,13 +22,21 @@ available weeks, and Browse only. Paginate within the host's option limit. Map c
 to IDs yourself; students need not type them. If the host lacks AskUserQuestion,
 say so and offer lettered choices. Browse only and Back do not write progress.
 
-Selecting a week opens a submenu, without starting it: Start/Continue core,
-Optional topics, and Back. For core, call start, then task/code and that week's
-saved teaching_guide path returned by start/status. Resume saved checkpoints one
-step at a time. After an update, never clear progress or recopy student resources.
+Selecting a week opens a submenu without starting it: Continue saved progress,
+Start again from the beginning, Choose an earlier learning session, Optional topics,
+and Back. Paginate if necessary. Unstarted weeks offer Start learning instead.
+Always wait for the mode choice; even a top-level Continue shortcut must offer it.
+Continue calls start. Start again calls restart to create separate progress and
+fresh starter code at 0%, preserving every old session. Earlier session calls
+sessions, then select-session --session ID after the learner selects a dated record.
+Explain that new sessions need separate setup and Week 1 private key configuration;
+never copy credentials or start paid calls just because restart was selected.
+For core, read MENTOR.md, task/code and only the current section of the saved guide.
+Never skip new-session tasks because an earlier session completed them.
+After an update, never clear progress or overwrite student resources.
 If records are incompatible, report the preservation/recovery error; do not suggest
 starting a new workspace as a way around it. When core is 100%, show
-Core complete and offer optional topics or review, not another core task.
+Core complete and offer Start again, optional topics or review.
 
 ## Optional topics inside the selected week
 

@@ -2,12 +2,15 @@
 description: Explain the five seminar commands and how to resume
 ---
 
-Read `${CLAUDE_PLUGIN_ROOT}/persona.md` and `${CLAUDE_PLUGIN_ROOT}/MENTOR.md`.
+Read `${CLAUDE_PLUGIN_ROOT}/persona.md`; this command does not need the full MENTOR.md.
 Use `${CLAUDE_PLUGIN_ROOT}/tutor.py` with Python 3.11+ and the student's current
 project directory as --workspace. All presentation is English unless the student
 explicitly requests a Chinese translation. Follow the persona and progress footer.
 
-Show exactly these five commands and their uses:
+Explain that menu/start offers Continue saved progress, Start again from the
+beginning, and Choose an earlier learning session. Starting again creates separate
+progress and fresh exercises, preserving earlier records and code. Each session
+has its own setup and percentage. Show exactly these five commands and their uses:
 
 | Command | Purpose |
 | --- | --- |

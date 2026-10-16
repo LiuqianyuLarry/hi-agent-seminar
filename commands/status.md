@@ -3,7 +3,7 @@ description: Show the active seminar and saved progress
 argument-hint: "[week01|week02]"
 ---
 
-Read `${CLAUDE_PLUGIN_ROOT}/persona.md` and `${CLAUDE_PLUGIN_ROOT}/MENTOR.md`.
+Read `${CLAUDE_PLUGIN_ROOT}/persona.md`; this command does not need the full MENTOR.md.
 Use `${CLAUDE_PLUGIN_ROOT}/tutor.py` with an available Python 3.11+ interpreter,
 the student's current project directory as --workspace, and the selected --week.
 All student-facing content is English; Chinese is allowed only for an explicitly

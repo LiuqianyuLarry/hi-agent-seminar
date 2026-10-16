@@ -1,6 +1,12 @@
 # Changes from the instructor's test feedback
 
-Release: 2.1.1. Existing learning records remain preserved.
+Release 2.2.0: every menu/start entry offers continue, fresh repeat
+learning, or an earlier saved session. Repeats have separate progress and starter
+code; old sessions remain intact. Catalog reads avoid task requirement checks and
+routine CLI status summarizes historical extensions. Entry commands defer the full
+mentor/weekly guide until teaching begins. Publication was approved by the instructor.
+
+Previous release: 2.1.1. Existing learning records remain preserved.
 
 Both weeks now give two progressive hints, each followed by a learner attempt.
 If still stuck, the learner chooses an answer explanation or another hint.

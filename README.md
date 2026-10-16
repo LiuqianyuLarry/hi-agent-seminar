@@ -1,4 +1,12 @@
-# hi-agent-seminar 2.1.1
+# hi-agent-seminar 2.2.0
+
+Version 2.2.0: menu/start now asks whether to continue saved progress,
+start again from the beginning, or choose an earlier learning session. A repeat
+starts at 0% with fresh exercises in separate session folders; previous progress,
+code and outputs remain available. Each session needs its own environment setup
+and Week 1 private key configuration. No credentials are copied. Only the five
+existing slash commands are exposed. Menu/status use compact summaries and defer
+full teaching-guide loading until a learning mode is selected.
 
 Week 1 and Week 2 now use two progressive hints when a learner is stuck, followed
 by a choice of an answer explanation or more hints. After an answer explanation,
@@ -148,7 +156,7 @@ claude plugin update hi-agent-seminar@hi-agent-seminar-marketplace
 If it points to another folder, inspect `claude plugin marketplace list` and update
 that source or use the explicit --plugin-dir loading method above. Do not assume
 editing source files changes an already installed cache. Restart the Claude Code
-session after an update. Confirm version 2.1.1 with `claude plugin list`.
+session after an update. Confirm version 2.2.0 with `claude plugin list`.
 
 Replace the whole plugin source folder with the extracted release folder, including
 the hidden .claude-plugin directory. Do not merge it into an old commands folder:
@@ -191,7 +199,7 @@ does not change the core percentage.
 Confirmed learning steps save automatically. Ask Mentor Liu in chat to save a
 pause note or export an existing learning report; no extra slash command is needed.
 The review command always means three reflections plus a code snapshot.
-Version 2.1.1 resumes existing v2 progress in the same workspace; it does not reset it.
+Version 2.2.0 resumes existing v2 progress in the same workspace; it does not reset it.
 
 Course selection and multiple-choice checks use genuine AskUserQuestion selectors
 when available in the host. Open questions and reflections remain ordinary typed

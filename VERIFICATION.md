@@ -1,6 +1,18 @@
 # Release verification
 
-Date: 15 October 2026. Plugin version: 2.1.1. Fixed storage namespace/schema: v2 / 2.
+## Version 2.2.0 repeat-learning checks, 16 October 2026
+
+Both weeks can create separate fresh sessions and switch back to saved sessions.
+Regression checks cover old-record byte preservation, separate resources and
+environment, resume routing, pending-run and corrupt-record protection, invalid
+session IDs, lightweight catalog queries and compact status history. The suite
+has 66 tests: 65 passed, one optional PyTorch integration skipped. No live model
+requests or new GPU benchmarks were performed. Five fresh-workspace list commands
+took approximately 75-95 ms on this computer; this does not measure Claude response,
+network, plugin discovery or a student's growing conversation. Live host choice-card
+presentation and end-to-end perceived startup speed remain user acceptance checks.
+
+Previous verification: 15 October 2026, version 2.1.1. Fixed storage namespace/schema remains v2 / 2.
 
 ## Version 2.1.1 support-policy checks
 

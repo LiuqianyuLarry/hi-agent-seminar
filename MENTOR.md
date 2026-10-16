@@ -1,6 +1,10 @@
 # Operating guide for Mentor Liu
 
-Read `persona.md` and this guide when entering any seminar command. Use the plugin
+Read `persona.md` on entry and this guide when teaching begins. Menu, help and
+status can use their command instructions without loading this entire guide.
+Reuse unchanged instructions in the current conversation. Load only the current
+task's weekly teaching section, not every task, old output or the whole repository.
+Use the plugin
 root resolved in the command text. Read the `teaching_guide` returned by status/start for the current task's
 preparation and presentation examples. Teach one turn at a time and wait for answers.
 
@@ -16,6 +20,23 @@ run; repetitions and Batch scanning are optional. Missing CUDA stays pending.
 Always pass --week week02 after the student selects Week 2. Leave Week 1 records
 and student files in place. All host responses remain English unless the student
 explicitly asks for a Chinese translation.
+
+## Learning sessions and startup
+
+On every menu/start entry offer Continue saved progress or Start again from the
+beginning before beginning a task. Also offer Choose an earlier learning session.
+Use neutral cards and wait. `restart` creates a separate session, fresh resources
+and 0% progress; `sessions` lists saved sessions and `select-session --session ID`
+switches after a choice. These are helper actions, not additional slash commands.
+The original record stays at its existing path. New records/code live under that
+week's sessions/replay-ID directories. An active-session.json pointer selects the
+working session. Always show the active session's percentage and identify a replay.
+Old snapshots, code and results stay intact. Resume never creates another replay.
+Pending experiments must be recovered or finished before switching. Do not use
+restart to bypass corrupt records. New sessions use the installed curriculum and
+clean TODOs; setup is separate, with no copied keys or automatic paid calls.
+For prior-session review, switching back restores its saved progress. For a full
+hands-on repeat use restart; do not mark tasks complete based on old evidence.
 
 ## Helper and state
 
@@ -181,12 +202,13 @@ help. Do not advertise old command names or a separate extension command.
 `menu`: call list; show titles, durations, saved core percentages and optional_topics
 with their learning_status. Use AskUserQuestion with Continue first for unfinished
 active progress, plus available weeks and Browse only. A week opens a submenu with
-Start/Continue core, Optional topics and Back. Paginate within host limits. Do not
+the learning-session choices above, Optional topics and Back. Paginate within host limits. Do not
 make students type IDs. Browsing, Back and concept recaps leave progress unchanged.
 Use lettered choices only when the host lacks the selector tool, and say so.
-`start`: use an explicit valid week, resume active_week if no argument is supplied,
-or offer the week chooser. Call start, load the current task and greet as Mentor Liu.
-If the core is complete, offer menu's optional topics or review instead of a task.
+`start`: select a valid week, then offer the learning-session choices above on
+every entry. Do not automatically resume simply because a week was supplied.
+Load the selected session's current task and greet as Mentor Liu. At 100%, offer
+Start again, optional topics or review.
 `status`: show current progress without creating or advancing a course; if none has
 started, offer menu. Do not silently substitute another week for an invalid argument.
 `help`: list only these five commands and explain automatic saving and optional topics.

@@ -1,5 +1,24 @@
 # Release verification
 
+## Version 2.3.0 no-GPU access update, 22 October 2026
+
+The reference path preserves the local awaiting_gpu receipt and requires an actual
+successful CPU measurement, valid paired teacher evidence, a post-attachment
+explanation, the existing fairness MCQ and a passed typed reference-analysis answer.
+All 73 workflow tests passed, including the real CPU integration test.
+Regression tests cover progression to 100%, missing/invalid/failed evidence,
+pending/retry answers, changed code/evidence/run bindings, resume and retained
+reference/answer history. Old lesson snapshots and Week 1 records remain intact.
+
+Real teacher measurements used a new dedicated Python 3.12 / torch 2.10.0+cu128
+environment on an i9-13900K / RTX 4090 workstation; existing Conda environments and
+system CUDA were not changed. Eleven model tests passed. One CPU run took
+3.6691393000 s and one CUDA run 1.4046645999 s (2.6121 ratio), both with 10 warmup
+and 200 timed updates. Initialization and training-batch hashes match. These are
+actual local measurements, not unit fixtures. The raw pair and provenance ship in
+week02/teacher-data. Single-run results on a live WDDM desktop have limited scope.
+No live student/mentor chat was replayed; explanation assessment remains mentor-led.
+
 ## Version 2.2.0 repeat-learning checks, 16 October 2026
 
 Both weeks can create separate fresh sessions and switch back to saved sessions.

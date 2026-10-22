@@ -21,7 +21,9 @@ python -m pytest -q tests/test_model.py -o pythonpath=. -k "vocabulary or data_d
 
 These three starter tests can pass before model.py's four TODOs are completed.
 Full model tests should initially fail on the unfinished forward methods.
-CUDA unavailable means a real GPU comparison remains pending, not an invitation
-to invent a result. Apple MPS is not the CUDA branch of this experiment.
+CUDA unavailable is recorded honestly. Students without CUDA can finish the local
+CPU experiment, analyse real teacher CPU/CUDA reference data and pass the related
+understanding check to continue to 100%. Ask the instructor for the comparison
+dataset; missing data must never be invented. Apple MPS is not CUDA.
 
 Reference installation page: https://pytorch.org/get-started/previous-versions/

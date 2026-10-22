@@ -638,11 +638,11 @@
     },
     {
       "id": "w208",
-      "title": "Measure one CPU run and one CUDA run fairly",
+      "title": "Measure CPU work and compare CPU/CUDA evidence fairly",
       "minutes": 12,
       "weight": 12,
       "session": 2,
-      "purpose": "Compare the same training workload on real CPU and CUDA hardware.",
+      "purpose": "Measure local CPU work; compare local CPU/CUDA runs or analyse the teacher's real paired measurements when CUDA is unavailable. Follow the installed week02/NO_GPU.md guide for the reference route.",
       "recap": "Device comparisons need equal work and correct timing; the device name does not determine the result.",
       "logic": "Device comparisons need equal work and correct timing; the device name does not determine the result.",
       "mathematics": "Measured work=200*16*64=204800 training positions. Throughput=positions/elapsed_seconds. Speedup=CPU time/CUDA time for equal work. Ten warm-up updates precede the 200 timed updates.",

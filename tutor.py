@@ -818,7 +818,8 @@ def compact_output(value):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["list", "start", "restart", "sessions", "select-session", "status", "task", "code", "teach", "predict", "setup", "key-ready", "write-prompt", "run", "results", "explain", "answer", "assess", "complete", "save", "recover", "export", "review-questions", "review-answer", "review", "extension", "run-extension", "explain-extension", "concepts", "concept-choice", "diagram", "write-code"])
+    parser.add_argument("action", choices=["list", "start", "restart", "sessions", "select-session", "status", "task", "code", "teach", "predict", "setup", "key-ready", "write-prompt", "run", "results", "explain", "answer", "assess", "complete", "save", "recover", "export", "review-questions", "review-answer", "review", "extension", "run-extension", "explain-extension", "concepts", "concept-choice", "diagram", "write-code", "reference-data", "reference-answer", "reference-assess"])
+    parser.add_argument("--reference-dir")
     parser.add_argument("--session")
     parser.add_argument("--workspace", default=str(Path.cwd()))
     parser.add_argument("--week")
@@ -846,7 +847,14 @@ def main():
                         "Use a response-only .txt or .md file, not a credential or state file.")
                 require(args.input_file.stat().st_size <= 80000, "Response file is too large.")
                 args.text = args.input_file.read_text(encoding="utf-8")
-            if args.action == "restart":
+            if args.action in ("reference-data", "reference-answer", "reference-assess"):
+                require(week == "week02", "Teacher device comparison belongs to Week 2.")
+                if args.action == "reference-data":
+                    result = seminar.reference_data(args.reference_dir, args.text)
+                else:
+                    require(args.action != "reference-assess" or args.verdict, "Provide pass or retry.")
+                    result = seminar.reference_answer(args.text, args.verdict if args.action == "reference-assess" else None)
+            elif args.action == "restart":
                 result = seminar.select_session(fresh=True)
             elif args.action == "select-session":
                 result = seminar.select_session(args.session)

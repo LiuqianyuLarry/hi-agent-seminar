@@ -1,0 +1,13 @@
+REAL EXECUTION ON SYNTHETIC DATA; NOT AN LLM API RESULT
+Device: cpu; generation temperature=0.8, seed=4248
+
+BEFORE TRAINING
+M12 temperaturea,[t)Qe&&A2S.82W2B~9HE1?68mCa,pWX|&0i5t'vP]8B?`blQ#IRd]oC[QQAv+1RrWlm^ydc2{
+MRw:RvEi`w
+!9FM2&wp8:Qvz
+
+AFTER TRAINING
+M12 temperature=sotome=7 C; fation=srmpermasyntorord; owntd; malaio_rd; oran=operd; ot_recor=nased; memaintog.
+Reno
+
+This toy model is not a validated fault diagnosis system.

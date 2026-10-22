@@ -34,5 +34,7 @@ Week 2 is available with beginner concept choices, the original Transformer figu
 four student coding exercises and local PyTorch experiments. Students may choose
 I understand - continue, Explain briefly, or Show an example before foundation
 explanations. The teaching order is logic, mathematics and actual code. Core uses
-one run per CPU/CUDA device; three repeats and full Batch scanning are optional
+one run per CPU/CUDA device. Without CUDA, complete a local CPU experiment and
+analyse the supplied real teacher CPU/CUDA data, then pass the understanding check
+to continue to 100%. Three repeats and full Batch scanning are optional
 inside Week 2's menu. Week 2 needs no API key. Week 1 records remain separate.

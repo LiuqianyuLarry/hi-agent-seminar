@@ -1,0 +1,28 @@
+{
+  "attribution": "Instructor-requested real execution on 22 October 2026 (Asia/Shanghai), 13th Gen Intel(R) Core(TM) i9-13900K and NVIDIA GeForce RTX 4090; CPU/CUDA run on the same Windows workstation using one CUDA-enabled PyTorch environment.",
+  "recorded_at_utc": "2026-10-22T09:17:21.546489+00:00",
+  "cpu": "13th Gen Intel(R) Core(TM) i9-13900K",
+  "nvidia_driver": "617.42",
+  "kind": "real_execution",
+  "repeat_count": 1,
+  "summary": {
+    "teacher_cpu_seconds": 3.669139300007373,
+    "teacher_cuda_seconds": 1.4046645999187604,
+    "teacher_pair_speedup": 2.612110606488965,
+    "origin": "teacher_reference_not_student_hardware",
+    "limitation": "One measurement per device; no universal or cross-machine speedup claim."
+  },
+  "source_sha256": {
+    "batch_sweep.py": "f8ce93d03bc38168bacaaaa7a0c1b72fbe35c10032dea0b374fec53770351c30",
+    "benchmark.py": "6b565d84c6f072334f499a715d8faaefb3532b458af790a462f89fc3e031a6c6",
+    "data.py": "339366de4f411c0ecb4f86729f9789ca409093af3856e857e7a56c21651dd109",
+    "failure_demo.py": "28dd4fa34ab1f81ee4f3483fa9e12d0c4f626d3a579ef7852090636afbabe94e",
+    "model.py": "a36810cd73548e83f75ba903023acd5f57e4e55e5908ca5f4203d32af2d5e790",
+    "plot_results.py": "b334d4bf6bb4b43a465bf22b26695aa6335243b190d9f0a2af789ccdcbda8502",
+    "preflight.py": "043c4694f58790e0057010c1aec5519309beb11ef02e28a6a4d170f2d6a91885",
+    "seminar_step.py": "22f9a4265592cc51b36fbf35a8c5d833f9e11d40444419df3a3d0ce76d95a34f",
+    "train.py": "58a0ed7b538eee0565bf70377726d04ce43cc34611a12b0b80224f0606aee7e3"
+  },
+  "limitations": "Single runs on an active Windows WDDM workstation; not an isolated performance benchmark. Explicit Python attention heads, not optimized fused attention. No claim that GPU must be faster.",
+  "validation": "Eleven original model tests passed before measurements. Both device outputs retained. No test-fixture timings used."
+}

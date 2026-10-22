@@ -112,7 +112,7 @@ def benchmark(out, repeats=1):
             "repeats_per_device":repeats, "measured_steps":200, "warmup_updates":10,
             "equal_work_hashes_match":equal, "measurements":metrics,
             "csv":str(folder / "benchmark_results.csv"), "plot_returncode":plotting,
-            "note":"Training token positions/s is not text-generation speed. Missing CUDA is retained as unavailable; obtain a real GPU run before completing the device comparison."}
+            "note":"Training token positions/s is not text-generation speed. Missing local CUDA remains unavailable. Core learning may use a validated teacher reference pair and a passed analysis check; this does not create a local GPU result."}
 
 
 def failures(out):

@@ -1,4 +1,10 @@
-# hi-agent-seminar 2.2.0
+# hi-agent-seminar 2.3.0
+
+Version 2.3.0: Week 2 also supports students without
+CUDA. Complete a real local CPU experiment, analyse the teacher's real paired
+CPU/CUDA measurements and pass a typed understanding check, then continue to 100%.
+Old learning records and lesson snapshots remain intact; no fabricated local GPU
+measurement or automatic completion is introduced. See week02/NO_GPU.md.
 
 Version 2.2.0: menu/start now asks whether to continue saved progress,
 start again from the beginning, or choose an earlier learning session. A repeat
@@ -63,8 +69,9 @@ local transformer-map.html when your chat host cannot display the figure inline.
 Prepare a Week 2 PyTorch environment before class; see week02/resources/SETUP.md.
 Core measurement uses ONE run per device, ten warm-up updates and 200 timed
 updates. Three repeats and the full Batch sweep are optional in the Week 2 menu.
-Missing CUDA is recorded as unavailable and the device comparison stays pending;
-you need an actual CUDA run to complete it. No GPU result or speedup is invented.
+Missing CUDA is recorded as unavailable. Students may complete a local CPU run,
+analyse the real teacher CPU/CUDA pair and pass its explanation check to continue.
+No local GPU result or cross-machine speedup is invented.
 
 The progress paths stay at .hi-agent-seminar/v2/week01 and /week02 respectively.
 Starting Week 2 does not reset or replace Week 1's code, answers or measurements.
@@ -156,7 +163,7 @@ claude plugin update hi-agent-seminar@hi-agent-seminar-marketplace
 If it points to another folder, inspect `claude plugin marketplace list` and update
 that source or use the explicit --plugin-dir loading method above. Do not assume
 editing source files changes an already installed cache. Restart the Claude Code
-session after an update. Confirm version 2.2.0 with `claude plugin list`.
+session after an update. Confirm version 2.3.0 with `claude plugin list`.
 
 Replace the whole plugin source folder with the extracted release folder, including
 the hidden .claude-plugin directory. Do not merge it into an old commands folder:
@@ -199,7 +206,7 @@ does not change the core percentage.
 Confirmed learning steps save automatically. Ask Mentor Liu in chat to save a
 pause note or export an existing learning report; no extra slash command is needed.
 The review command always means three reflections plus a code snapshot.
-Version 2.2.0 resumes existing v2 progress in the same workspace; it does not reset it.
+Version 2.3.0 resumes existing v2 progress in the same workspace; it does not reset it.
 
 Course selection and multiple-choice checks use genuine AskUserQuestion selectors
 when available in the host. Open questions and reflections remain ordinary typed

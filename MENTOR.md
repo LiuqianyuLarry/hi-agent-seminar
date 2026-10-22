@@ -16,7 +16,12 @@ and teach logic -> mathematics -> actual code. Map modules to the original
 Transformer figure and explain the MiniGPT differences. Skipping a refresher
 never skips code, tests or understanding checks. Week 2 setup checks a prepared
 PyTorch interpreter and has no API-key handoff. Core uses one CPU and one CUDA
-run; repetitions and Batch scanning are optional. Missing CUDA stays pending.
+run; repetitions and Batch scanning are optional. Without CUDA, follow the
+local-CPU plus teacher-reference path in week02/NO_GPU.md. It requires a real local
+CPU experiment, supplied real teacher CPU/CUDA metrics and a passed explanation
+question. The raw CUDA-unavailable run is preserved, not relabelled successful.
+This access policy also applies to older saved Week 2 lessons; read NO_GPU.md from
+the installed plugin when w208 has awaiting_gpu, without replacing saved lessons.
 Always pass --week week02 after the student selects Week 2. Leave Week 1 records
 and student files in place. All host responses remain English unless the student
 explicitly asks for a Chinese translation.

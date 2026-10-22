@@ -26,8 +26,10 @@ chosen refresher depth. Skipping a refresher never removes code/test/check gates
 Default benchmark: one CPU and one CUDA run; B=16, T=64, d=128, 4 heads, 2 blocks,
 FP32, AdamW 3e-4, ten warm-up updates and 200 timed updates. Calibrate classroom
 hardware before class. No GPU winner is assumed. The supplied CPU validation is
-not evidence about a classroom GPU. Missing CUDA keeps comparison pending until
-real GPU evidence is obtained. Do not call a CPU-only result a completed comparison.
+not evidence about a classroom GPU. Without CUDA, use the local-CPU plus real
+teacher-reference route in NO_GPU.md. Prepare the teacher data before class;
+students must interpret it and pass the additional question to continue. This
+route can reach 100% without claiming students measured a GPU themselves.
 
 Full model checks: eleven original tests, plus a recorded thirty-update fixed-batch
 probe. Do not run the complete test suite before the four student TODOs are filled.

@@ -1,5 +1,10 @@
 # Week 2 inside the model
 
+No CUDA GPU is required to finish the core: run the CPU experiment and follow
+NO_GPU.md to analyse the teacher's real CPU/CUDA reference pair. Passing the
+additional explanation check permits normal progression to 100%. Recorded local
+CUDA unavailability stays unchanged and is never presented as a GPU measurement.
+
 Start with /hi-agent-seminar:start week02 or choose Week 2 in the course menu.
 The core lasts 2 x 50 minutes. Beginner concept cards let learners continue, request
 a brief explanation or see an example. The mentor teaches logic, mathematics and

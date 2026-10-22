@@ -1,5 +1,10 @@
 # Changes from the instructor's test feedback
 
+Release 2.3.0: Week 2 supports a local CPU experiment plus real
+teacher CPU/CUDA reference analysis for learners without CUDA. The additional
+typed answer and mentor assessment gate educational completion. Local unavailable
+GPU records remain unchanged. Existing sessions, code and snapshots are preserved.
+
 Release 2.2.0: every menu/start entry offers continue, fresh repeat
 learning, or an earlier saved session. Repeats have separate progress and starter
 code; old sessions remain intact. Catalog reads avoid task requirement checks and
@@ -21,7 +26,7 @@ GitHub publication requires the instructor's explicit approval for each update.
 | No deep-learning prerequisites | Neutral concept cards select continue, brief explanation or numerical example; choices are saved |
 | Logic, mathematics, code | Required task order and original Transformer module/code guide, with encoder-decoder versus MiniGPT differences explained |
 | Student code ownership | Exact chat bodies saved into only the requested forward method, with before-files, draft records and model/run hashes |
-| Honest hardware comparison | CUDA unavailable remains pending; three repetitions and Batch scanning are optional |
+| Honest hardware comparison | Local CUDA unavailability stays recorded; core can use local CPU plus attributed real teacher comparison and an assessed explanation; repetitions and Batch scanning remain optional |
 | Preserve Week 1 | Fixed v2 paths/schema and Week 1 lesson/resources remain unchanged; cross-week byte-preservation tests |
 | 1, setup ownership | Mentor-run setup action creates the venv, installs with that interpreter and checks imports; only private key entry stays with the learner |
 | 2, unhelpful setup quiz | Task01 has no prediction or graded questions; actual setup plus the private key handoff gates completion |

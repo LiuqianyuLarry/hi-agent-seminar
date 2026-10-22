@@ -200,19 +200,24 @@ Explain synchronization as waiting until queued GPU work finishes, at both ends.
 Inspect initial_weights_sha256 and training_batches_sha256, configuration,
 environment and measured interval. Do not assume CUDA must win on this small job.
 
-If CUDA is unavailable, the summary is awaiting_gpu and the device metrics say
-unavailable. Preserve the real CPU run, explain it, allow concept review, and help
-arrange a real CUDA environment. Do not mark the device-comparison task complete.
-To supplement a saved CPU run, use a NEW approved run once CUDA is available;
-retain old evidence. Do not import an unrelated teacher's numbers as a student run.
-There is no automatic CPU-only completion override.
+If CUDA is unavailable, keep the raw awaiting_gpu/unavailable evidence. Offer the
+local-CPU plus teacher-reference path described in the installed week02/NO_GPU.md.
+It reuses the saved CPU experiment, imports attributed real teacher CPU/CUDA data,
+and requires a separate typed analysis and mentor assessment in addition to the
+normal fairness question. Once all gates pass, complete w208 and continue normally
+to w209-w211 and 100%. Never describe reference values as student measurements.
+If no real teacher dataset is supplied, report the missing material and save the
+checkpoint; do not invent GPU values or complete the task with only CPU evidence.
 
 ### w209: actual results, 6 minutes
 
 Offer the evaluation/sampling/memory card. Call results --task-id w208. Do not run
 training again. Read actual metrics.json, loss.csv, generated_samples.txt and PNGs
 from that receipt. Calculate measured_tokens/elapsed_seconds and, only with both
-devices, equal-work CPU time / CUDA time. Report n=1; do not imply a stable ranking.
+devices from the same comparison, equal-work CPU time / CUDA time. On the reference
+path, use the student's local CPU samples/loss and the teacher's paired times and
+memory metrics, labelled separately. Never divide the student's CPU time by the
+teacher's CUDA time as a local speedup. Report n=1; do not imply a stable ranking.
 Separate last_measured_step_loss from final_train_eval_loss and final_val_loss.
 RSS is sampled process resident memory DURING the measured interval at 10 ms;
 sampling can miss peaks. CUDA peak allocated memory includes resident model,

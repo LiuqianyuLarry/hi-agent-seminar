@@ -39,13 +39,102 @@ def checked_process(command, cwd, timeout=600):
 
 
 class Week2Mixin:
+    def task(self):
+        result = super().task()
+        current = self.current(self.load())
+        if current and current["id"] in {"w208", "w209"}:
+            result["device_access_guide"] = str(child(self.root, "week02", "NO_GPU.md"))
+            result["device_access_policy"] = (
+                "Use local CPU/CUDA if available. Without CUDA, keep a real local CPU run, "
+                "attach the bundled teacher pair using reference-data, explain both sources, "
+                "then reference-answer and reference-assess before completion. This applies "
+                "to saved older lessons too; no snapshot or student files are replaced.")
+        return result
+
+    def reference_ready(self, state):
+        record = state["tasks"]["w208"]
+        ref = record.get("teacher_reference")
+        if not ref or not record["runs"]:
+            return False
+        run = record["runs"][-1]
+        path = child(self.base, "teacher_reference", ref["id"] + ".json")
+        return (run["id"] == ref["local_run_id"] and run["status"] == "awaiting_gpu"
+                and run.get("model_sha256") == fingerprint(child(self.resources, "model.py"))
+                and path.is_file() and fingerprint(path) == ref["sha256"])
+
+    def reference_data(self, directory, attribution):
+        from teacher_comparison import validate_pair, QUESTION
+        directory = Path(directory).resolve() if directory else child(self.root, "week02", "teacher-data")
+        if not attribution:
+            provenance = child(directory, "provenance.json")
+            require(provenance.is_file(), "Provide instructor attribution and measurement date.")
+            attribution = json.loads(provenance.read_text(encoding="utf-8"))["attribution"]
+        attribution = clean_text(attribution)
+        metrics = []
+        for device in ("cpu", "cuda"):
+            path = child(directory, device + "_r1", "metrics.json")
+            require(path.is_file() and path.stat().st_size < 1000000, "Missing or oversized teacher metrics: " + device)
+            metrics.append(json.loads(path.read_text(encoding="utf-8")))
+        summary = validate_pair(*metrics)
+        with self.lock():
+            state = self.load()
+            require(self.current(state) and self.current(state)["id"] == "w208", "Attach reference evidence during the device comparison task.")
+            record = state["tasks"]["w208"]
+            require(record["runs"], "Run the local CPU experiment first.")
+            run = record["runs"][-1]
+            require(run["status"] == "awaiting_gpu" and run.get("model_sha256") == fingerprint(child(self.resources, "model.py")),
+                    "Use the current model's recorded CPU-only benchmark, not a failed or stale run.")
+            summaries = [c.get("summary", {}) for c in run["commands"]]
+            require(any(s.get("status") == "awaiting_gpu" and s.get("plot_returncode") == 0
+                        and s.get("equal_work_hashes_match") is True
+                        and any(m.get("device") == "cpu" and m.get("status") == "ok"
+                                and m.get("elapsed_seconds", 0) > 0 for m in s.get("measurements", [])) for s in summaries),
+                    "A successful local CPU measurement and output plots are required.")
+            ident = uuid.uuid4().hex
+            path = child(self.base, "teacher_reference", ident + ".json")
+            atomic_json(path, {"attribution":attribution, "measurements":metrics, "summary":summary,
+                               "notice":"Instructor-supplied measurements; file validation cannot prove authenticity."})
+            ref = {"id":ident, "at":now(), "local_run_id":run["id"], "file":str(path),
+                   "sha256":fingerprint(path), "attribution":attribution, "summary":summary, "answers":[]}
+            if record.get("teacher_reference"):
+                record.setdefault("teacher_reference_history", []).append(record["teacher_reference"])
+            record["teacher_reference"] = ref
+            self.save(state)
+        return {"reference":ref, "question":QUESTION,
+                "next":"Explain local CPU output and teacher CPU/CUDA data separately, save explain, then ask this question."}
+
+    def reference_answer(self, text, verdict=None):
+        from teacher_comparison import RUBRIC
+        text = clean_text(text)
+        with self.lock():
+            state = self.load()
+            require(self.current(state) and self.current(state)["id"] == "w208" and self.reference_ready(state), "Attach valid teacher evidence for the current CPU run first.")
+            record = state["tasks"]["w208"]
+            ref = record["teacher_reference"]
+            require(record["explanations"] and record["explanations"][-1]["at"] >= ref["at"]
+                    and record["explanations"][-1]["run_id"] == ref["local_run_id"],
+                    "Explain the attached teacher evidence and local CPU output before asking for an answer.")
+            if verdict is None:
+                ref["answers"].append({"at":now(), "student_answer":text, "verdict":"pending"})
+            else:
+                require(verdict in {"pass", "retry"} and ref["answers"] and ref["answers"][-1]["verdict"] == "pending",
+                        "Save a new student answer before assessing it.")
+                ref["answers"][-1].update(verdict=verdict, feedback=text, assessed_at=now())
+            self.save(state)
+        return {"attempt":ref["answers"][-1], "mentor_rubric":RUBRIC, "status":self.status(state)}
+
     def status(self, state=None):
         state = state or self.load()
         result = super().status(state)
         current = self.current(state)
         runs = state["tasks"][current["id"]]["runs"] if current else []
         if runs and runs[-1]["status"] == "awaiting_gpu":
-            result["next"] = "Obtain an actual CUDA measurement for the pending equal-work device comparison; keep the saved CPU evidence."
+            result["next"] = ("Explain teacher reference data and finish its understanding check; keep the local CUDA-unavailable record."
+                              if self.reference_ready(state) else
+                              "Keep the local CPU result. Attach instructor-supplied real CPU/CUDA data for the no-GPU route, or obtain an actual CUDA measurement.")
+            if not result["remaining_requirements"]:
+                result["next"] = "complete task"
+        result["device_learning_path"] = "local_cpu_with_teacher_reference" if self.reference_ready(state) else "local_devices"
         result["foundation_choices"] = {key:history[-1]["choice"] for key,history in state.get("concept_choices", {}).items() if history}
         return result
 
@@ -108,8 +197,13 @@ class Week2Mixin:
                 gaps.append("rerun this check with the current model.py")
         if task.get("evidence_task"):
             source = state["tasks"][task["evidence_task"]]
-            if not source["runs"] or source["runs"][-1]["status"] != "success":
+            if not source["runs"] or (source["runs"][-1]["status"] != "success" and not self.reference_ready(state)):
                 gaps.append("a successful saved benchmark for output interpretation")
+        if task["id"] == "w208" and self.reference_ready(state):
+            gaps = [g for g in gaps if g != "successful experiment execution (not a claim that its report is true)"]
+            answers = record["teacher_reference"]["answers"]
+            if not answers or answers[-1]["verdict"] != "pass":
+                gaps.append("explain the teacher comparison in your own words and pass mentor review")
         return gaps
 
     def write_code(self, name, text):
@@ -264,7 +358,7 @@ class Week2Mixin:
             record["runs"][index] = run
             self.save(state)
         return {"run":run, "status":self.status(state),
-                "next_instruction":"Read results and actual artifacts; explain fields before checking understanding. Awaiting GPU is not a completed CPU/GPU comparison."}
+                "next_instruction":"Read actual artifacts and explain fields. For core w208 awaiting_gpu, follow the installed week02/NO_GPU.md: attach real teacher data, explain both evidence sources and assess the student's analysis. The raw local run remains GPU-unavailable."}
 
     def results(self, name=None, task_id=None):
         state = self.load()
@@ -280,13 +374,22 @@ class Week2Mixin:
         require(record.get("runs"), "No recorded experiment exists for this task/topic.")
         run = record["runs"][-1]
         return {"task":run["task"], "run_id":run["id"], "status":run["status"],
+                "teacher_reference":record.get("teacher_reference"),
                 "model_sha256":run.get("model_sha256"), "commands":run["commands"],
-                "instruction":"Use these recorded values and listed artifacts. Explain the schema and units; do not invent device values or reuse a different learner's run."}
+                "instruction":"Use these recorded values and listed artifacts. Open teacher_reference.file when present and label its CPU/CUDA metrics as teacher reference data. Local loss/samples belong to this student's CPU run. Explain units; never invent GPU values or calculate speedup by mixing the local CPU and teacher CUDA."}
 
     def export(self):
         result = super().export()
         state = self.load()
         lines = ["", "## Foundation refresher choices", ""]
+        ref = state["tasks"]["w208"].get("teacher_reference")
+        if ref:
+            lines += ["## Device evidence", "", "Local CPU measurement plus instructor-supplied CPU/CUDA reference data.",
+                      "Local CUDA was unavailable; no student GPU measurement is claimed.",
+                      "Reference: " + english_display(ref["attribution"]), ref["file"], ""]
+            for answer in ref["answers"]:
+                lines += ["Student explanation: " + english_display(answer["student_answer"]),
+                          "Mentor assessment: " + answer["verdict"], ""]
         for concept, history in state.get("concept_choices", {}).items():
             lines.append(f"- {concept}: {history[-1]['choice']} ({len(history)} saved choices)")
         lines += ["", "## Student code attempts", ""]

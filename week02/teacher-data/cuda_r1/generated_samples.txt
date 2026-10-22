@@ -1,0 +1,11 @@
+REAL EXECUTION ON SYNTHETIC DATA; NOT AN LLM API RESULT
+Device: cuda; generation temperature=0.8, seed=4248
+
+BEFORE TRAINING
+M12 temperature|P/}A6p:37@u6Ar:dK .A+)O/j9&RG}bE;~Af%u"\k[:@^t_w4&f5712)&)7ZgxOi;k08:eCxb2
+OWs+h5+.2VK<5Z")P]PZEoi(
+
+AFTER TRAINING
+M12 temperature= C; mperaturered; f; vin=9 viotoratin=rmatiormawnonorae=n=ncececormanon; on; sounknoncounourmed; ic
+
+This toy model is not a validated fault diagnosis system.

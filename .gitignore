@@ -9,3 +9,6 @@ outputs/
 hi-agent-seminar-work/
 .pytest_cache/
 dist/
+.hi-agent-seminar-preview/
+traces/
+*.sqlite

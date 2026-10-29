@@ -74,7 +74,7 @@ class Week2Tests(unittest.TestCase):
         self.assertFalse(lesson["requires_api_key"])
         self.assertTrue(all(t["planned_calls"] == 0 for t in lesson["tasks"]))
         self.assertIsInstance(seminar_for(self.workspace, "week02"), Week2Seminar)
-        self.assertEqual({c["id"] for c in catalog(self.workspace)["courses"]}, {"week01", "week02"})
+        self.assertEqual({c["id"] for c in catalog(self.workspace)["courses"]}, {"week01", "week02", "week03"})
 
     def test_concept_choice_precedes_teaching_and_resumes_without_progress(self):
         before = self.s.status()["core_percent"]

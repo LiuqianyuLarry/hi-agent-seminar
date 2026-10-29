@@ -1,0 +1,3 @@
+-r requirements.txt
+# Official SDK v2 code, not the separate third-party fastmcp package.
+mcp==2.2.0

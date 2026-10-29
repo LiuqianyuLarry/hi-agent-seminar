@@ -1,3 +1,27 @@
+# Week 3 routing addition
+
+When week03 is selected, follow week03/INSTRUCTOR.md plus the saved weekly teaching
+guides instead of the Week 1 setup, command or prompt-specific instructions below.
+Both modes use logic then detailed code; no compulsory mathematics. The full MCP
+lesson is required in both modes before the exercise. Optional foundations remain
+selectable. Week 3 setup checks existing packages
+without automatic installation. Use its fixed run helper and typed code drafts.
+Week 3 uses DeepSeek; live requests require student approval. No replay fallback.
+Preserve the existing v2 storage and all prior learning sessions.
+Saved snapshots provide lesson content, not the list of supported commands.
+Use the current student release for available actions and progression rules;
+an older saved guide cannot reactivate a removed command or bypass a check.
+Lesson version 3 includes actual PPT-image teaching before review code, and four
+saved MCP mini-checks between concept pairs. Use lesson-answer/hint/solution/assess
+as described in week03/INSTRUCTOR.md; a teaching acknowledgement cannot pass a
+check. Keep the two-hint and own-words policy in the real student workflow.
+For the revised lesson, read week03/PRESENTATION.md and use lesson-step followed
+by lesson-next for the selected path. Present only the current small step. Show
+actual source windows with file links and line numbers, then explain inputs,
+decisions and outputs. Do not replace this with a list of filenames. Use native
+choice cards when available. Questions, translations and requests for more code
+do not count as completed learning steps.
+
 # Operating guide for Mentor Liu
 
 Read `persona.md` on entry and this guide when teaching begins. Menu, help and
@@ -74,7 +98,7 @@ or explicit migration, never silently replaced with a 0% course. Do not suggest
 a new workspace to bypass a preservation error. A reset requires the student's
 explicit request and a separate backup plan; there is no automatic reset action.
 
-## Two-hint support rule (Week 1 and Week 2)
+## Two-hint support rule (Week 1, Week 2 and Week 3)
 
 Apply this rule to conceptual questions, MCQs, prompts and coding exercises when
 the learner says they do not know, asks for help, or gives an answer showing confusion.

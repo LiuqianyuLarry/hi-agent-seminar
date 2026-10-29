@@ -11,10 +11,11 @@ spec = importlib.util.spec_from_file_location("package_check", ROOT / "verify-pa
 check = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(check)
 files = sorted(check.package_files(ROOT))
-blocked = {".venv", "node_modules", "outputs", ".hi-agent-seminar", "hi-agent-seminar-work", ".archive"}
+blocked = {".venv", "node_modules", "outputs", "traces", ".hi-agent-seminar", ".hi-agent-seminar-preview", "hi-agent-seminar-work", ".archive"}
 errors = []
 approved_binary = {"week02/resources/assets/transformer-original.png":
                    "6d82cf140193daf9e1c95baab59017754e36c2f9548cfec9db86b2bd8d7d27ed"}
+approved_binary.update({'week03/slides/slide-02.png': '53839781f8fa443a790e142566be9bbd50e149593b3f3496dac3d185bc00cc73', 'week03/slides/slide-07.png': '70a33fe18a4b273a91bb78d11d287fa7948188549fd8e194f8559d2017d44d8c', 'week03/slides/slide-09.png': '7cf7c284910927df55f4313e00d00cbdab75d839a13af9eb8ccd0e12cfff7e30', 'week03/slides/slide-16.png': '3b26f495f3e3badbf9023250992fed3853e69740e944455a47c0f3cd87ce2dc8', 'week03/slides/slide-15.png': '4e56dfcbe1af0e8f71c8ed5e90d1c8259c9cf944ce6f0ddd54fa69672b7197f6', 'week03/slides/slide-08.png': 'bbe8bbf691b068eeb6fc1b6478d4e157996e093c32db00f958ddb35bd95e9316', 'week03/slides/slide-20.png': '579793f54516e6a4a7cc84003faeba37d566da2e30b2e456a9908d951c28796c', 'week03/slides/slide-31.png': '860c0de92cbb5b0fb7233e2c6dcccb866aa6b6202a48fa98d949454423762f85', 'week03/slides/slide-37.png': '4d4facb0af01ae65bf015214a8f944c64c2cf5607409d6f4c85ad7f48e2e1b9b'})
 for path in files:
     relative = path.relative_to(ROOT)
     if path.is_symlink() or not path.resolve().is_relative_to(ROOT):
@@ -47,7 +48,7 @@ if errors:
 version = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))["version"]
 inventory = {"version":version, "files":{
     p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in files}}
-(ROOT / "SHA256SUMS.json").write_text(json.dumps(inventory, indent=2)+"\n", encoding="utf-8")
+(ROOT / "SHA256SUMS.json").write_text(json.dumps(inventory, indent=2)+"\n", encoding="utf-8", newline="\n")
 problems = check.verify(ROOT)
 if problems:
     raise SystemExit("\n".join(problems))

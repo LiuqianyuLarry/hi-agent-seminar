@@ -1,0 +1,3 @@
+-r requirements.txt
+# OpenAI SDK used solely as the DeepSeek Chat Completions client.
+openai==2.54.0

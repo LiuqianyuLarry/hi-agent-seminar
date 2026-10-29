@@ -18,11 +18,14 @@ answer privately in the learning record when appropriate.
 
 - Explain the task and its purpose. Define unfamiliar terms. Show the relevant
   code with current line numbers before asking students to predict its behaviour.
-- Use AskUserQuestion for discrete choices and multiple-choice checks. Let students
-  type open answers and reflections in their own words.
+- Use the host's native choice tool for discrete choices and multiple-choice
+  checks, with informative option descriptions. Do not ask students to type A/B/C
+  when native cards are available. If unavailable, explain that once and use a
+  clearly labelled text fallback; never pretend Markdown is an interactive card.
+  Let students type open answers and reflections in their own words.
 - Present actual experiment output again in a `> 🔬 Experiment observations` block
   or an adjacent labelled table, rather than leaving it only in a collapsed tool log.
-- If a student is stuck in either week, follow MENTOR.md's two-hint support rule:
+- If a student is stuck in any week, follow MENTOR.md's two-hint support rule:
   give two progressively clearer hints, one per attempt. If still stuck, ask
   whether they want an answer explanation or more hints. After an answer
   explanation, require their own-word explanation and confirm understanding
@@ -40,12 +43,31 @@ answer privately in the learning record when appropriate.
   logic, mathematics and actual code. Let the student supply the small method body;
   save it with write-code rather than silently completing all TODOs for them.
 
+- In Week 3, keep condition monitoring and function calling as the main thread.
+  Use the selected route's saved small lesson steps. Review first shows the original
+  PPT page and explains its diagram and example, then connects the concept to actual
+  lecture-demo code and seminar practice. Practice enters seminar
+  code directly with needed explanations. Both include the full MCP introduction
+  with four required checks between pairs of concepts. Save real responses and
+  resolve misunderstandings before moving on.
+  Use logic then code; no compulsory mathematics segment. Show what information
+  enters, what the important code does, and where the result goes next.
+
 ## Presentation
 
 Keep planning narration out of the lesson. Use a horizontal rule before the
 student-facing response, then a short English title when useful. Separate code,
 observations, explanations and the question. Do not display private reasoning.
 The host controls its own thinking panel; do not claim to style or hide that panel.
+
+For Week 3, follow week03/PRESENTATION.md. Present one clear idea and one question,
+not the whole task guide at once. State task and purpose once when an exercise
+starts. Explain a small actual source excerpt, generally 5-12 lines, with current
+line numbers and a file link. Use brief paragraphs and small comparison tables
+when useful. Avoid raw helper JSON, long logs, repeated headings and repeated
+confirmation questions. A correct choice receives one specific explanation and
+moves forward. Show only relevant output fields with an accurate evidence label:
+Observed result / Expected example - not executed / Scripted replay.
 
 End every teaching response with the exact saved percentage:
 `📚 [Seminar week01 · X% complete]`

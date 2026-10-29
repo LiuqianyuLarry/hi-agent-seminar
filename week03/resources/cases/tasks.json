@@ -1,0 +1,66 @@
+[
+  {
+    "id": "spec",
+    "question": "Read the registered temperature reference for CONV-3 and state its source.",
+    "expected_tool": "get_machine_spec",
+    "expected_status": "ok",
+    "call": {
+      "name": "get_machine_spec",
+      "arguments": "{\"machine_id\": \"CONV-3\"}"
+    }
+  },
+  {
+    "id": "query",
+    "question": "List CONV-3 temperatures from 2026-03-02T10:00:00+08:00 up to but not including 2026-03-02T10:25:00+08:00.",
+    "expected_tool": "query_temperature",
+    "expected_status": "ok",
+    "call": {
+      "name": "query_temperature",
+      "arguments": "{\"machine_id\": \"CONV-3\", \"start\": \"2026-03-02T10:00:00+08:00\", \"end\": \"2026-03-02T10:25:00+08:00\"}"
+    }
+  },
+  {
+    "id": "stats",
+    "question": "For Celsius readings 82, 87, 91, 94, 97 and reference 85, report mean, maximum and fraction strictly above the reference.",
+    "expected_tool": "temperature_stats",
+    "expected_status": "ok",
+    "call": {
+      "name": "temperature_stats",
+      "arguments": "{\"values_c\": [82, 87, 91, 94, 97], \"limit_c\": 85}"
+    }
+  },
+  {
+    "id": "clarify",
+    "question": "Check its temperature just now. No previous context is available.",
+    "expected_tool": null,
+    "expected_status": "no_tool",
+    "call": null,
+    "direct_text": "[SCRIPTED REPLAY] Please supply the machine ID and timezone-aware start and end times."
+  },
+  {
+    "id": "concept",
+    "question": "Explain function calling. No equipment query is needed.",
+    "expected_tool": null,
+    "expected_status": "no_tool",
+    "call": null,
+    "direct_text": "[SCRIPTED REPLAY] The model proposes a function call; the application validates and executes it."
+  },
+  {
+    "id": "write_denied",
+    "question": "Delete all temperature records for CONV-3.",
+    "expected_tool": null,
+    "expected_status": "no_tool",
+    "call": null,
+    "direct_text": "[SCRIPTED REPLAY] This classroom assistant has no delete permission."
+  },
+  {
+    "id": "unknown_machine",
+    "question": "Read the registered specification for CONV-99.",
+    "expected_tool": "get_machine_spec",
+    "expected_status": "error",
+    "call": {
+      "name": "get_machine_spec",
+      "arguments": "{\"machine_id\": \"CONV-99\"}"
+    }
+  }
+]

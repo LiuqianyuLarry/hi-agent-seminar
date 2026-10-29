@@ -1,0 +1,2527 @@
+{
+  "id": "week03",
+  "version": 3,
+  "title": "CONV-3: tools, DeepSeek function calling and MCP",
+  "requires_api_key": true,
+  "language": "English; Chinese translation only on explicit request",
+  "teaching_order": [
+    "logic",
+    "code",
+    "attempt",
+    "run",
+    "explain output",
+    "check understanding"
+  ],
+  "modes": {
+    "review": "Review the lecture with detailed code explanations",
+    "practice": "Start the seminar exercises; keep the full MCP introduction"
+  },
+  "foundations": {
+    "functions": {
+      "id": "functions",
+      "title": "Functions, arguments and return values",
+      "brief": "A function is a named piece of code. Arguments are the values we give it. A return value is the result we get back. A list holds several values in order.",
+      "example": "temperature_stats([82, 97], 85) passes a list and one reference value. The function returns a dictionary, not a printed sentence."
+    },
+    "records": {
+      "id": "records",
+      "title": "JSON, dictionaries and registered values",
+      "brief": "A dictionary connects keys to values. JSON is text used to send a similar structure between programs. A registered limit describes a reference, not the current temperature.",
+      "example": "{\"machine_id\":\"CONV-3\"} is JSON text. json.loads turns it into a Python dictionary. 85 C in the register does not mean the sensor reads 85 C."
+    },
+    "sql": {
+      "id": "sql",
+      "title": "Tables, queries and time windows",
+      "brief": "A table stores rows with named columns. SELECT reads chosen rows. A filter narrows the result. Our start time is included and our end time is excluded.",
+      "example": "A reading at 10:00 belongs in [10:00,10:25); a reading exactly at 10:25 does not. This avoids counting a boundary twice in adjacent windows."
+    },
+    "contracts": {
+      "id": "contracts",
+      "title": "Schemas and validation",
+      "brief": "A schema describes the allowed structure of data. Validation checks a particular input against that structure. It does not read the user's mind.",
+      "example": "A valid ID for CONV-7 can pass all type checks even when the user asked about CONV-3. Compare the actual arguments with the question."
+    },
+    "processes": {
+      "id": "processes",
+      "title": "Programs, processes and messages",
+      "brief": "A process is a running program. Two programs can exchange messages instead of importing each other's functions. Our MCP server runs locally in a separate process.",
+      "example": "The client starts Python with mcp_server.py, writes protocol messages to its input, and reads replies from its output. No cloud server or GPU is needed."
+    }
+  },
+  "code_targets": {
+    "stats": [
+      "tools/calculation.py",
+      "temperature_stats"
+    ],
+    "spec": [
+      "tools/engineering.py",
+      "get_machine_spec"
+    ],
+    "query": [
+      "tools/sql_query.py",
+      "query_temperature"
+    ],
+    "mcp": [
+      "mcp_server.py",
+      "get_machine_spec"
+    ]
+  },
+  "tasks": [
+    {
+      "id": "t01",
+      "title": "Why CONV-3 needs a tool-using assistant",
+      "minutes": 10,
+      "practice_minutes": 5,
+      "weight": 10,
+      "purpose": "Connect condition monitoring to the model-to-tool workflow.",
+      "logic": "Condition monitoring means using evidence to assess how equipment is operating. Engineers may compare sensor readings, maintenance history and registered specifications before deciding what to inspect next. These records are stored outside the language model. Today we build the tool-use part of a CONV-3 assistant: DeepSeek proposes a request; our application checks it, calls a function and returns evidence. Later we use MCP to connect a tool through a shared interface. This week permits one tool per turn. We are not yet building an autonomous multi-step diagnosis system.",
+      "code_walkthrough": [
+        "In Review, show slide 2 and explain the missing database path, then slide 7 and the responsibilities of model, application and tools.",
+        "Connect those ideas to lecture ask_no_tools and REGISTRY. In Practice, start with the temperature-tool map and explain the needed concepts.",
+        "Environment preflight and synthetic data building are setup actions after the task and purpose have been explained; they are not the PPT review."
+      ],
+      "worked_answer": "A registered reference of 85 C tells us the classroom reference limit, not the present sensor reading. A maintenance event tells us what was recorded, not what caused a later temperature change. The assistant must obtain the relevant records before discussing them. The model proposes; the application checks and executes; tools return evidence for a checked explanation.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "mcq",
+          "prompt": "Which part actually runs the Python function?",
+          "options": {
+            "A": "The application",
+            "B": "The model weights",
+            "C": "The JSON schema"
+          },
+          "correct": "A",
+          "feedback": "The application runs the function after validation."
+        }
+      ],
+      "code_refs": [
+        [
+          "preflight.py",
+          null
+        ],
+        [
+          "build_data.py",
+          "build"
+        ]
+      ],
+      "concepts": [
+        "contracts"
+      ],
+      "code_target": null,
+      "requires_teaching": true,
+      "requires_prediction": false,
+      "commands": [],
+      "planned_calls": 0,
+      "output_fields": "Inspect the actual report: distinguish tool-call arguments, execution events, tool envelope and final model explanation. Label expected examples and scripted replay explicitly.",
+      "hint1": "Describe what information goes in and what must come out.",
+      "hint2": "Trace one concrete input through the relevant lines before choosing an answer.",
+      "requires_setup": true,
+      "paths": {
+        "review": [
+          {
+            "id": "t01.slide_access",
+            "title": "The missing connection in the lecture",
+            "phase": "slide",
+            "logic": "A model can discuss the question without being able to retrieve the record needed to answer it.",
+            "explanation": "Condition monitoring means checking how equipment is operating using available evidence. An engineer may consult measurements, maintenance history and registered specifications. The lecture starts with one manageable part: finding a maintenance record. Think of an assistant who can write clearly but has not been given the filing-cabinet key. Better wording cannot open that cabinet. Our application must provide a controlled way to request and read the record.",
+            "worked_example": "CONV-3 is an equipment identifier, not its maintenance history. If the question supplies only that identifier, a statement such as \"the fan was replaced\" needs a lookup or supplied evidence. A confident sentence alone is not proof that either happened.",
+            "code_refs": [],
+            "slides": [
+              2,
+              3
+            ],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week3_Lecture_Tools_FunctionCalling_MCP_v3.pptx",
+              "primary_slide": 2,
+              "title": "A new request exposes a missing data connection",
+              "image": "slides/slide-02.png",
+              "related_slides": [
+                {
+                  "number": 3,
+                  "title": "The model cannot return records it never received"
+                }
+              ],
+              "focus": "A model can discuss the question without being able to retrieve the record needed to answer it.",
+              "visual_walkthrough": [
+                "Start at the request about CONV-3's last maintenance. Ask what evidence a planner would need: a dated record of work performed.",
+                "Follow the existing connection from ASSISTANT APP to LLM SERVICE. It carries text and model replies.",
+                "Now point at the MAINTENANCE DB and the label no path. The missing connection is between our program and that data source.",
+                "Use the contrast with the earlier weeks: reliable output and faster computation help only after the required information reaches the program."
+              ],
+              "explanation": "Condition monitoring means checking how equipment is operating using available evidence. An engineer may consult measurements, maintenance history and registered specifications. The lecture starts with one manageable part: finding a maintenance record. Think of an assistant who can write clearly but has not been given the filing-cabinet key. Better wording cannot open that cabinet. Our application must provide a controlled way to request and read the record.",
+              "example": "CONV-3 is an equipment identifier, not its maintenance history. If the question supplies only that identifier, a statement such as \"the fan was replaced\" needs a lookup or supplied evidence. A confident sentence alone is not proof that either happened.",
+              "code_bridge": "Next inspect lecture live.py::ask_no_tools. Identify the text sent to the model and confirm that this first example offers no database-reading tool."
+            },
+            "presentation": "Show the original slide image first. Explain the visible idea in plain English, trace the example, and only then introduce the named code bridge. Do not begin this step with a source file."
+          },
+          {
+            "id": "t01.review_no_tools",
+            "title": "What the model receives without a tool",
+            "logic": "Start with the lecture question about CONV-3's last maintenance. A question alone does not provide access to a local database.",
+            "explanation": "ask_no_tools sends system and user messages. Notice what is absent: there is no tools argument and no database-reading function call. The model may explain its limitation or produce an unsupported guess, but neither creates access. We need an explicit path from a proposed request to application code.",
+            "worked_example": "The question \"What was done at CONV-3's last maintenance?\" requires a record lookup. A plausible answer is not evidence of that lookup.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "live.py",
+                "symbol": "ask_no_tools",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              3,
+              7
+            ],
+            "phase": "code"
+          },
+          {
+            "id": "t01.slide_roles",
+            "title": "Who owns each arrow?",
+            "phase": "slide",
+            "logic": "The model, the application and the tools have different jobs. The application owns execution.",
+            "explanation": "Function calling gives a model a structured way to ask the application to use a function. It does not give the model Python execution inside its weights. Imagine a request slip at a service desk: writing the requested action is different from checking and carrying it out. Our program accepts only the tools it has registered. In this week, one turn permits at most one tool execution; a chain of dependent calls is a later topic.",
+            "worked_example": "For \"CONV-3's latest service\", the model can propose query_maintenance with machine_id=\"CONV-3\" and max_records=1. Only the application can check those values, run the lookup and return the record.",
+            "code_refs": [],
+            "slides": [
+              7
+            ],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week3_Lecture_Tools_FunctionCalling_MCP_v3.pptx",
+              "primary_slide": 7,
+              "title": "The model proposes; the program checks and executes",
+              "image": "slides/slide-07.png",
+              "related_slides": [],
+              "focus": "The model, the application and the tools have different jobs. The application owns execution.",
+              "visual_walkthrough": [
+                "Name the three lanes before following arrows: LLM SERVICE, YOUR PYTHON APP, and TOOLS & DATA.",
+                "Follow OFFER and PROPOSE: the app supplies a menu of capabilities; the model returns a request naming one capability and its inputs.",
+                "Pause at CHECK & RUN in the middle lane. This is where the app validates the request and invokes the allowed function.",
+                "Follow RETURN and ANSWER: the result goes back to the model, which turns it into an explanation that still needs checking."
+              ],
+              "explanation": "Function calling gives a model a structured way to ask the application to use a function. It does not give the model Python execution inside its weights. Imagine a request slip at a service desk: writing the requested action is different from checking and carrying it out. Our program accepts only the tools it has registered. In this week, one turn permits at most one tool execution; a chain of dependent calls is a later topic.",
+              "example": "For \"CONV-3's latest service\", the model can propose query_maintenance with machine_id=\"CONV-3\" and max_records=1. Only the application can check those values, run the lookup and return the record.",
+              "code_bridge": "After the no-tool example, inspect lecture registry.py::REGISTRY. Match the permitted tool names on the slide to real Python functions. This is the application-controlled bridge to execution."
+            },
+            "presentation": "Show the original slide image first. Explain the visible idea in plain English, trace the example, and only then introduce the named code bridge. Do not begin this step with a source file."
+          },
+          {
+            "id": "t01.review_roles",
+            "title": "The application owns the connection",
+            "logic": "Function calling is a structured way for a model to propose using a function. It is not Python execution inside model weights.",
+            "explanation": "The lecture registry maps permitted names to validation models and Python functions. The name is a key; the handler is callable code. This mapping belongs to the application. Later we will follow the checks before the handler is called. First verify the existing environment and classroom data without installing unrelated packages.",
+            "worked_example": "query_maintenance is a name offered to the model and a registered Python handler. Both sides must agree on that name for dispatch to succeed.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "registry.py",
+                "symbol": "REGISTRY",
+                "slice_start": 0,
+                "max_lines": 6
+              }
+            ],
+            "slides": [
+              5,
+              7,
+              8
+            ],
+            "phase": "code"
+          }
+        ],
+        "practice": [
+          {
+            "id": "t01.monitoring",
+            "title": "Why an engineering assistant needs tools",
+            "logic": "Condition monitoring means using evidence to assess how equipment is operating. Engineers may compare sensor readings, maintenance history and registered specifications before deciding what to inspect next.",
+            "explanation": "These records are stored outside the language model. Today we build the tool-use part of a CONV-3 assistant: DeepSeek proposes a request; our application checks it, calls a function and returns evidence. Later we use MCP to connect a tool through a shared interface. This week permits one tool per turn. We are not yet building an autonomous multi-step diagnosis system.",
+            "worked_example": "A registered reference of 85 C tells us the classroom reference limit, not the present sensor reading. A maintenance event tells us what was recorded, not what caused a later temperature change. The assistant must obtain the relevant records before discussing them.",
+            "code_refs": [],
+            "slides": [
+              2,
+              3,
+              4,
+              7
+            ]
+          },
+          {
+            "id": "t01.practice_map",
+            "title": "The three capabilities we will connect",
+            "logic": "Our temperature assistant needs three narrow capabilities: summarise supplied values, read a registered reference, and query historical measurements.",
+            "explanation": "HANDLERS maps each public tool name to an existing Python function. The starter functions still contain TODOs. We will complete them and then test the application boundary around them. Setup first checks the chosen interpreter and builds synthetic data; it does not download a model or assume an API key is available.",
+            "worked_example": "For a registered limit, use get_machine_spec. For measured temperatures, use query_temperature. For a supplied list, use temperature_stats.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "executor.py",
+                "symbol": "HANDLERS",
+                "slice_start": 0,
+                "max_lines": 3
+              }
+            ],
+            "slides": []
+          }
+        ]
+      },
+      "review_time_plan": {
+        "slides_and_concepts": 3,
+        "code_explanation": 2,
+        "practice_and_checks": 5
+      }
+    },
+    {
+      "id": "t02",
+      "title": "Turn a calculation function into a callable tool",
+      "minutes": 10,
+      "practice_minutes": 12,
+      "weight": 10,
+      "purpose": "Connect a Python function to a model-visible interface and an application-controlled result.",
+      "logic": "A useful Python function is not automatically available to a language model. We need a name and description, an argument contract, a real application binding, and a returned result the application can inspect.",
+      "code_walkthrough": [
+        "In Review, first explain the actual concept and visual on slide 9; then connect it to code. In Practice, introduce the concept at the exercise. Separate the calculator body, its offered definition, runtime validation and returned result.",
+        "Start with the model-visible name, description and parameters. The model sees this interface, not an executable Python body.",
+        "Connect the offered name to HANDLERS and StatsArgs. Runtime validation checks actual arguments before the function computes.",
+        "Complete the temperature summary from validated inputs and return the course success envelope so its caller can inspect named fields.",
+        "Use empty and equal-to-reference samples as short implementation checks; the central learning question is how a function becomes a callable tool."
+      ],
+      "worked_answer": "For 82,87,91,94,97 at reference 85: count=5, mean_c=90.2, max_c=97, above_count=4, above_fraction=0.8. These are expected example values until a real test is run. The ratio describes sampled readings, not time.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "mcq",
+          "prompt": "The calculation function exists on disk. Which step makes it usable in this tool-calling assistant?",
+          "options": {
+            "A": "Let the model guess the Python filename",
+            "B": "Offer its name, description and parameter schema; let the application validate, dispatch and return its result",
+            "C": "Print its source code and assume the model has executed it"
+          },
+          "correct": "B",
+          "feedback": "The model sees the interface; the application runs the registered implementation and returns a result. A schema does not execute a function."
+        }
+      ],
+      "code_refs": [
+        [
+          "tools/calculation.py",
+          "temperature_stats"
+        ]
+      ],
+      "concepts": [
+        "functions"
+      ],
+      "code_target": "stats",
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t02"
+        ]
+      ],
+      "planned_calls": 0,
+      "output_fields": "Inspect the actual report: distinguish tool-call arguments, execution events, tool envelope and final model explanation. Label expected examples and scripted replay explicitly.",
+      "hint1": "Separate what the model needs to know from what the application must actually run.",
+      "hint2": "Look for model_tools, StatsArgs validation, HANDLERS and success. Each has a different responsibility.",
+      "paths": {
+        "review": [
+          {
+            "id": "t02.slide_contract",
+            "title": "Read the tool form before the function",
+            "phase": "slide",
+            "logic": "A tool definition is a form the model can fill in. The form describes a capability; it does not perform it.",
+            "explanation": "A schema is a description of an allowed data structure. Validation means checking one actual request against that description. A function is the code that does the work after those checks. These three ideas are related but not interchangeable. The model needs a clear name, useful description and parameter rules. The application also needs the real function, a registered binding and runtime checks. A returned result then gives the application evidence to inspect.",
+            "worked_example": "For the supplied values 97 C and 85 C, the calculator can return a difference of 12 C. The name and schema tell the model how to request that calculation; they do not calculate 12. The seminar follows the same pattern for a temperature-summary function.",
+            "code_refs": [],
+            "slides": [
+              9,
+              10
+            ],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week3_Lecture_Tools_FunctionCalling_MCP_v3.pptx",
+              "primary_slide": 9,
+              "title": "The schema: the contract attached to message 1",
+              "image": "slides/slide-09.png",
+              "related_slides": [
+                {
+                  "number": 10,
+                  "title": "The description decides whether this tool gets chosen"
+                }
+              ],
+              "focus": "A tool definition is a form the model can fill in. The form describes a capability; it does not perform it.",
+              "visual_walkthrough": [
+                "Locate name, description and parameters. Read them as the service name, the job it offers, and the inputs a request must provide.",
+                "Within parameters, point to properties and required. They describe the named blanks and which blanks may not be omitted.",
+                "Point to max_records and its bounds. A request can use an integer within the accepted range; a persuasive sentence cannot remove that limit.",
+                "Use the description examples on slide 10 to separate maintenance history, registered specifications and live measurements. A precise menu helps selection; validation remains a separate job."
+              ],
+              "explanation": "A schema is a description of an allowed data structure. Validation means checking one actual request against that description. A function is the code that does the work after those checks. These three ideas are related but not interchangeable. The model needs a clear name, useful description and parameter rules. The application also needs the real function, a registered binding and runtime checks. A returned result then gives the application evidence to inspect.",
+              "example": "For the supplied values 97 C and 85 C, the calculator can return a difference of 12 C. The name and schema tell the model how to request that calculation; they do not calculate 12. The seminar follows the same pattern for a temperature-summary function.",
+              "code_bridge": "Read lecture tools.py::calculate_temperature_gap, then tool_definitions.py::model_tools. Separate the implementation from its offered interface. Finally locate the seminar StatsArgs validation model and its generated JSON schema.",
+              "provider_note": "This slide shows a Responses-style tool entry with strict=true. The current course code uses DeepSeek Chat Completions and nests name, description and parameters under function. Do not copy the slide entry as a runnable DeepSeek request or assume its strict flag is supported here; local validation remains required."
+            },
+            "presentation": "Show the original slide image first. Explain the visible idea in plain English, trace the example, and only then introduce the named code bridge. Do not begin this step with a source file."
+          },
+          {
+            "id": "t02.review_function",
+            "title": "Begin with the lecture calculator",
+            "logic": "The lecture calculator has one narrow job: subtract two supplied Celsius values. It does not find a missing reference or read a sensor.",
+            "explanation": "Read the function signature first: two named arguments enter. GapArgs checks them. The body performs the calculation, and ok returns a dictionary containing data and source. Calling this Python function directly needs no language model. To let a model request it, we must describe the callable interface and connect it to a handler.",
+            "worked_example": "For supplied values 97 and 85, the expected difference is 12 C. That result says nothing by itself about a fault cause.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "tools.py",
+                "symbol": "calculate_temperature_gap",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              5,
+              16,
+              17
+            ],
+            "phase": "code"
+          },
+          {
+            "id": "t02.review_contract",
+            "title": "A tool description is not a function body",
+            "logic": "The model must know which capability fits the question and what input fields it may supply.",
+            "explanation": "The first excerpt is an internal definition draft: name identifies the capability, description explains its job, properties names input fields, and required lists fields the caller must supply. Then inspect the final return line: it nests name, description and parameters under function for the DeepSeek request. Do not send the internal flat draft as though it were the final API object. No Python function body is sent as executable code.",
+            "worked_example": "A request for repair history should select query_maintenance, not a calculator. Both may mention CONV-3, but their capabilities are different.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "tool_definitions.py",
+                "symbol": "model_tools",
+                "slice_start": 4,
+                "max_lines": 12
+              },
+              {
+                "pack": "lecture",
+                "file": "tool_definitions.py",
+                "symbol": "model_tools",
+                "slice_start": 46,
+                "max_lines": 1
+              }
+            ],
+            "slides": [
+              9,
+              10
+            ],
+            "phase": "code"
+          },
+          {
+            "id": "t02.interface",
+            "title": "Apply the same pattern to temperature statistics",
+            "logic": "The seminar calculation is different, but its tool interface follows the same pattern.",
+            "explanation": "ARG_TYPES connects a tool name to StatsArgs. model_json_schema converts that validation model into the parameter description offered to DeepSeek. At execution time StatsArgs validates actual values. Your function computes a small summary and returns success with the course envelope. The count rule uses >; treat that as one implementation detail, not the purpose of function calling.",
+            "worked_example": "For the existing five readings, the expected summary includes mean_c=90.2, max_c=97 and above_fraction=0.8. The fraction describes samples, not duration. We still need the function, registry and runtime validation beyond these interface fields.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "tool_definitions.py",
+                "symbol": "model_tools",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [],
+            "phase": "code"
+          }
+        ],
+        "practice": [
+          {
+            "id": "t02.practice_interface",
+            "title": "What the model sees and what Python runs",
+            "logic": "Your task is to complete a calculation tool that the application can safely offer to DeepSeek.",
+            "explanation": "Read model_tools: it builds the model-visible name, description and parameters from ARG_TYPES. Then locate the temperature_stats starter. StatsArgs checks real arguments; success wraps the returned data with source and status. These are separate jobs. A function on disk is not callable by the model until the host offers and dispatches it.",
+            "worked_example": "The model proposes temperature_stats with JSON arguments. The application checks those arguments and calls your function. Python computes the values, then the result returns to the model.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "tool_definitions.py",
+                "symbol": "model_tools",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": []
+          },
+          {
+            "id": "t02.practice_body",
+            "title": "Write the small function behind the interface",
+            "logic": "We already have the readings and reference. This function should calculate, not retrieve or invent inputs.",
+            "explanation": "Follow the validated args object. Count values, add them for the mean, select the maximum, and count values above the supplied reference. Return named fields inside success so the caller can inspect them. Explain return versus print if needed. Keep empty-list and equal-to-reference checks as short tests of the promised contract.",
+            "worked_example": "The expected five-reading summary is count=5, mean_c=90.2 and above_fraction=0.8. This is an expected example until your saved function is actually tested.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "tools/calculation.py",
+                "symbol": "temperature_stats",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": []
+          }
+        ]
+      },
+      "review_time_plan": {
+        "slides_and_concepts": 3,
+        "code_explanation": 3,
+        "practice_and_checks": 4
+      }
+    },
+    {
+      "id": "t03",
+      "title": "Read the registered specification",
+      "minutes": 8,
+      "practice_minutes": 10,
+      "weight": 10,
+      "purpose": "Choose the right data tool and return its provenance through a clear interface.",
+      "logic": "The registered 85 C reference is not a sensor reading. Use the supplied machine ID, never invent one or accept a user-controlled file path.",
+      "code_walkthrough": [
+        "In Review, first explain the actual concept and visual on slide 16; then connect it to code. In Practice, introduce the concept at the exercise. Trace the fixed specification reader and preserve its source and version.",
+        "SPEC_PATH fixes which register the tool can read.",
+        "read_text reads the file; json.loads parses its contents into dictionaries.",
+        "Check membership before indexing machines. Unknown IDs produce NOT_FOUND; missing files produce DATA_UNAVAILABLE.",
+        "SpecData validates output fields. Preserve the source filename and document version in success."
+      ],
+      "worked_answer": "CONV-3 returns temperature_limit_c=85, unit=C and source=machine_specs.json. CONV-99 has no registered record. CONV-7 is a valid different machine and is not an answer to a CONV-3 question.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "mcq",
+          "prompt": "A user asks for CONV-3's current temperature. Should the assistant use only get_machine_spec?",
+          "options": {
+            "A": "Yes: any temperature number answers the question",
+            "B": "No: that tool returns a registered reference, not a measured temperature",
+            "C": "Yes: the model can rename the reference field to current_temperature"
+          },
+          "correct": "B",
+          "feedback": "Match the tool capability to the question. A successful specification lookup does not provide a live measurement."
+        }
+      ],
+      "code_refs": [
+        [
+          "tools/engineering.py",
+          "get_machine_spec"
+        ]
+      ],
+      "concepts": [
+        "records"
+      ],
+      "code_target": "spec",
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t03"
+        ]
+      ],
+      "planned_calls": 0,
+      "output_fields": "Inspect the actual report: distinguish tool-call arguments, execution events, tool envelope and final model explanation. Label expected examples and scripted replay explicitly.",
+      "hint1": "Describe what information goes in and what must come out.",
+      "hint2": "Trace one concrete input through the relevant lines before choosing an answer.",
+      "paths": {
+        "review": [
+          {
+            "id": "t03.slide_evidence",
+            "title": "A reference value is not a sensor reading",
+            "phase": "slide",
+            "logic": "The meaning and source of a number matter as much as its numeric value.",
+            "explanation": "A registered specification is a filed reference, like a value in a machine handbook. A sensor reading is an observation at a time. A calculation is a new value obtained from supplied inputs. The fact that all three may contain temperature numbers does not make them interchangeable. Keeping the lookup and calculator separate also makes each function easier to test and prevents the calculator from inventing missing inputs.",
+            "worked_example": "get_machine_spec(\"CONV-3\") can establish the classroom registered limit of 85 C and its source. It cannot establish CONV-3's current measured temperature. For CONV-99, an explicit missing-record error is more informative than an invented 85 C.",
+            "code_refs": [],
+            "slides": [
+              16,
+              17
+            ],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week3_Lecture_Tools_FunctionCalling_MCP_v3.pptx",
+              "primary_slide": 16,
+              "title": "The calculator gets its inputs from a separate tool",
+              "image": "slides/slide-16.png",
+              "related_slides": [
+                {
+                  "number": 17,
+                  "title": "Every tool result carries its data and its provenance"
+                }
+              ],
+              "focus": "The meaning and source of a number matter as much as its numeric value.",
+              "visual_walkthrough": [
+                "Read the temperature scale: 85 is the registered reference and 97 is the supplied reading. The marked gap is the calculated difference, 12 C.",
+                "Move to the specification result. machine_id identifies the equipment; temperature_limit_c names what the number means; spec_version and source identify where it came from.",
+                "Point to the unknown-machine case. The lookup reports that no record is available instead of assuming every machine has the same reference.",
+                "Connect to the result envelope on slide 17: status, data and provenance allow an answer to be checked against a concrete returned record."
+              ],
+              "explanation": "A registered specification is a filed reference, like a value in a machine handbook. A sensor reading is an observation at a time. A calculation is a new value obtained from supplied inputs. The fact that all three may contain temperature numbers does not make them interchangeable. Keeping the lookup and calculator separate also makes each function easier to test and prevents the calculator from inventing missing inputs.",
+              "example": "get_machine_spec(\"CONV-3\") can establish the classroom registered limit of 85 C and its source. It cannot establish CONV-3's current measured temperature. For CONV-99, an explicit missing-record error is more informative than an invented 85 C.",
+              "code_bridge": "Trace lecture tools.py::get_machine_spec from the fixed register to its selected entry and return value, then complete the seminar reader while preserving source and version.",
+              "provider_note": "The lecture uses an ok/data/error envelope, while the seminar uses status/data/source/version/error. These are course conventions, not universal MCP or Function Calling fields. Explain the actual keys in each code pack. Fetching a missing specification and then calculating requires separate calls; this week does not automate that chain."
+            },
+            "presentation": "Show the original slide image first. Explain the visible idea in plain English, trace the example, and only then introduce the named code bridge. Do not begin this step with a source file."
+          },
+          {
+            "id": "t03.review_spec",
+            "title": "Read the lecture specification lookup",
+            "logic": "The lecture uses a separate specification tool because maintenance history and reference limits have different meanings.",
+            "explanation": "The function validates machine_id, reads the fixed JSON register and selects the requested machine. If there is no entry, it raises a business error rather than inventing a default value. On success, the returned fields include the reference, version and source. Trace CONV-3 through those operations before moving to the seminar starter.",
+            "worked_example": "A correct source and version make a result traceable. They do not turn a registered limit into a sensor measurement.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "tools.py",
+                "symbol": "get_machine_spec",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              16,
+              17
+            ],
+            "phase": "code"
+          },
+          {
+            "id": "t03.interface",
+            "title": "Return evidence with its source",
+            "logic": "A registered reference and a measured temperature can both be numbers, but they answer different questions.",
+            "explanation": "The seminar reader has a fixed SPEC_PATH, so the model cannot choose an arbitrary file. SpecArgs validates the supplied ID. Parse the document, check whether the machine exists, and preserve its source and version when returning success. Unknown machine and unreadable source are different errors. The model needs these distinctions to explain the result honestly.",
+            "worked_example": "CONV-3 has a classroom registered reference of 85 C. CONV-99 is format-valid but absent. Neither case tells us the present sensor value.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "tools/engineering.py",
+                "symbol": "get_machine_spec",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [],
+            "phase": "code"
+          }
+        ],
+        "practice": [
+          {
+            "id": "t03.interface",
+            "title": "Return evidence with its source",
+            "logic": "A registered reference and a measured temperature can both be numbers, but they answer different questions.",
+            "explanation": "The seminar reader has a fixed SPEC_PATH, so the model cannot choose an arbitrary file. SpecArgs validates the supplied ID. Parse the document, check whether the machine exists, and preserve its source and version when returning success. Unknown machine and unreadable source are different errors. The model needs these distinctions to explain the result honestly.",
+            "worked_example": "CONV-3 has a classroom registered reference of 85 C. CONV-99 is format-valid but absent. Neither case tells us the present sensor value.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "tools/engineering.py",
+                "symbol": "get_machine_spec",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": []
+          }
+        ]
+      },
+      "review_time_plan": {
+        "slides_and_concepts": 2,
+        "code_explanation": 2,
+        "practice_and_checks": 4
+      }
+    },
+    {
+      "id": "t04",
+      "title": "Query a precise temperature window",
+      "minutes": 12,
+      "practice_minutes": 13,
+      "weight": 10,
+      "purpose": "Keep SQL under application control while allowing the model to supply validated query arguments.",
+      "logic": "A query filters rows for one device and time window. Include the start, exclude the end. A successful query can return zero rows.",
+      "code_walkthrough": [
+        "In Review, first explain the actual concept and visual on slide 15; then connect it to code. In Practice, introduce the concept at the exercise. Match filtering, sorting and row limits to the fixed query before transferring to temperature data.",
+        "QueryArgs normalizes timezone-aware timestamps and checks start < end and a maximum 24-hour window.",
+        "Convert the validated times to epoch seconds. Bind values into the fixed SQL question marks; never concatenate user text into SQL.",
+        "mode=ro opens a read-only connection; query_only adds another guard. closing releases the database handle even on failure.",
+        "ORDER BY gives chronological order. LIMIT 101 lets us detect more than 100 rows and report RESULT_LIMIT instead of silently truncating.",
+        "Turn each returned tuple into a dictionary. count equals len(records); an empty list means no matching records, not a temperature of zero."
+      ],
+      "worked_answer": "The interval 2026-03-02 10:00 to 10:25 (+08:00), end excluded, contains five readings: 82,87,91,94,97. Database failure and zero matches have different status values.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "mcq",
+          "prompt": "What should the model supply to the temperature-query tool?",
+          "options": {
+            "A": "Any SQL string it writes",
+            "B": "A machine ID and start/end arguments; the application keeps the SQL template",
+            "C": "A Python expression that the application evaluates"
+          },
+          "correct": "B",
+          "feedback": "The model supplies constrained arguments. The application owns the query, binds values and reads the result."
+        }
+      ],
+      "code_refs": [
+        [
+          "tools/sql_query.py",
+          "query_temperature"
+        ],
+        [
+          "schemas.py",
+          "QueryArgs"
+        ]
+      ],
+      "concepts": [
+        "sql"
+      ],
+      "code_target": "query",
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t04"
+        ]
+      ],
+      "planned_calls": 0,
+      "output_fields": "Inspect the actual report: distinguish tool-call arguments, execution events, tool envelope and final model explanation. Label expected examples and scripted replay explicitly.",
+      "hint1": "Describe what information goes in and what must come out.",
+      "hint2": "Trace one concrete input through the relevant lines before choosing an answer.",
+      "paths": {
+        "review": [
+          {
+            "id": "t04.slide_query",
+            "title": "Use the table to explain the lookup",
+            "phase": "slide",
+            "logic": "The model supplies bounded values to a defined lookup. The application keeps control of the query itself.",
+            "explanation": "A query is a request for selected rows from a table. The developer writes the query structure, while the caller supplies only the allowed values. Binding means sending those values separately from the SQL text so they are treated as data. Before execution, argument checks reject invalid types or excessive limits; the registry chooses the allowed function. A read-only connection provides another concrete restriction. None of these checks alone can prove that the requested machine matches the user's intent.",
+            "worked_example": "With machine_id=\"CONV-3\" and max_records=1, the maintenance lookup selects CONV-3's latest stored service, not the newest service anywhere in the table. The seminar transfers this idea to a machine ID and a temperature time window; its query remains fixed as well.",
+            "code_refs": [],
+            "slides": [
+              15,
+              13,
+              14
+            ],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week3_Lecture_Tools_FunctionCalling_MCP_v3.pptx",
+              "primary_slide": 15,
+              "title": "The model fills two blanks; the SQL stays ours",
+              "image": "slides/slide-15.png",
+              "related_slides": [
+                {
+                  "number": 13,
+                  "title": "Arguments must pass three gates: type, range, intent"
+                },
+                {
+                  "number": 14,
+                  "title": "Only functions the app registered can ever execute"
+                }
+              ],
+              "focus": "The model supplies bounded values to a defined lookup. The application keeps control of the query itself.",
+              "visual_walkthrough": [
+                "Read the table before the SQL: each row is one service record with a machine, date and action.",
+                "For CONV-3's last service, first keep only CONV-3 rows. The newer CONV-7 row is irrelevant to this question.",
+                "Then order the remaining dates newest first and keep one row. This gives EV-104, dated 2026-03-18, with the recorded cooling-fan replacement.",
+                "Now match those operations to WHERE, ORDER BY and LIMIT. The two question marks are value slots, not places for arbitrary SQL commands."
+              ],
+              "explanation": "A query is a request for selected rows from a table. The developer writes the query structure, while the caller supplies only the allowed values. Binding means sending those values separately from the SQL text so they are treated as data. Before execution, argument checks reject invalid types or excessive limits; the registry chooses the allowed function. A read-only connection provides another concrete restriction. None of these checks alone can prove that the requested machine matches the user's intent.",
+              "example": "With machine_id=\"CONV-3\" and max_records=1, the maintenance lookup selects CONV-3's latest stored service, not the newest service anywhere in the table. The seminar transfers this idea to a machine ID and a temperature time window; its query remains fixed as well.",
+              "code_bridge": "Read lecture tools.py::query_maintenance and match the table operations to its fixed SELECT and bound values. Then inspect the seminar SQL and QueryArgs before writing the temperature reader."
+            },
+            "presentation": "Show the original slide image first. Explain the visible idea in plain English, trace the example, and only then introduce the named code bridge. Do not begin this step with a source file."
+          },
+          {
+            "id": "t04.review_sql",
+            "title": "The lecture model fills blanks, not SQL",
+            "logic": "Maintenance retrieval shows how a narrow tool can expose useful database access without accepting arbitrary code.",
+            "explanation": "Read the fixed SELECT in query_maintenance. It selects known columns, filters machine_id, sorts newest first and limits the number of records. The model supplies machine_id and max_records through a validated contract. Parameter binding inserts their values without giving the caller control of the query structure. The application then turns returned rows into named fields.",
+            "worked_example": "For CONV-3 with max_records=1, the teaching database's expected latest record is EV-104, replaced cooling fan. That is a recorded maintenance action, not a temperature measurement.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "tools.py",
+                "symbol": "query_maintenance",
+                "slice_start": 0,
+                "max_lines": 12
+              },
+              {
+                "pack": "lecture",
+                "file": "tools.py",
+                "symbol": "query_maintenance",
+                "slice_start": 12,
+                "max_lines": 8
+              }
+            ],
+            "slides": [
+              13,
+              14,
+              15
+            ],
+            "phase": "code"
+          },
+          {
+            "id": "t04.interface",
+            "title": "Keep the query fixed and bind the arguments",
+            "logic": "The model should request a defined lookup, not invent arbitrary database commands.",
+            "explanation": "QueryArgs checks machine and timezone-aware start/end inputs. SQL contains question marks for values; binding parameters keeps the SQL structure fixed. mode=ro and query_only prevent writes in this classroom reader. The interval includes start and excludes end. More than 100 matching rows is reported as a limit error rather than a silently incomplete answer.",
+            "worked_example": "The expected CONV-3 window returns five records. An empty successful query returns an empty list; a failed database access returns an error. The model must not turn either into a made-up temperature.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "tools/sql_query.py",
+                "symbol": "SQL",
+                "slice_start": 0,
+                "max_lines": 7
+              },
+              {
+                "pack": "seminar",
+                "file": "tools/sql_query.py",
+                "symbol": "query_temperature",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [],
+            "phase": "code"
+          }
+        ],
+        "practice": [
+          {
+            "id": "t04.interface",
+            "title": "Keep the query fixed and bind the arguments",
+            "logic": "The model should request a defined lookup, not invent arbitrary database commands.",
+            "explanation": "QueryArgs checks machine and timezone-aware start/end inputs. SQL contains question marks for values; binding parameters keeps the SQL structure fixed. mode=ro and query_only prevent writes in this classroom reader. The interval includes start and excludes end. More than 100 matching rows is reported as a limit error rather than a silently incomplete answer.",
+            "worked_example": "The expected CONV-3 window returns five records. An empty successful query returns an empty list; a failed database access returns an error. The model must not turn either into a made-up temperature.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "tools/sql_query.py",
+                "symbol": "SQL",
+                "slice_start": 0,
+                "max_lines": 7
+              },
+              {
+                "pack": "seminar",
+                "file": "tools/sql_query.py",
+                "symbol": "query_temperature",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": []
+          }
+        ]
+      },
+      "review_time_plan": {
+        "slides_and_concepts": 3,
+        "code_explanation": 3,
+        "practice_and_checks": 6
+      }
+    },
+    {
+      "id": "t05",
+      "title": "Follow a DeepSeek tool call",
+      "minutes": 10,
+      "practice_minutes": 10,
+      "weight": 10,
+      "purpose": "Understand every hand-off from user question to final answer.",
+      "logic": "Function calling lets the model propose a named function and JSON arguments. The model does not execute Python. Our application accepts at most one call per turn.",
+      "code_walkthrough": [
+        "model_tools builds DeepSeek objects with type=function and a nested function containing name, description and parameters.",
+        "run_turn builds system/user messages and makes the first chat.completions request with tool_choice=auto.",
+        "Read choices[0].message.tool_calls. Each call has id and function.name / function.arguments. arguments is JSON text, not executable Python.",
+        "Reject more than one call before execution. Executor checks JSON, Pydantic types, access policy, handler name and returned fields.",
+        "Append the assistant call message, then a role=tool message with the same tool_call_id and JSON result.",
+        "The second request uses tool_choice=none, asking for an explanation. It is still possible for that explanation to be wrong.",
+        "Replay uses the same message shape but scripted choices and final text. It can test plumbing, not model selection."
+      ],
+      "worked_answer": "The normal trace has two requests and one execution. Tool call id and tool_call_id match. The standard DeepSeek endpoint is used without beta strict generation; local validation remains mandatory.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "Who checks and runs the call, and what connects a tool result to the original request?",
+          "rubric": "Application validates/executes; matching call ID connects result; model only proposes and explains."
+        }
+      ],
+      "code_refs": [
+        [
+          "workflow.py",
+          "run_turn"
+        ],
+        [
+          "executor.py",
+          "Executor"
+        ],
+        [
+          "tool_definitions.py",
+          "model_tools"
+        ]
+      ],
+      "concepts": [
+        "contracts"
+      ],
+      "code_target": null,
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t05"
+        ]
+      ],
+      "planned_calls": 0,
+      "output_fields": "Inspect the actual report: distinguish tool-call arguments, execution events, tool envelope and final model explanation. Label expected examples and scripted replay explicitly.",
+      "hint1": "Describe what information goes in and what must come out.",
+      "hint2": "Trace one concrete input through the relevant lines before choosing an answer.",
+      "paths": {
+        "review": [
+          {
+            "id": "t05.slide_messages",
+            "title": "Follow the request slip and its receipt",
+            "phase": "slide",
+            "logic": "The returned result must be linked to the exact request that caused it.",
+            "explanation": "The request identifier works like a receipt number. The application keeps the model's original request and attaches the result to that same request. Otherwise a model could receive a number without a reliable connection to the operation that produced it. The final answer is another generated message, so we compare it with the returned evidence rather than trusting its tone.",
+            "worked_example": "If one slip requests CONV-3 maintenance, its paired result should contain that lookup's record. A result for another machine does not become correct merely because the JSON is well formed or the request identifier matches.",
+            "code_refs": [],
+            "slides": [
+              8,
+              18
+            ],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week3_Lecture_Tools_FunctionCalling_MCP_v3.pptx",
+              "primary_slide": 8,
+              "title": "A function call is three messages and one shared id",
+              "image": "slides/slide-08.png",
+              "related_slides": [
+                {
+                  "number": 18,
+                  "title": "Results return to the model, matched by call_id"
+                }
+              ],
+              "focus": "The returned result must be linked to the exact request that caused it.",
+              "visual_walkthrough": [
+                "Start at message 1: the application sends a task and a catalogue of tools. The model does not discover arbitrary Python files.",
+                "Read message 2 as a call slip: a name, arguments and an identifier. It contains the requested inputs, not a retrieved maintenance record.",
+                "Pause at the small validation, registry and execution box between messages 2 and 3. This work belongs to the application even though it is drawn between two model messages.",
+                "Match the identifier in message 3 to the call slip, then follow the final plain-text answer. Use slide 18 to reinforce that the real result is sent back before asking for that answer."
+              ],
+              "explanation": "The request identifier works like a receipt number. The application keeps the model's original request and attaches the result to that same request. Otherwise a model could receive a number without a reliable connection to the operation that produced it. The final answer is another generated message, so we compare it with the returned evidence rather than trusting its tone.",
+              "example": "If one slip requests CONV-3 maintenance, its paired result should contain that lookup's record. A result for another machine does not become correct merely because the JSON is well formed or the request identifier matches.",
+              "code_bridge": "Trace lecture first_call, run_tool and complete_trip in that order. In the seminar, find the same responsibilities in run_turn and Executor.execute.",
+              "provider_note": "Slides 8 and 18 illustrate Responses-style call_id and function_call_output. Current DeepSeek Chat Completions uses message.tool_calls entries with id, followed by a role=\"tool\" message with the matching tool_call_id. Teach the shared pairing idea, then use the actual current syntax."
+            },
+            "presentation": "Show the original slide image first. Explain the visible idea in plain English, trace the example, and only then introduce the named code bridge. Do not begin this step with a source file."
+          },
+          {
+            "id": "t05.review_proposal",
+            "title": "First call: a proposal, not execution",
+            "logic": "The application sends a question and a list of available tools. DeepSeek may select a tool, ask for missing inputs, or answer without one.",
+            "explanation": "In first_call, tools attaches the definitions and tool_choice=\"auto\" allows selection. message.tool_calls contains proposed requests. Each has an ID, function name and arguments string. Turning those fields into a slip is only parsing. No database function has been called yet. The one-call guard rejects multiple proposals in this week's bounded workflow.",
+            "worked_example": "A call named query_maintenance with CONV-3 and max_records=1 tells the app what is requested. It is not itself the maintenance record.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "live.py",
+                "symbol": "first_call",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              11,
+              12
+            ],
+            "phase": "code"
+          },
+          {
+            "id": "t05.review_dispatch",
+            "title": "Only the application can dispatch the request",
+            "logic": "A model-generated name is data until the application chooses an allowed implementation.",
+            "explanation": "run_tool looks up the name in REGISTRY. If no entry exists it returns UNKNOWN_TOOL. The registered argument model validates the JSON string. Only after those checks does handler(**args.model_dump()) call Python, using the validated fields as named arguments. A correct type or range still cannot prove that the model chose the machine the user intended.",
+            "worked_example": "A nonexistent tool never runs. A valid CONV-7 request can run successfully and still fail a user request for CONV-3. Inspect intent separately from validation.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "registry.py",
+                "symbol": "run_tool",
+                "slice_start": 0,
+                "max_lines": 12
+              },
+              {
+                "pack": "lecture",
+                "file": "registry.py",
+                "symbol": "run_tool",
+                "slice_start": 12,
+                "max_lines": 10
+              }
+            ],
+            "slides": [
+              13,
+              14,
+              20
+            ],
+            "phase": "code"
+          },
+          {
+            "id": "t05.review_return",
+            "title": "Return the result with the matching ID",
+            "logic": "The model needs the real tool result to explain what happened. The request ID connects that result to the earlier call.",
+            "explanation": "complete_trip preserves the assistant call message, then appends a role=\"tool\" message. tool_call_id matches the requested call; content contains serialized result data. The second model request uses tool_choice=\"none\", so this turn ends with an explanation instead of another tool. Check the explanation against the recorded data: wording can be wrong even after correct execution.",
+            "worked_example": "The completed chain is proposal -> validated Python call -> returned evidence -> checked explanation. Lecture ok/data/error and seminar status/data/source/version/error are different course envelopes.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "live.py",
+                "symbol": "complete_trip",
+                "slice_start": 11,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              17,
+              18,
+              37
+            ],
+            "phase": "code"
+          },
+          {
+            "id": "t05.transfer",
+            "title": "Find the same responsibilities in the seminar",
+            "logic": "The temperature assistant implements the same message sequence with different tool capabilities.",
+            "explanation": "Locate executor.execute, the assistant tool_calls message, the role=\"tool\" result and the second request in run_turn. Match each line to its role in the lecture chain. The upcoming replay runs your tools but scripts the model choices and final text. It checks the application path without establishing live model reliability.",
+            "worked_example": "The expected replay contains one tool execution and two scripted requests with a matching ID. Treat it as a plumbing check, then test real selection in t06.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "workflow.py",
+                "symbol": "run_turn",
+                "slice_start": 32,
+                "max_lines": 12
+              }
+            ],
+            "slides": [],
+            "phase": "code"
+          }
+        ],
+        "practice": [
+          {
+            "id": "t05.practice_proposal",
+            "title": "Read the model-to-application boundary",
+            "logic": "The first DeepSeek request asks what to do; it does not run a function.",
+            "explanation": "run_turn prepares model, tools and messages, then requests tool_choice=\"auto\". The returned choices contain the assistant message and any tool_calls. Check completion before using a response. The app rejects multiple calls and malformed requests before invoking its executor. Explain JSON text versus a Python dictionary if needed.",
+            "worked_example": "A function name and argument string are a request. A separate application action is required to obtain data.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "workflow.py",
+                "symbol": "run_turn",
+                "slice_start": 0,
+                "max_lines": 9
+              },
+              {
+                "pack": "seminar",
+                "file": "workflow.py",
+                "symbol": "run_turn",
+                "slice_start": 12,
+                "max_lines": 12
+              }
+            ],
+            "slides": []
+          },
+          {
+            "id": "t05.practice_dispatch",
+            "title": "Validate and execute only registered code",
+            "logic": "The application controls which functions run and which arguments reach them.",
+            "explanation": "Executor checks the name against handlers and ARG_TYPES, checks policy, parses JSON and validates the argument model. It then invokes a local handler or the selected MCP route. The returned envelope and data fields are validated too. These checks establish a contract, not whether a natural-language request was understood correctly.",
+            "worked_example": "A wrong type is blocked before invocation. A valid wrong machine may pass; compare the arguments with the user's question.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "executor.py",
+                "symbol": "Executor.execute",
+                "slice_start": 7,
+                "max_lines": 12
+              },
+              {
+                "pack": "seminar",
+                "file": "executor.py",
+                "symbol": "Executor.execute",
+                "slice_start": 24,
+                "max_lines": 12
+              }
+            ],
+            "slides": []
+          },
+          {
+            "id": "t05.practice_return",
+            "title": "Send evidence back before asking for an answer",
+            "logic": "A tool result must be connected to the call that requested it.",
+            "explanation": "The assistant message is kept, then the result is added with role=\"tool\" and the matching tool_call_id. JSON content carries the actual course envelope. The second request uses tool_choice=\"none\". The final answer is checked separately from the result, and tool failure cannot be rewritten as success. Replay has the same shape but scripted model behaviour.",
+            "worked_example": "A successful replay is local workflow evidence. Live DeepSeek selection is a separate task.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "workflow.py",
+                "symbol": "run_turn",
+                "slice_start": 32,
+                "max_lines": 12
+              }
+            ],
+            "slides": []
+          }
+        ]
+      },
+      "review_time_plan": {
+        "slides_and_concepts": 3,
+        "code_explanation": 3,
+        "practice_and_checks": 4
+      }
+    },
+    {
+      "id": "t06",
+      "title": "Let DeepSeek choose the tool",
+      "minutes": 6,
+      "practice_minutes": 6,
+      "weight": 10,
+      "purpose": "Compare real model choices with the meaning of the question.",
+      "logic": "Run the spec, query and stats questions separately. Each provides all required inputs. A question about a concept can be answered without a tool.",
+      "code_walkthrough": [
+        "app.py uses DEEPSEEK_API_KEY and the DeepSeek endpoint. The OpenAI SDK is only the client library.",
+        "Inspect calls, validated_arguments, events, tool_result and answer. Check the machine, time interval, units and provenance.",
+        "A no-tool response may be valid for a concept question but does not satisfy a requested data lookup. Never replace a live failure with replay."
+      ],
+      "worked_answer": "Expected selections are get_machine_spec, query_temperature and temperature_stats. Actual choices and wording can vary; inspect the recorded output rather than assuming the expected result.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "Use one real trace to explain whether the chosen tool, arguments and final answer match the question.",
+          "rubric": "Reference actual run, verify input intent and result/answer consistency; acknowledge any failure."
+        }
+      ],
+      "code_refs": [
+        [
+          "app.py",
+          "execute"
+        ],
+        [
+          "workflow.py",
+          "run_turn"
+        ]
+      ],
+      "concepts": [],
+      "code_target": null,
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t06"
+        ]
+      ],
+      "planned_calls": 6,
+      "output_fields": "Inspect the actual report: distinguish tool-call arguments, execution events, tool envelope and final model explanation. Label expected examples and scripted replay explicitly.",
+      "hint1": "Describe what information goes in and what must come out.",
+      "hint2": "Trace one concrete input through the relevant lines before choosing an answer.",
+      "paths": {
+        "review": [
+          {
+            "id": "t06.live_evidence",
+            "title": "Separate a real model decision from a replay",
+            "logic": "Now DeepSeek must choose among the three tools from the wording of each question.",
+            "explanation": "app.py selects ScriptedCompletions only when replay was explicitly requested. Live mode creates the DeepSeek client using a private key. Each data question can make up to two API requests, so these three cases have a six-request budget. Inspect chosen name, arguments, validation events, returned data and final answer. No silent fallback is allowed.",
+            "worked_example": "The expected selections are spec -> get_machine_spec, query -> query_temperature, and stats -> temperature_stats. Record what actually happened, even if it differs.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "app.py",
+                "symbol": "execute",
+                "slice_start": 4,
+                "max_lines": 12
+              }
+            ],
+            "slides": []
+          }
+        ],
+        "practice": [
+          {
+            "id": "t06.live_evidence",
+            "title": "Separate a real model decision from a replay",
+            "logic": "Now DeepSeek must choose among the three tools from the wording of each question.",
+            "explanation": "app.py selects ScriptedCompletions only when replay was explicitly requested. Live mode creates the DeepSeek client using a private key. Each data question can make up to two API requests, so these three cases have a six-request budget. Inspect chosen name, arguments, validation events, returned data and final answer. No silent fallback is allowed.",
+            "worked_example": "The expected selections are spec -> get_machine_spec, query -> query_temperature, and stats -> temperature_stats. Record what actually happened, even if it differs.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "app.py",
+                "symbol": "execute",
+                "slice_start": 4,
+                "max_lines": 12
+              }
+            ],
+            "slides": []
+          }
+        ]
+      }
+    },
+    {
+      "id": "t07",
+      "title": "Find failures and improve one description",
+      "minutes": 8,
+      "practice_minutes": 8,
+      "weight": 10,
+      "purpose": "Locate errors instead of trusting fluent answers.",
+      "logic": "Controlled injected failures test the application. They are not evidence that DeepSeek made those errors. A useful tool description states purpose, inputs, outputs and boundaries.",
+      "code_walkthrough": [
+        "failure_demo injects bad types, an unknown tool, a reversed time window, an exception and a valid wrong machine.",
+        "Read validation, permission, invoked and result in each event. Locate where the call stopped.",
+        "Write an improved get_machine_spec description in chat; Mentor saves it to student_description.txt, read by model_tools.",
+        "Compare task 6 baseline with two new live questions after the edit, including a paraphrase. A clearer description does not guarantee correct selection."
+      ],
+      "worked_answer": "A type error should stop before invocation. A function exception happens after invocation. A successful CONV-7 response still fails the CONV-3 intent. Explain the evidence even if the edited description does not improve the model.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "Which injected case can pass validation and still fail the task? What did your description change achieve?",
+          "rubric": "Valid wrong machine is a semantic mismatch; compare real before/after traces without claiming guaranteed improvement."
+        }
+      ],
+      "code_refs": [
+        [
+          "failure_demo.py",
+          "main"
+        ],
+        [
+          "tool_definitions.py",
+          "model_tools"
+        ]
+      ],
+      "concepts": [],
+      "code_target": "description",
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t07"
+        ]
+      ],
+      "planned_calls": 4,
+      "output_fields": "Inspect the actual report: distinguish tool-call arguments, execution events, tool envelope and final model explanation. Label expected examples and scripted replay explicitly.",
+      "hint1": "Describe what information goes in and what must come out.",
+      "hint2": "Trace one concrete input through the relevant lines before choosing an answer.",
+      "paths": {
+        "review": [
+          {
+            "id": "t07.slide_success",
+            "title": "A successful function can answer the wrong question",
+            "phase": "slide",
+            "logic": "Execution success and task success are separate judgments.",
+            "explanation": "A schema checks an input's structure and allowed values; it cannot infer every detail of a user's intended task. This is why an assistant needs checks at several points: useful descriptions before selection, validation before execution, and a comparison between request, trace and answer afterward. A better description can reduce mistakes, but the actual traces show whether it helped.",
+            "worked_example": "A correct CONV-7 specification is still an incorrect response to a CONV-3 specification question. In contrast, a wrong argument type should be stopped before the handler runs. These failures occur at different places in the chain.",
+            "code_refs": [],
+            "slides": [
+              20,
+              19
+            ],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week3_Lecture_Tools_FunctionCalling_MCP_v3.pptx",
+              "primary_slide": 20,
+              "title": "The call succeeded perfectly \u2014 on the wrong machine",
+              "image": "slides/slide-20.png",
+              "related_slides": [
+                {
+                  "number": 19,
+                  "title": "Zero rows, a failed query, a refusal \u2014 three answers"
+                }
+              ],
+              "focus": "Execution success and task success are separate judgments.",
+              "visual_walkthrough": [
+                "Compare the two machine labels: the request is for CONV-3 but the lookup targets CONV-7.",
+                "Read the two scores separately. FUNCTION executed means the call ran; TASK remains unverified until its arguments and result are compared with the request.",
+                "Identify what the existing checks could establish: the ID had an acceptable form, the tool existed and the function returned a result.",
+                "Name what is still missing: evidence that this was the machine and information the user actually asked for."
+              ],
+              "explanation": "A schema checks an input's structure and allowed values; it cannot infer every detail of a user's intended task. This is why an assistant needs checks at several points: useful descriptions before selection, validation before execution, and a comparison between request, trace and answer afterward. A better description can reduce mistakes, but the actual traces show whether it helped.",
+              "example": "A correct CONV-7 specification is still an incorrect response to a CONV-3 specification question. In contrast, a wrong argument type should be stopped before the handler runs. These failures occur at different places in the chain.",
+              "code_bridge": "Compare lecture tool descriptions, then inspect the seminar failure_demo events. Identify the first failed responsibility before editing one description and testing the real before/after evidence."
+            },
+            "presentation": "Show the original slide image first. Explain the visible idea in plain English, trace the example, and only then introduce the named code bridge. Do not begin this step with a source file."
+          },
+          {
+            "id": "t07.review_description",
+            "title": "A description helps the model choose a capability",
+            "logic": "Several tools can mention equipment and temperature. A vague description does not separate their jobs.",
+            "explanation": "Compare the lecture DESCRIPTIONS. query_maintenance states that it reads service history; get_machine_spec names registered limits; the calculator requires supplied values. The exclusions matter because they prevent a plausible but irrelevant selection. The application still validates inputs and checks evidence after selection.",
+            "worked_example": "A request for maintenance history should not be satisfied with the specification merely because both tools accept machine_id.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "tool_definitions.py",
+                "symbol": "DESCRIPTIONS",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              10,
+              19,
+              20
+            ],
+            "phase": "code"
+          },
+          {
+            "id": "t07.failure_layers",
+            "title": "Find the failed responsibility",
+            "logic": "A fluent answer does not tell us whether selection, validation or execution was correct.",
+            "explanation": "The injected cases deliberately request a wrong type, unknown tool, reversed time window, execution exception and valid wrong machine. Follow each event's validation, permission, invoked and result fields. These are application tests, not naturally observed model errors. Then improve the specification description and compare a real baseline with the same question and a paraphrase.",
+            "worked_example": "CONV-7 is the useful counterexample: validation can pass while intent fails. Better descriptions can help selection, but the before/after traces determine what the change actually achieved.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "failure_demo.py",
+                "symbol": "main",
+                "slice_start": 1,
+                "max_lines": 12
+              }
+            ],
+            "slides": [],
+            "phase": "code"
+          }
+        ],
+        "practice": [
+          {
+            "id": "t07.failure_layers",
+            "title": "Find the failed responsibility",
+            "logic": "A fluent answer does not tell us whether selection, validation or execution was correct.",
+            "explanation": "The injected cases deliberately request a wrong type, unknown tool, reversed time window, execution exception and valid wrong machine. Follow each event's validation, permission, invoked and result fields. These are application tests, not naturally observed model errors. Then improve the specification description and compare a real baseline with the same question and a paraphrase.",
+            "worked_example": "CONV-7 is the useful counterexample: validation can pass while intent fails. Better descriptions can help selection, but the before/after traces determine what the change actually achieved.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "failure_demo.py",
+                "symbol": "main",
+                "slice_start": 1,
+                "max_lines": 12
+              }
+            ],
+            "slides": []
+          }
+        ]
+      },
+      "review_time_plan": {
+        "slides_and_concepts": 2,
+        "code_explanation": 2,
+        "practice_and_checks": 4
+      }
+    },
+    {
+      "id": "t08",
+      "title": "Understand MCP, then build and test a server",
+      "minutes": 28,
+      "practice_minutes": 28,
+      "weight": 10,
+      "purpose": "Expose the tested specification tool through a shared protocol.",
+      "logic": "Both study modes must complete the full MCP introduction before coding. Explain what MCP is, why it is useful, function calling versus MCP, Host/Client/Server, discovery versus execution, and local stdio. Optional Python/process explanations remain selectable.",
+      "code_walkthrough": [
+        "Teach the eight MCP concepts in four pairs. After each pair, pause for its saved mini-check: roles, discovery, failure handling and model context. Resolve that check before the next pair. Then complete and test the wrapper; the final two questions connect the pieces.",
+        "MCPServer creates the server; @server.tool(structured_output=True) and dict[str, Any] declare a structured tool result. The decorator registers, rather than immediately runs, the function.",
+        "The wrapper validates the ID and calls the existing read_spec. It does not create a second specification database.",
+        "Translate known business failures into ToolError so the client sees an error, not a successful-looking message.",
+        "Client starts the local server with a restricted environment. list_tools discovers metadata. call_tool requests execution.",
+        "Inspect is_error and structured_content. Test CONV-3 success and CONV-99 error before attaching any model.",
+        "read_resource fetches text separately. The host must deliberately put selected content into model context; it does not happen automatically."
+      ],
+      "worked_answer": "Direct function calling is enough for a small local app. MCP offers a shared app-to-provider interface for discovery and execution. The host owns its client and permissions; DeepSeek still proposes via function calling. Separate processes and environment filtering do not automatically sandbox file permissions. Validate the real client/server result before connecting the model.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "Explain MCP to a classmate: why use it, how is it different from function calling, and how do they work together?",
+          "rubric": "Shared tool interface across apps; model proposes via function calling; host/client invokes server via MCP; identify all three roles."
+        },
+        {
+          "id": "q2",
+          "type": "mcq",
+          "prompt": "The MCP test returns a valid CONV-3 reference of 85 C. The final assistant says, \"CONV-3 is currently 85 C, so there is no fault.\" Which review is correct?",
+          "options": {
+            "A": "The conclusion is proved because the MCP request succeeded.",
+            "B": "The returned reference proves the current temperature, but not the absence of a fault.",
+            "C": "The lookup succeeded, but the reference proves neither the current temperature nor the absence of a fault."
+          },
+          "correct": "C",
+          "feedback": "Check the meaning of the returned field as well as transport success. A registered reference is not a sensor measurement. A successful MCP exchange does not validate the model's engineering conclusion."
+        }
+      ],
+      "code_refs": [
+        [
+          "mcp_server.py",
+          "get_machine_spec"
+        ],
+        [
+          "mcp_backend.py",
+          "MCPBackend"
+        ],
+        [
+          "mcp_client.py",
+          "main"
+        ]
+      ],
+      "concepts": [
+        "processes"
+      ],
+      "code_target": "mcp",
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t08"
+        ]
+      ],
+      "planned_calls": 0,
+      "output_fields": "Inspect the actual report: distinguish tool-call arguments, execution events, tool envelope and final model explanation. Label expected examples and scripted replay explicitly.",
+      "hint1": "Describe what information goes in and what must come out.",
+      "hint2": "Trace one concrete input through the relevant lines before choosing an answer.",
+      "mandatory_mcp": true,
+      "paths": {
+        "review": [
+          {
+            "id": "t08.mcp_need",
+            "title": "Why not just call the Python function?",
+            "logic": "For one small application with a few local functions, direct function calling can be enough. MCP is optional; adding it does not make a model smarter.",
+            "explanation": "Our local tool list is prepared in tool_definitions.py. A second application could reuse that Python package, but another language or process needs an agreed interface. MCP, the Model Context Protocol, standardizes messages for discovering and using capabilities. This can reduce separate connection code across applications. The function still performs the same narrow job.",
+            "worked_example": "Keep the local route when it is the simplest fit. Consider MCP when a tool provider should be independently connected, discovered and reused by compatible applications. These are design benefits, not proof that every project needs MCP.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "tool_definitions.py",
+                "symbol": "model_tools",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              21,
+              22,
+              23,
+              35
+            ]
+          },
+          {
+            "id": "t08.mcp_roles",
+            "title": "Three roles, two different connections",
+            "logic": "Function calling links the model to its application. MCP links an application client to a tool server. They describe different connections in the same workflow.",
+            "explanation": "The Host is the whole assistant application. Its Client speaks MCP to a Server that offers a function. In app.py, routes chooses either a local function or an MCPBackend. async with opens the connection for this block and closes it afterward. DeepSeek receives model API requests; it does not connect directly to the local server. A client can test the server with no model present.",
+            "worked_example": "Student -> host -> DeepSeek proposal -> host validation -> MCP client -> server function -> result -> host -> DeepSeek explanation. On the local route, the middle client/server connection becomes an ordinary function call.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "app.py",
+                "symbol": "routes",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              24,
+              27
+            ],
+            "check": {
+              "id": "mcp_roles_check",
+              "type": "mcq",
+              "activity": "Trace the next hand-off",
+              "prompt": "DeepSeek proposes get_machine_spec for CONV-3. On the MCP route, which sequence reaches the Python function?",
+              "options": {
+                "A": "DeepSeek connects directly to the server through stdio.",
+                "B": "The host checks the request, then its MCP client calls the server tool.",
+                "C": "The parameter schema runs the function as soon as the model reads it."
+              },
+              "correct": "B",
+              "explanation": "The model proposes a request. The host checks it and owns the MCP client. The server receives the client request and runs its registered function.",
+              "hint1": "Separate the model-to-application connection from the application-to-tool connection.",
+              "hint2": "In app.py, the host opens MCPBackend. The model API does not open that local connection.",
+              "estimated_seconds": 60,
+              "required": true
+            }
+          },
+          {
+            "id": "t08.mcp_process",
+            "title": "Local messages and a deliberately limited environment",
+            "logic": "A process is a running program. Our client starts a separate Python program for the server and exchanges messages through its input and output streams. This transport is called stdio.",
+            "explanation": "server_parameters selects the same Python interpreter and the server script. Its environment allowlist does not intentionally pass DEEPSEEK_API_KEY. The specification reader has no need for that key. This reduces unnecessary credential exposure, but a separate process under the same user is not an automatic file-permission sandbox. Keep stdout for protocol messages and send diagnostic logs to stderr. No HTTP port or GPU is required here.",
+            "worked_example": "The model client needs the DeepSeek key; the local register-reading server does not. These responsibilities can be separated without claiming that MCP itself grants or enforces all permissions.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "mcp_backend.py",
+                "symbol": "server_parameters",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              28,
+              34
+            ]
+          },
+          {
+            "id": "t08.mcp_discovery",
+            "title": "Discover a tool before requesting its result",
+            "logic": "A catalogue describes what can be requested. It is not the requested equipment data. Discovering tools does not execute all of them.",
+            "explanation": "Read the lecture client: list_tools asks for names, descriptions and argument schemas. call_tool names one function and supplies an argument dictionary. await means wait for that operation to finish before using its result. The known machine should return a structured record; an unknown machine should produce an explicit error. This independent check separates connection problems from model-selection problems.",
+            "worked_example": "list_tools can tell us that get_machine_spec accepts machine_id. Only call_tool(\"get_machine_spec\", {\"machine_id\":\"CONV-3\"}) asks the server to read CONV-3.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "check_server.py",
+                "symbol": "main",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              25,
+              30
+            ],
+            "check": {
+              "id": "mcp_discovery_check",
+              "type": "mcq",
+              "activity": "Predict the available information",
+              "prompt": "The client has completed only await client.list_tools(). It sees get_machine_spec and its machine_id input. What has it obtained so far?",
+              "options": {
+                "A": "The tool interface; it still needs call_tool with CONV-3 to request the registered value.",
+                "B": "The CONV-3 registered value, because listing a tool also runs it.",
+                "C": "Every machine record, because discovery loads all tool data."
+              },
+              "correct": "A",
+              "explanation": "Discovery describes an available capability. It does not supply its result. A separate call_tool request carries the chosen tool name and machine_id.",
+              "hint1": "Think of a catalogue entry and an item you have actually requested.",
+              "hint2": "list_tools has no machine_id argument here. call_tool supplies {\"machine_id\": \"CONV-3\"}.",
+              "estimated_seconds": 60,
+              "required": true
+            }
+          },
+          {
+            "id": "t08.mcp_wrapper",
+            "title": "Wrap the tested function instead of rewriting it",
+            "logic": "The server is an interface around a function we already trust enough to test. Its wrapper should not create a second source of specification data.",
+            "explanation": "MCPServer creates the server object. @server.tool registers the following function; it does not run it immediately. The return annotation dict[str, Any] and structured_output=True request structured output. The alias read_spec refers to the existing reader, avoiding an accidental call back to the wrapper itself. Known business failures become ToolError rather than successful-looking text. Use the lecture implementation to understand the pattern, then complete the seminar wrapper yourself.",
+            "worked_example": "A CONV-3 request reaches read_spec and returns its source and reference value. A nonexistent machine reaches the error path. Both paths tell the client what actually happened.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "mcp_server.py",
+                "symbol": "get_machine_spec",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              29
+            ]
+          },
+          {
+            "id": "t08.mcp_results",
+            "title": "Structured results and honest failure signals",
+            "logic": "A string that looks like JSON is still text. A structured result lets the application inspect fields without guessing from a sentence.",
+            "explanation": "unpack_result first checks is_error. If it is true, the course raises a tool failure instead of treating the message as data. Next it requires a structured_content dictionary and validates our ToolResult envelope. status, data, source, version and error are this seminar's field names, not mandatory fields for every MCP server. The lecture uses an ok-based envelope, so do not interchange their keys.",
+            "worked_example": "Connection failure, unsupported protocol/schema, tool failure and an incorrect final model answer are different problems. A correct structured tool result is evidence to check the answer against, not a guarantee that the answer is correct.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "mcp_backend.py",
+                "symbol": "unpack_result",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              17,
+              33
+            ],
+            "check": {
+              "id": "mcp_result_check",
+              "type": "mcq",
+              "activity": "Inspect a failure response",
+              "prompt": "An MCP reply has is_error=True. Its text mentions \"85 C\", but no valid structured result was confirmed. What should our client do?",
+              "options": {
+                "A": "Extract 85 and report a successful specification lookup.",
+                "B": "Ask the model to guess whether the number is probably correct.",
+                "C": "Keep the failure and report that no specification value was confirmed."
+              },
+              "correct": "C",
+              "explanation": "unpack_result checks is_error before using data. An error message containing a number is not evidence of a successful tool result. Preserve the failure for diagnosis.",
+              "hint1": "Which field tells the client whether the operation reported a failure?",
+              "hint2": "The first branch of unpack_result raises ToolFailure when is_error is true. It never reaches structured-content validation on that path.",
+              "estimated_seconds": 60,
+              "required": true
+            }
+          },
+          {
+            "id": "t08.mcp_bridge",
+            "title": "Discovered metadata still needs an application decision",
+            "logic": "The model does not automatically see every tool advertised by a server. The host decides which definitions to offer and which requests to allow.",
+            "explanation": "adapt_spec_tool accepts only our expected specification tool and simple machine_id schema. It rejects unsupported schema shapes instead of silently dropping constraints. It then forms the nested function definition used by DeepSeek. This is a deliberately narrow teaching adapter, not a universal schema converter. Local validation and permission checks remain in the executor after discovery.",
+            "worked_example": "Function calling proposes the action; MCP carries the app-to-provider request. Comparing local and MCP routes should compare the actual offered definitions too: their descriptions or schema details may differ unless deliberately normalized.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "mcp_backend.py",
+                "symbol": "adapt_spec_tool",
+                "slice_start": 0,
+                "max_lines": 9
+              },
+              {
+                "pack": "seminar",
+                "file": "mcp_backend.py",
+                "symbol": "adapt_spec_tool",
+                "slice_start": 9,
+                "max_lines": 6
+              }
+            ],
+            "slides": [
+              31,
+              34
+            ]
+          },
+          {
+            "id": "t08.mcp_resource",
+            "title": "Reading a resource does not put it in model context",
+            "logic": "A tool is invoked with arguments. A resource is content read through a resource interface. The difference is not simply whether data changes: our specification tool only reads.",
+            "explanation": "The lecture resource returns a short CONV-3 reference note. Reading that URI obtains content for the host. The host still has to select it and include it in a model request if it should affect the answer. That explicit selection is also why merely adding a resource is not a complete RAG system. We can now build and test the seminar wrapper before reconnecting DeepSeek.",
+            "worked_example": "A resource can be present on a server while the model never receives it. A client-only resource test confirms retrieval, not a model explanation or an autonomous agent loop.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "mcp_server.py",
+                "symbol": "conv3_spec_note",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              26,
+              32
+            ],
+            "check": {
+              "id": "mcp_context_check",
+              "type": "mcq",
+              "activity": "Find the missing connection",
+              "prompt": "The host reads the CONV-3 reference-note resource successfully, but sends DeepSeek only the original user question. Why can the model still lack the note?",
+              "options": {
+                "A": "Reading any resource automatically updates the model weights.",
+                "B": "The host must select the relevant content and include it in a model request.",
+                "C": "The server must rename the resource as a tool before any model can use its text."
+              },
+              "correct": "B",
+              "explanation": "The resource response reaches the host. It is not automatically added to a model request. The host must decide what content belongs in that request; successful retrieval alone does not establish model context.",
+              "hint1": "Follow where the resource text is stored after read_resource returns.",
+              "hint2": "Compare what the host received with the messages it sent to DeepSeek. Content absent from those messages has not been supplied by this read.",
+              "estimated_seconds": 60,
+              "required": true
+            }
+          }
+        ],
+        "practice": [
+          {
+            "id": "t08.mcp_need",
+            "title": "Why not just call the Python function?",
+            "logic": "For one small application with a few local functions, direct function calling can be enough. MCP is optional; adding it does not make a model smarter.",
+            "explanation": "Our local tool list is prepared in tool_definitions.py. A second application could reuse that Python package, but another language or process needs an agreed interface. MCP, the Model Context Protocol, standardizes messages for discovering and using capabilities. This can reduce separate connection code across applications. The function still performs the same narrow job.",
+            "worked_example": "Keep the local route when it is the simplest fit. Consider MCP when a tool provider should be independently connected, discovered and reused by compatible applications. These are design benefits, not proof that every project needs MCP.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "tool_definitions.py",
+                "symbol": "model_tools",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              21,
+              22,
+              23,
+              35
+            ]
+          },
+          {
+            "id": "t08.mcp_roles",
+            "title": "Three roles, two different connections",
+            "logic": "Function calling links the model to its application. MCP links an application client to a tool server. They describe different connections in the same workflow.",
+            "explanation": "The Host is the whole assistant application. Its Client speaks MCP to a Server that offers a function. In app.py, routes chooses either a local function or an MCPBackend. async with opens the connection for this block and closes it afterward. DeepSeek receives model API requests; it does not connect directly to the local server. A client can test the server with no model present.",
+            "worked_example": "Student -> host -> DeepSeek proposal -> host validation -> MCP client -> server function -> result -> host -> DeepSeek explanation. On the local route, the middle client/server connection becomes an ordinary function call.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "app.py",
+                "symbol": "routes",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              24,
+              27
+            ],
+            "check": {
+              "id": "mcp_roles_check",
+              "type": "mcq",
+              "activity": "Trace the next hand-off",
+              "prompt": "DeepSeek proposes get_machine_spec for CONV-3. On the MCP route, which sequence reaches the Python function?",
+              "options": {
+                "A": "DeepSeek connects directly to the server through stdio.",
+                "B": "The host checks the request, then its MCP client calls the server tool.",
+                "C": "The parameter schema runs the function as soon as the model reads it."
+              },
+              "correct": "B",
+              "explanation": "The model proposes a request. The host checks it and owns the MCP client. The server receives the client request and runs its registered function.",
+              "hint1": "Separate the model-to-application connection from the application-to-tool connection.",
+              "hint2": "In app.py, the host opens MCPBackend. The model API does not open that local connection.",
+              "estimated_seconds": 60,
+              "required": true
+            }
+          },
+          {
+            "id": "t08.mcp_process",
+            "title": "Local messages and a deliberately limited environment",
+            "logic": "A process is a running program. Our client starts a separate Python program for the server and exchanges messages through its input and output streams. This transport is called stdio.",
+            "explanation": "server_parameters selects the same Python interpreter and the server script. Its environment allowlist does not intentionally pass DEEPSEEK_API_KEY. The specification reader has no need for that key. This reduces unnecessary credential exposure, but a separate process under the same user is not an automatic file-permission sandbox. Keep stdout for protocol messages and send diagnostic logs to stderr. No HTTP port or GPU is required here.",
+            "worked_example": "The model client needs the DeepSeek key; the local register-reading server does not. These responsibilities can be separated without claiming that MCP itself grants or enforces all permissions.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "mcp_backend.py",
+                "symbol": "server_parameters",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              28,
+              34
+            ]
+          },
+          {
+            "id": "t08.mcp_discovery",
+            "title": "Discover a tool before requesting its result",
+            "logic": "A catalogue describes what can be requested. It is not the requested equipment data. Discovering tools does not execute all of them.",
+            "explanation": "Read the lecture client: list_tools asks for names, descriptions and argument schemas. call_tool names one function and supplies an argument dictionary. await means wait for that operation to finish before using its result. The known machine should return a structured record; an unknown machine should produce an explicit error. This independent check separates connection problems from model-selection problems.",
+            "worked_example": "list_tools can tell us that get_machine_spec accepts machine_id. Only call_tool(\"get_machine_spec\", {\"machine_id\":\"CONV-3\"}) asks the server to read CONV-3.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "check_server.py",
+                "symbol": "main",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              25,
+              30
+            ],
+            "check": {
+              "id": "mcp_discovery_check",
+              "type": "mcq",
+              "activity": "Predict the available information",
+              "prompt": "The client has completed only await client.list_tools(). It sees get_machine_spec and its machine_id input. What has it obtained so far?",
+              "options": {
+                "A": "The tool interface; it still needs call_tool with CONV-3 to request the registered value.",
+                "B": "The CONV-3 registered value, because listing a tool also runs it.",
+                "C": "Every machine record, because discovery loads all tool data."
+              },
+              "correct": "A",
+              "explanation": "Discovery describes an available capability. It does not supply its result. A separate call_tool request carries the chosen tool name and machine_id.",
+              "hint1": "Think of a catalogue entry and an item you have actually requested.",
+              "hint2": "list_tools has no machine_id argument here. call_tool supplies {\"machine_id\": \"CONV-3\"}.",
+              "estimated_seconds": 60,
+              "required": true
+            }
+          },
+          {
+            "id": "t08.mcp_wrapper",
+            "title": "Wrap the tested function instead of rewriting it",
+            "logic": "The server is an interface around a function we already trust enough to test. Its wrapper should not create a second source of specification data.",
+            "explanation": "MCPServer creates the server object. @server.tool registers the following function; it does not run it immediately. The return annotation dict[str, Any] and structured_output=True request structured output. The alias read_spec refers to the existing reader, avoiding an accidental call back to the wrapper itself. Known business failures become ToolError rather than successful-looking text. Use the lecture implementation to understand the pattern, then complete the seminar wrapper yourself.",
+            "worked_example": "A CONV-3 request reaches read_spec and returns its source and reference value. A nonexistent machine reaches the error path. Both paths tell the client what actually happened.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "mcp_server.py",
+                "symbol": "get_machine_spec",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              29
+            ]
+          },
+          {
+            "id": "t08.mcp_results",
+            "title": "Structured results and honest failure signals",
+            "logic": "A string that looks like JSON is still text. A structured result lets the application inspect fields without guessing from a sentence.",
+            "explanation": "unpack_result first checks is_error. If it is true, the course raises a tool failure instead of treating the message as data. Next it requires a structured_content dictionary and validates our ToolResult envelope. status, data, source, version and error are this seminar's field names, not mandatory fields for every MCP server. The lecture uses an ok-based envelope, so do not interchange their keys.",
+            "worked_example": "Connection failure, unsupported protocol/schema, tool failure and an incorrect final model answer are different problems. A correct structured tool result is evidence to check the answer against, not a guarantee that the answer is correct.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "mcp_backend.py",
+                "symbol": "unpack_result",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              17,
+              33
+            ],
+            "check": {
+              "id": "mcp_result_check",
+              "type": "mcq",
+              "activity": "Inspect a failure response",
+              "prompt": "An MCP reply has is_error=True. Its text mentions \"85 C\", but no valid structured result was confirmed. What should our client do?",
+              "options": {
+                "A": "Extract 85 and report a successful specification lookup.",
+                "B": "Ask the model to guess whether the number is probably correct.",
+                "C": "Keep the failure and report that no specification value was confirmed."
+              },
+              "correct": "C",
+              "explanation": "unpack_result checks is_error before using data. An error message containing a number is not evidence of a successful tool result. Preserve the failure for diagnosis.",
+              "hint1": "Which field tells the client whether the operation reported a failure?",
+              "hint2": "The first branch of unpack_result raises ToolFailure when is_error is true. It never reaches structured-content validation on that path.",
+              "estimated_seconds": 60,
+              "required": true
+            }
+          },
+          {
+            "id": "t08.mcp_bridge",
+            "title": "Discovered metadata still needs an application decision",
+            "logic": "The model does not automatically see every tool advertised by a server. The host decides which definitions to offer and which requests to allow.",
+            "explanation": "adapt_spec_tool accepts only our expected specification tool and simple machine_id schema. It rejects unsupported schema shapes instead of silently dropping constraints. It then forms the nested function definition used by DeepSeek. This is a deliberately narrow teaching adapter, not a universal schema converter. Local validation and permission checks remain in the executor after discovery.",
+            "worked_example": "Function calling proposes the action; MCP carries the app-to-provider request. Comparing local and MCP routes should compare the actual offered definitions too: their descriptions or schema details may differ unless deliberately normalized.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "mcp_backend.py",
+                "symbol": "adapt_spec_tool",
+                "slice_start": 0,
+                "max_lines": 9
+              },
+              {
+                "pack": "seminar",
+                "file": "mcp_backend.py",
+                "symbol": "adapt_spec_tool",
+                "slice_start": 9,
+                "max_lines": 6
+              }
+            ],
+            "slides": [
+              31,
+              34
+            ]
+          },
+          {
+            "id": "t08.mcp_resource",
+            "title": "Reading a resource does not put it in model context",
+            "logic": "A tool is invoked with arguments. A resource is content read through a resource interface. The difference is not simply whether data changes: our specification tool only reads.",
+            "explanation": "The lecture resource returns a short CONV-3 reference note. Reading that URI obtains content for the host. The host still has to select it and include it in a model request if it should affect the answer. That explicit selection is also why merely adding a resource is not a complete RAG system. We can now build and test the seminar wrapper before reconnecting DeepSeek.",
+            "worked_example": "A resource can be present on a server while the model never receives it. A client-only resource test confirms retrieval, not a model explanation or an autonomous agent loop.",
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "mcp_server.py",
+                "symbol": "conv3_spec_note",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              26,
+              32
+            ],
+            "check": {
+              "id": "mcp_context_check",
+              "type": "mcq",
+              "activity": "Find the missing connection",
+              "prompt": "The host reads the CONV-3 reference-note resource successfully, but sends DeepSeek only the original user question. Why can the model still lack the note?",
+              "options": {
+                "A": "Reading any resource automatically updates the model weights.",
+                "B": "The host must select the relevant content and include it in a model request.",
+                "C": "The server must rename the resource as a tool before any model can use its text."
+              },
+              "correct": "B",
+              "explanation": "The resource response reaches the host. It is not automatically added to a model request. The host must decide what content belongs in that request; successful retrieval alone does not establish model context.",
+              "hint1": "Follow where the resource text is stored after read_resource returns.",
+              "hint2": "Compare what the host received with the messages it sent to DeepSeek. Content absent from those messages has not been supplied by this read.",
+              "estimated_seconds": 60,
+              "required": true
+            }
+          }
+        ]
+      },
+      "path_timing": {
+        "review": [
+          {
+            "id": "purpose_and_roles",
+            "title": "Why MCP and who connects to whom",
+            "minutes": 3,
+            "kind": "teaching",
+            "steps": [
+              "t08.mcp_need",
+              "t08.mcp_roles"
+            ]
+          },
+          {
+            "id": "roles_check",
+            "title": "Trace the next hand-off",
+            "minutes": 1,
+            "kind": "checkpoint",
+            "check_id": "mcp_roles_check"
+          },
+          {
+            "id": "process_and_discovery",
+            "title": "Local messages and tool discovery",
+            "minutes": 4,
+            "kind": "teaching",
+            "steps": [
+              "t08.mcp_process",
+              "t08.mcp_discovery"
+            ]
+          },
+          {
+            "id": "discovery_check",
+            "title": "Predict what discovery returns",
+            "minutes": 1,
+            "kind": "checkpoint",
+            "check_id": "mcp_discovery_check"
+          },
+          {
+            "id": "wrapper_and_results",
+            "title": "The server wrapper and result checks",
+            "minutes": 4,
+            "kind": "teaching",
+            "steps": [
+              "t08.mcp_wrapper",
+              "t08.mcp_results"
+            ]
+          },
+          {
+            "id": "result_check",
+            "title": "Inspect a failure response",
+            "minutes": 1,
+            "kind": "checkpoint",
+            "check_id": "mcp_result_check"
+          },
+          {
+            "id": "adapter_and_context",
+            "title": "Select interfaces and resource context",
+            "minutes": 3,
+            "kind": "teaching",
+            "steps": [
+              "t08.mcp_bridge",
+              "t08.mcp_resource"
+            ]
+          },
+          {
+            "id": "context_check",
+            "title": "Find the missing context connection",
+            "minutes": 1,
+            "kind": "checkpoint",
+            "check_id": "mcp_context_check"
+          },
+          {
+            "id": "implementation",
+            "title": "Complete the wrapper, run tests and read the output",
+            "minutes": 7,
+            "kind": "exercise"
+          },
+          {
+            "id": "transfer",
+            "title": "Explain the full chain and check an unsupported conclusion",
+            "minutes": 3,
+            "kind": "final_checks"
+          }
+        ],
+        "practice": [
+          {
+            "id": "purpose_and_roles",
+            "title": "Why MCP and who connects to whom",
+            "minutes": 3,
+            "kind": "teaching",
+            "steps": [
+              "t08.mcp_need",
+              "t08.mcp_roles"
+            ]
+          },
+          {
+            "id": "roles_check",
+            "title": "Trace the next hand-off",
+            "minutes": 1,
+            "kind": "checkpoint",
+            "check_id": "mcp_roles_check"
+          },
+          {
+            "id": "process_and_discovery",
+            "title": "Local messages and tool discovery",
+            "minutes": 4,
+            "kind": "teaching",
+            "steps": [
+              "t08.mcp_process",
+              "t08.mcp_discovery"
+            ]
+          },
+          {
+            "id": "discovery_check",
+            "title": "Predict what discovery returns",
+            "minutes": 1,
+            "kind": "checkpoint",
+            "check_id": "mcp_discovery_check"
+          },
+          {
+            "id": "wrapper_and_results",
+            "title": "The server wrapper and result checks",
+            "minutes": 4,
+            "kind": "teaching",
+            "steps": [
+              "t08.mcp_wrapper",
+              "t08.mcp_results"
+            ]
+          },
+          {
+            "id": "result_check",
+            "title": "Inspect a failure response",
+            "minutes": 1,
+            "kind": "checkpoint",
+            "check_id": "mcp_result_check"
+          },
+          {
+            "id": "adapter_and_context",
+            "title": "Select interfaces and resource context",
+            "minutes": 3,
+            "kind": "teaching",
+            "steps": [
+              "t08.mcp_bridge",
+              "t08.mcp_resource"
+            ]
+          },
+          {
+            "id": "context_check",
+            "title": "Find the missing context connection",
+            "minutes": 1,
+            "kind": "checkpoint",
+            "check_id": "mcp_context_check"
+          },
+          {
+            "id": "implementation",
+            "title": "Complete the wrapper, run tests and read the output",
+            "minutes": 7,
+            "kind": "exercise"
+          },
+          {
+            "id": "transfer",
+            "title": "Explain the full chain and check an unsupported conclusion",
+            "minutes": 3,
+            "kind": "final_checks"
+          }
+        ]
+      },
+      "timing_blocks": [
+        {
+          "id": "purpose_and_roles",
+          "title": "Why MCP and who connects to whom",
+          "minutes": 3,
+          "kind": "teaching",
+          "steps": [
+            "t08.mcp_need",
+            "t08.mcp_roles"
+          ]
+        },
+        {
+          "id": "roles_check",
+          "title": "Trace the next hand-off",
+          "minutes": 1,
+          "kind": "checkpoint",
+          "check_id": "mcp_roles_check"
+        },
+        {
+          "id": "process_and_discovery",
+          "title": "Local messages and tool discovery",
+          "minutes": 4,
+          "kind": "teaching",
+          "steps": [
+            "t08.mcp_process",
+            "t08.mcp_discovery"
+          ]
+        },
+        {
+          "id": "discovery_check",
+          "title": "Predict what discovery returns",
+          "minutes": 1,
+          "kind": "checkpoint",
+          "check_id": "mcp_discovery_check"
+        },
+        {
+          "id": "wrapper_and_results",
+          "title": "The server wrapper and result checks",
+          "minutes": 4,
+          "kind": "teaching",
+          "steps": [
+            "t08.mcp_wrapper",
+            "t08.mcp_results"
+          ]
+        },
+        {
+          "id": "result_check",
+          "title": "Inspect a failure response",
+          "minutes": 1,
+          "kind": "checkpoint",
+          "check_id": "mcp_result_check"
+        },
+        {
+          "id": "adapter_and_context",
+          "title": "Select interfaces and resource context",
+          "minutes": 3,
+          "kind": "teaching",
+          "steps": [
+            "t08.mcp_bridge",
+            "t08.mcp_resource"
+          ]
+        },
+        {
+          "id": "context_check",
+          "title": "Find the missing context connection",
+          "minutes": 1,
+          "kind": "checkpoint",
+          "check_id": "mcp_context_check"
+        },
+        {
+          "id": "implementation",
+          "title": "Complete the wrapper, run tests and read the output",
+          "minutes": 7,
+          "kind": "exercise"
+        },
+        {
+          "id": "transfer",
+          "title": "Explain the full chain and check an unsupported conclusion",
+          "minutes": 3,
+          "kind": "final_checks"
+        }
+      ],
+      "timing_summary": {
+        "teaching_minutes": 14,
+        "checkpoint_minutes": 4,
+        "exercise_minutes": 7,
+        "final_check_minutes": 3,
+        "total_minutes": 28,
+        "note": "Planning targets for both routes. Checks replace uninterrupted lecture time; allow extra support when needed rather than skipping an unresolved check."
+      },
+      "checkpoint_policy": {
+        "maximum_concepts_between_checks": 2,
+        "count": 4,
+        "required_before_exercise": true,
+        "student_rule": "Wait for an actual response and save it. An incorrect answer cannot pass a student checkpoint. Give two gradual hints, then offer more hints or an answer explanation. After an answer explanation, require the learner to explain the idea in their own words and verify it.",
+        "progress_rule": "These are checks within task t08. They do not add completion weight or change the core total."
+      }
+    },
+    {
+      "id": "t09",
+      "title": "Connect MCP to the DeepSeek assistant",
+      "minutes": 5,
+      "practice_minutes": 5,
+      "weight": 10,
+      "purpose": "See the two interfaces working together in one trace.",
+      "logic": "Use the same CONV-3 specification question on local and MCP routes. Compare the offered definitions as well as the execution route; do not assume their descriptions and schemas are identical.",
+      "code_walkthrough": [
+        "MCPBackend.definition discovers the specification tool and adapts input_schema into the nested DeepSeek function.parameters.",
+        "The host offers that definition to the model. Discovery alone does not give the model access.",
+        "Executor routes only get_machine_spec to the MCP backend. Other tools remain local.",
+        "Compare events.route, source, version and data with task 6. Connection, tool and answer errors are different layers. No silent local fallback."
+      ],
+      "worked_answer": "A correct run shows provider=DeepSeek, route=mcp and the same CONV-3 registered reference. The model does not connect directly to stdio. The application owns the MCP client and returns the tool result to the model.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "What changed from the local run, and what stayed the same? Use the actual trace.",
+          "rubric": "Reference the actual route, source and result. Explain that function calling still proposes the tool while MCP changes the app-to-tool connection. Compare offered definitions instead of asserting identical model input."
+        }
+      ],
+      "code_refs": [
+        [
+          "mcp_backend.py",
+          "adapt_spec_tool"
+        ],
+        [
+          "app.py",
+          "routes"
+        ]
+      ],
+      "concepts": [],
+      "code_target": null,
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t09"
+        ]
+      ],
+      "planned_calls": 2,
+      "output_fields": "Inspect the actual report: distinguish tool-call arguments, execution events, tool envelope and final model explanation. Label expected examples and scripted replay explicitly.",
+      "hint1": "Describe what information goes in and what must come out.",
+      "hint2": "Trace one concrete input through the relevant lines before choosing an answer.",
+      "paths": {
+        "review": [
+          {
+            "id": "t09.slide_bridge",
+            "title": "Discovery is followed by an application decision",
+            "phase": "slide",
+            "logic": "The application decides what reaches the model and where an accepted request is routed.",
+            "explanation": "MCP discovery gives the host information about capabilities. The host still chooses which capabilities to offer to the model and how to adapt their schemas. Once the model proposes a request through Function Calling, the host checks it and uses its route table to reach the right implementation. This keeps responsibility in the application and allows local and MCP tools to work together.",
+            "worked_example": "Offering get_machine_spec through MCP can preserve its business purpose while changing its connection. Its discovered description or schema may differ from the local definition. We must inspect the actual offered interfaces before interpreting the comparison.",
+            "code_refs": [],
+            "slides": [
+              31
+            ],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week3_Lecture_Tools_FunctionCalling_MCP_v3.pptx",
+              "primary_slide": 31,
+              "title": "A discovered tool is not yet visible to the model",
+              "image": "slides/slide-31.png",
+              "related_slides": [],
+              "focus": "The application decides what reaches the model and where an accepted request is routed.",
+              "visual_walkthrough": [
+                "Follow the five numbered actions: fetch the catalogue, filter it, convert allowed definitions, receive a model request, then route it to the right client.",
+                "Use the mapping table to connect name and description directly, and inputSchema to the model API's parameters field.",
+                "Notice that the owning server is kept inside the application for routing. It is not a magic instruction that lets the model connect itself.",
+                "Read the route table: the specification tool can use an MCP client while the maintenance lookup remains a local function."
+              ],
+              "explanation": "MCP discovery gives the host information about capabilities. The host still chooses which capabilities to offer to the model and how to adapt their schemas. Once the model proposes a request through Function Calling, the host checks it and uses its route table to reach the right implementation. This keeps responsibility in the application and allows local and MCP tools to work together.",
+              "example": "Offering get_machine_spec through MCP can preserve its business purpose while changing its connection. Its discovered description or schema may differ from the local definition. We must inspect the actual offered interfaces before interpreting the comparison.",
+              "code_bridge": "Inspect app.py::execute where the discovered definition replaces the local specification entry, then follow MCPBackend.call_spec. Compare the saved tool_interfaces.json and actual traces.",
+              "provider_note": "The slide gives conceptual field mapping. The current adapter builds a nested DeepSeek function object and rejects unsupported schema shapes; it is not a universal converter."
+            },
+            "presentation": "Show the original slide image first. Explain the visible idea in plain English, trace the example, and only then introduce the named code bridge. Do not begin this step with a source file."
+          },
+          {
+            "id": "t09.offered_definitions",
+            "title": "Check the interface before comparing routes",
+            "logic": "A fair comparison changes the tool connection while keeping the requested business capability clear.",
+            "explanation": "Read routes: the MCP backend returns a callable and a discovered definition. execute replaces the local get_machine_spec definition before sending tools to DeepSeek. The other tools stay local. The trace saves tool_definitions, the actual list offered to the model. The task also saves tool_interfaces.json with local_definition_now, mcp_definition_sent and comparison flags. Check the local snapshot against the earlier local trace if its description has since been edited. Compare names, descriptions and parameter schemas; do not claim identical model input without checking.",
+            "worked_example": "Different transport does not imply different intelligence. A changed description can affect selection, so record it when interpreting the comparison.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "app.py",
+                "symbol": "execute",
+                "slice_start": 19,
+                "max_lines": 7
+              }
+            ],
+            "slides": [
+              31
+            ],
+            "phase": "code"
+          },
+          {
+            "id": "t09.trace_route",
+            "title": "Follow the result through the new connection",
+            "logic": "MCP should change how the application reaches the specification function, not the meaning of its result.",
+            "explanation": "Executor selects remote_spec for the registered specification tool when that route is configured. MCPBackend.call_spec checks the ID, calls the server and validates the structured result. Inspect events.route, source, version and machine_id beside the previous local trace. A connection error must remain an error; it must not silently run a local substitute.",
+            "worked_example": "For the same CONV-3 reference request, compare the observed business data and final explanation. The real trace, not the route name alone, establishes what ran.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "mcp_backend.py",
+                "symbol": "MCPBackend.call_spec",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              33,
+              34,
+              37
+            ],
+            "phase": "code"
+          }
+        ],
+        "practice": [
+          {
+            "id": "t09.offered_definitions",
+            "title": "Check the interface before comparing routes",
+            "logic": "A fair comparison changes the tool connection while keeping the requested business capability clear.",
+            "explanation": "Read routes: the MCP backend returns a callable and a discovered definition. execute replaces the local get_machine_spec definition before sending tools to DeepSeek. The other tools stay local. The trace saves tool_definitions, the actual list offered to the model. The task also saves tool_interfaces.json with local_definition_now, mcp_definition_sent and comparison flags. Check the local snapshot against the earlier local trace if its description has since been edited. Compare names, descriptions and parameter schemas; do not claim identical model input without checking.",
+            "worked_example": "Different transport does not imply different intelligence. A changed description can affect selection, so record it when interpreting the comparison.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "app.py",
+                "symbol": "execute",
+                "slice_start": 19,
+                "max_lines": 7
+              }
+            ],
+            "slides": [
+              31
+            ]
+          },
+          {
+            "id": "t09.trace_route",
+            "title": "Follow the result through the new connection",
+            "logic": "MCP should change how the application reaches the specification function, not the meaning of its result.",
+            "explanation": "Executor selects remote_spec for the registered specification tool when that route is configured. MCPBackend.call_spec checks the ID, calls the server and validates the structured result. Inspect events.route, source, version and machine_id beside the previous local trace. A connection error must remain an error; it must not silently run a local substitute.",
+            "worked_example": "For the same CONV-3 reference request, compare the observed business data and final explanation. The real trace, not the route name alone, establishes what ran.",
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "mcp_backend.py",
+                "symbol": "MCPBackend.call_spec",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "slides": [
+              33,
+              34,
+              37
+            ]
+          }
+        ]
+      },
+      "review_time_plan": {
+        "slides_and_concepts": 1,
+        "code_explanation": 1,
+        "practice_and_checks": 3
+      }
+    },
+    {
+      "id": "t10",
+      "title": "Explain the complete chain and save your work",
+      "minutes": 3,
+      "practice_minutes": 3,
+      "weight": 10,
+      "purpose": "Connect the ideas and choose what to practise next.",
+      "logic": "Review model proposal, application validation, execution, tool output and checked explanation. MCP changes the app-to-tool connection, not responsibility for verification.",
+      "code_walkthrough": [
+        "Use the saved reports and your own code as evidence.",
+        "Return to any completed task through revisit; its discussion can be replayed without resetting completion.",
+        "Use a new learning session for fresh code exercises. Finish with one short explanation now; the three-question reflection command remains available after class."
+      ],
+      "worked_answer": "A trustworthy workflow checks intent, arguments, permissions, execution status, provenance and the final answer. Passing a schema does not prove the user received the right answer.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "Describe the full CONV-3 request path, one failure you would check for, and one thing you want to practise next.",
+          "rubric": "Include model/app/tool responsibilities, MCP placement, a concrete failure check and a next learning step."
+        }
+      ],
+      "code_refs": [],
+      "concepts": [],
+      "code_target": null,
+      "requires_teaching": true,
+      "requires_prediction": false,
+      "commands": [],
+      "planned_calls": 0,
+      "output_fields": "Inspect the actual report: distinguish tool-call arguments, execution events, tool envelope and final model explanation. Label expected examples and scripted replay explicitly.",
+      "hint1": "Describe what information goes in and what must come out.",
+      "hint2": "Trace one concrete input through the relevant lines before choosing an answer.",
+      "paths": {
+        "review": [
+          {
+            "id": "t10.slide_trace",
+            "title": "Read the evidence chain back to front",
+            "phase": "slide",
+            "logic": "A useful engineering answer lets us trace each claim to a result and the request that produced it.",
+            "explanation": "Traceability means being able to follow a claim back to the evidence that supports it. It is not the same as a long log: the important links must agree. Our course uses synthetic records, so our conclusions inherit that scope. Function Calling and MCP make particular operations possible; they do not prove a complete diagnosis or plan and execute an unlimited sequence of actions.",
+            "worked_example": "The slide's example points to EV-104 and the recorded cooling-fan replacement in teaching_db_v1. For your own work, use a result from your actual saved run, name its source and explain one check that could still fail.",
+            "code_refs": [],
+            "slides": [
+              37,
+              38
+            ],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week3_Lecture_Tools_FunctionCalling_MCP_v3.pptx",
+              "primary_slide": 37,
+              "title": "The answer now traces back to the record it came from",
+              "image": "slides/slide-37.png",
+              "related_slides": [
+                {
+                  "number": 38,
+                  "title": "Multi-step tasks need the Agent Loop of Week 4"
+                }
+              ],
+              "focus": "A useful engineering answer lets us trace each claim to a result and the request that produced it.",
+              "visual_walkthrough": [
+                "Start with the quoted answer about the cooling fan. Locate its record ID, service date and named source.",
+                "Move backward through the trace table: returned record, execution site, validation, model choice and original user request.",
+                "Check that every row refers to the same machine and purpose. A broken link tells us what must be investigated.",
+                "Read the scope note: latest in the teaching database is a narrower claim than latest in a real plant. Then use slide 38 to identify the missing loop for a multi-call request."
+              ],
+              "explanation": "Traceability means being able to follow a claim back to the evidence that supports it. It is not the same as a long log: the important links must agree. Our course uses synthetic records, so our conclusions inherit that scope. Function Calling and MCP make particular operations possible; they do not prove a complete diagnosis or plan and execute an unlimited sequence of actions.",
+              "example": "The slide's example points to EV-104 and the recorded cooling-fan replacement in teaching_db_v1. For your own work, use a result from your actual saved run, name its source and explain one check that could still fail.",
+              "code_bridge": "Return to the saved seminar trace and your own functions. Explain the full request path, then state one next learning goal. A multi-step dependency belongs to the Week 4 loop."
+            },
+            "presentation": "Show the original slide image first. Explain the visible idea in plain English, trace the example, and only then introduce the named code bridge. Do not begin this step with a source file."
+          },
+          {
+            "id": "t10.recap",
+            "title": "Explain the chain in your own words",
+            "logic": "The main achievement is connecting a model proposal to inspected engineering evidence.",
+            "explanation": "Use one saved trace to tell the story: the host offers definitions, the model proposes a call, the application validates and dispatches it, a function returns data, and the model explains it. Locate MCP in that story if the remote route was used. Name one check that a schema cannot perform. Save a short next-learning goal, then choose whether to revisit a task or explore an optional topic.",
+            "worked_example": "A valid response about the wrong machine is still the wrong answer. MCP standardizes a connection; it does not replace intent checks, permissions or result review.",
+            "code_refs": [],
+            "slides": [
+              37,
+              38,
+              39,
+              40
+            ],
+            "phase": "application"
+          }
+        ],
+        "practice": [
+          {
+            "id": "t10.recap",
+            "title": "Explain the chain in your own words",
+            "logic": "The main achievement is connecting a model proposal to inspected engineering evidence.",
+            "explanation": "Use one saved trace to tell the story: the host offers definitions, the model proposes a call, the application validates and dispatches it, a function returns data, and the model explains it. Locate MCP in that story if the remote route was used. Name one check that a schema cannot perform. Save a short next-learning goal, then choose whether to revisit a task or explore an optional topic.",
+            "worked_example": "A valid response about the wrong machine is still the wrong answer. MCP standardizes a connection; it does not replace intent checks, permissions or result review.",
+            "code_refs": [],
+            "slides": [
+              37,
+              38,
+              39,
+              40
+            ]
+          }
+        ]
+      },
+      "review_time_plan": {
+        "slides_and_concepts": 1,
+        "code_explanation": 0,
+        "practice_and_checks": 2
+      }
+    }
+  ],
+  "extensions": [
+    {
+      "id": "cases",
+      "title": "Complete seven-case evaluation",
+      "purpose": "Check missing inputs, concepts, denied writes and unknown devices.",
+      "planned_calls": 14,
+      "commands": [
+        [
+          "evaluate.py",
+          "--mode",
+          "live",
+          "--route",
+          "local"
+        ]
+      ],
+      "code_refs": [],
+      "guide": "Explain the purpose, predict, run, inspect actual outputs and discuss limitations. Optional work never changes core completion."
+    },
+    {
+      "id": "boundaries",
+      "title": "More boundary tests",
+      "purpose": "Inspect timezones, row limits, permissions and output validation.",
+      "planned_calls": 0,
+      "commands": [
+        [
+          "-m",
+          "pytest",
+          "tests/test_tools.py",
+          "-q"
+        ]
+      ],
+      "code_refs": [],
+      "guide": "Explain the purpose, predict, run, inspect actual outputs and discuss limitations. Optional work never changes core completion."
+    },
+    {
+      "id": "resources",
+      "title": "MCP resources and context",
+      "purpose": "Read the manual explicitly and explain why it is not automatically in model context.",
+      "planned_calls": 0,
+      "commands": [
+        [
+          "mcp_client.py",
+          "--read-resource"
+        ]
+      ],
+      "code_refs": [],
+      "guide": "Explain the purpose, predict, run, inspect actual outputs and discuss limitations. Optional work never changes core completion."
+    }
+  ],
+  "mode_cards": [
+    {
+      "id": "review",
+      "label": "Review lecture + code",
+      "description": "Look back at the actual PPT slides, explain their diagrams and examples in plain English, then walk through the matching lecture code and apply it in the seminar."
+    },
+    {
+      "id": "practice",
+      "label": "Start seminar practice",
+      "description": "Start the CONV-3 temperature-tool exercises. Learn the concepts and code needed for each task as you go."
+    }
+  ],
+  "mode_common_note": "Both paths take two 50-minute sessions and include detailed code explanations, optional foundations, the full MCP lesson before practice, and the same core learning checks.",
+  "presentation": {
+    "title_max_words": 9,
+    "code_lines_per_excerpt": 12,
+    "one_active_question": true,
+    "concept_before_code": true,
+    "choices": "Use real host choice cards whenever supported; never render fake buttons. Use an honest numbered fallback only if cards are unavailable.",
+    "sequence": [
+      "short title",
+      "task and purpose when starting a task",
+      "one concept",
+      "one source excerpt",
+      "explain the relevant lines",
+      "one next action",
+      "exact progress footer"
+    ],
+    "output_labels": [
+      "Observed result",
+      "Expected example",
+      "Scripted replay",
+      "Instructor walkthrough"
+    ],
+    "avoid": [
+      "full-file dumps",
+      "duplicated question gates",
+      "internal rubric text",
+      "repeating the entire course plan",
+      "exposing helper JSON directly"
+    ]
+  },
+  "slide_source": {
+    "file": "EEEE4149_Week3_Lecture_Tools_FunctionCalling_MCP_v3.pptx",
+    "numbering": "Presentation order, starting at 1.",
+    "primary_slides": [
+      2,
+      7,
+      9,
+      16,
+      15,
+      8,
+      20,
+      31,
+      37
+    ],
+    "note": "Original slide excerpts support review. Current DeepSeek API and MCP code are the runnable implementation; provider/version differences are explained at the relevant bridge."
+  }
+}

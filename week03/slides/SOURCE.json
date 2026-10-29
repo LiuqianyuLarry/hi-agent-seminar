@@ -1,0 +1,44 @@
+{
+  "source_deck": "EEEE4149_Week3_Lecture_Tools_FunctionCalling_MCP_v3.pptx",
+  "source_sha256": "a6762bf4693494d70bb373ac4f77365b4684b057f4e4c2e97f847e48341c9e7b",
+  "source_slide_count": 40,
+  "method": "PowerPoint read-only PNG export, 1280 x 720",
+  "images": {
+    "slide-02.png": {
+      "slide_number": 2,
+      "sha256": "53839781f8fa443a790e142566be9bbd50e149593b3f3496dac3d185bc00cc73"
+    },
+    "slide-07.png": {
+      "slide_number": 7,
+      "sha256": "70a33fe18a4b273a91bb78d11d287fa7948188549fd8e194f8559d2017d44d8c"
+    },
+    "slide-09.png": {
+      "slide_number": 9,
+      "sha256": "7cf7c284910927df55f4313e00d00cbdab75d839a13af9eb8ccd0e12cfff7e30"
+    },
+    "slide-16.png": {
+      "slide_number": 16,
+      "sha256": "3b26f495f3e3badbf9023250992fed3853e69740e944455a47c0f3cd87ce2dc8"
+    },
+    "slide-15.png": {
+      "slide_number": 15,
+      "sha256": "4e56dfcbe1af0e8f71c8ed5e90d1c8259c9cf944ce6f0ddd54fa69672b7197f6"
+    },
+    "slide-08.png": {
+      "slide_number": 8,
+      "sha256": "bbe8bbf691b068eeb6fc1b6478d4e157996e093c32db00f958ddb35bd95e9316"
+    },
+    "slide-20.png": {
+      "slide_number": 20,
+      "sha256": "579793f54516e6a4a7cc84003faeba37d566da2e30b2e456a9908d951c28796c"
+    },
+    "slide-31.png": {
+      "slide_number": 31,
+      "sha256": "860c0de92cbb5b0fb7233e2c6dcccb866aa6b6202a48fa98d949454423762f85"
+    },
+    "slide-37.png": {
+      "slide_number": 37,
+      "sha256": "4d4facb0af01ae65bf015214a8f944c64c2cf5607409d6f4c85ad7f48e2e1b9b"
+    }
+  }
+}

@@ -1,4 +1,38 @@
-# hi-agent-seminar 2.3.0
+# hi-agent-seminar 2.7.0
+
+An English EEEE4149 teaching plugin for Claude Code, with guided seminars for
+Weeks 1-3. Students make their own attempts, run real experiments with the mentor,
+and explain the results. Learning records and code stay in the student workspace.
+
+Week 3 covers CONV-3 tools, DeepSeek function calling and MCP in two 50-minute
+sessions. Choose **Review lecture + code** to look at the original PPT pages,
+understand their diagrams and examples, then trace the matching implementation.
+Choose **Start seminar practice** to enter the temperature-tool exercises with
+concept and code explanations as needed. Both routes include the full MCP lesson,
+four short checks between explanations, four coding tasks and observed-output
+reviews. Unfamiliar foundations have optional explanation cards.
+
+Start or resume Week 3 inside Claude Code:
+
+```text
+/hi-agent-seminar:start week03
+```
+
+If a saved course exists, choose **Continue saved progress**, **Start again from
+the beginning**, or **Choose an earlier learning session**. Starting again creates
+separate progress and fresh exercises; earlier work remains available. A started
+course keeps its saved lesson, so choose a new session to study a revised script.
+
+The course uses English unless the student explicitly requests a translation.
+When a learner is stuck, the mentor gives two gradual hints, then offers more
+hints or an answer explanation. After an answer explanation, the learner explains
+the idea in their own words before continuing.
+
+The Week 3 lecture and seminar code use DeepSeek Chat Completions. The OpenAI
+Python package is the compatible client library. Live experiments use a separate
+DeepSeek key and have a stated request budget; keys never belong in chat.
+
+## Earlier updates
 
 Version 2.3.0: Week 2 also supports students without
 CUDA. Complete a real local CPU experiment, analyse the teacher's real paired
@@ -18,11 +52,6 @@ Week 1 and Week 2 now use two progressive hints when a learner is stuck, followe
 by a choice of an answer explanation or more hints. After an answer explanation,
 the learner explains it in their own words before continuing. Support checkpoints
 use existing saved notes; previous learning records remain intact.
-
-An English EEEE4149 teaching plugin for Claude Code. Mentor Liu explains the code
-and terms before asking questions, runs the prepared experiments, and helps students
-interpret the actual output. Students write their own answers and prompts in chat.
-Chinese appears only when a student explicitly requests a Chinese translation.
 
 ## Install from GitHub
 
@@ -46,8 +75,8 @@ outside the plugin/repository, launch Claude Code there, and enter this in chat:
 /hi-agent-seminar:menu
 ```
 
-The menu offers Week 1 and Week 2 with separate progress and optional topics.
-Use the same student folder every time to resume either week.
+The menu offers Weeks 1-3 with separate progress and optional topics.
+Use the same student folder every time to resume your learning.
 
 ## Week 2: inside the model
 
@@ -163,7 +192,7 @@ claude plugin update hi-agent-seminar@hi-agent-seminar-marketplace
 If it points to another folder, inspect `claude plugin marketplace list` and update
 that source or use the explicit --plugin-dir loading method above. Do not assume
 editing source files changes an already installed cache. Restart the Claude Code
-session after an update. Confirm version 2.3.0 with `claude plugin list`.
+session after an update. Confirm version 2.7.0 with `claude plugin list`.
 
 Replace the whole plugin source folder with the extracted release folder, including
 the hidden .claude-plugin directory. Do not merge it into an old commands folder:
@@ -191,22 +220,22 @@ All commands begin with `/hi-agent-seminar:`.
 | Command | Purpose |
 | --- | --- |
 | `menu` | Browse weeks, saved progress and optional topics; start or continue learning |
-| `start [week01]` | Start a chosen week or resume the active week |
-| `status [week01]` | Show saved percentage and next step without advancing |
-| `review [week01]` | Answer three reflection questions; save answers and a code snapshot locally |
+| `start [week01, week02 or week03]` | Start a chosen week or resume the active week |
+| `status [week01, week02 or week03]` | Show saved percentage and next step without advancing |
+| `review [week01, week02 or week03]` | Answer three reflection questions; save answers and a code snapshot locally |
 | `help` | Show these five commands and usage guidance |
 
 In menu, choose a week, then Optional topics for sampling, reasoning, Memory, RAG,
 workflow/Agent comparison and extra cases. Each topic shows its own saved status.
 Browsing and short concept recaps do not start experiments or change progress.
 Practice requires the selected week's environment and your prediction and approval.
-Week 1 also needs private API-key setup; Week 2 runs locally. Optional progress
-does not change the core percentage.
+Weeks 1 and 3 need private API-key setup for live calls; Week 2 runs locally.
+Optional progress does not change the core percentage.
 
 Confirmed learning steps save automatically. Ask Mentor Liu in chat to save a
 pause note or export an existing learning report; no extra slash command is needed.
 The review command always means three reflections plus a code snapshot.
-Version 2.3.0 resumes existing v2 progress in the same workspace; it does not reset it.
+Version 2.7.0 resumes existing v2 progress in the same workspace; it does not reset it.
 
 Course selection and multiple-choice checks use genuine AskUserQuestion selectors
 when available in the host. Open questions and reflections remain ordinary typed

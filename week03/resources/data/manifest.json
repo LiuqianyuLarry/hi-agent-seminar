@@ -1,0 +1,7 @@
+{
+  "synthetic": true,
+  "machine": "CONV-3",
+  "build": "Run build_data.py to generate the local SQLite database and its checksums.",
+  "timezone": "+08:00",
+  "query_interval": "[start,end)"
+}

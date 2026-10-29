@@ -15,9 +15,9 @@ has its own setup and percentage. Show exactly these five commands and their use
 | Command | Purpose |
 | --- | --- |
 | /hi-agent-seminar:menu | Browse weeks, saved progress and optional topics |
-| /hi-agent-seminar:start [week01 or week02] | Start or resume the selected week |
-| /hi-agent-seminar:status [week01 or week02] | Show saved progress and the next step |
-| /hi-agent-seminar:review [week01 or week02] | Answer three reflections and save a local code snapshot |
+| /hi-agent-seminar:start [week01, week02 or week03] | Start or resume the selected week |
+| /hi-agent-seminar:status [week01, week02 or week03] | Show saved progress and the next step |
+| /hi-agent-seminar:review [week01, week02 or week03] | Answer three reflections and save a local code snapshot |
 | /hi-agent-seminar:help | Show this guide |
 
 Optional sampling, reasoning, Memory, RAG, workflow/Agent comparison and extra
@@ -38,3 +38,21 @@ one run per CPU/CUDA device. Without CUDA, complete a local CPU experiment and
 analyse the supplied real teacher CPU/CUDA data, then pass the understanding check
 to continue to 100%. Three repeats and full Batch scanning are optional
 inside Week 2's menu. Week 2 needs no API key. Week 1 records remain separate.
+
+
+Week 3 offers two distinct paths in the same 2 x 50-minute format:
+
+- Review lecture + code: original PPT pages explained through their diagrams and examples, then
+  actual CONV-3 maintenance-demo code and
+  the related temperature-tool exercises.
+- Start seminar practice: temperature-tool exercises with the necessary concept
+  and detailed code explanations as students need them.
+
+Both paths include the full MCP introduction before practice, optional foundation
+cards, and the same core learning checks. Native cards show these differences
+before students choose. Earlier records are preserved; a new session is needed
+to use a revised lesson when the saved session still uses an older snapshot.
+
+The four MCP mini-checks require actual learner responses before continuing.
+The mentor saves answers, hints and explanations so students can pause and resume
+without losing their place.

@@ -2,6 +2,31 @@
 description: Browse seminar weeks, continue learning, or choose optional topics
 ---
 
+After selecting a Week 3 learning session, show these native route cards with their
+full descriptions:
+
+- Review lecture + code: Look back at the actual PPT slides, explain their diagrams
+  and examples in plain English, then walk through the matching lecture code and
+  apply it in the seminar.
+- Start seminar practice: Start the CONV-3 temperature-tool exercises. Learn the
+  concepts and code needed for each task as you go.
+
+Common caption: Both paths take two 50-minute sessions. Both include detailed code
+explanations, optional foundation explanations, and the full MCP lesson before
+practice.
+
+Save study-mode after the actual choice. Read week03/INSTRUCTOR.md and
+week03/PRESENTATION.md, then use lesson-step for the selected route's next small
+fragment. Review first shows and explains slide_image/slide_review, then the
+matching lecture_demo code. Practice uses the seminar source directly. After
+teaching a fragment, record lesson-next with its exact ID and the actual
+explanation. Do not substitute the same walkthrough
+for both modes. Respect saved lesson/source snapshots; do not silently migrate
+old Week 3 answers. A fresh session offers the revised course while preserving
+older sessions. For an explicit revisit request, show that earlier content instead
+of redirecting to the next unfinished task. Load only the current fragment.
+
+
 Read `${CLAUDE_PLUGIN_ROOT}/persona.md`. Read MENTOR.md only after the student
 chooses learning or practice. Reuse unchanged instructions already in context.
 Use `${CLAUDE_PLUGIN_ROOT}/tutor.py` with Python 3.11+, the student's current
@@ -69,3 +94,7 @@ choice with concept-choice. Use diagram for the original Transformer module map,
 then teach logic, mathematics and source code in that order. Use write-code for
 the student's forward-method body. Week 2 has zero model API calls. Its measured
 local CPU/CUDA work still needs the student's approval before execution.
+
+Week 3 t08 has four required mini-checks between pairs of concepts. Use the
+lesson-answer/hint/solution/assess helpers and wait for real learner responses
+before lesson-next. A teaching acknowledgement alone cannot pass a check.

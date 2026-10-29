@@ -51,7 +51,7 @@ def resource_files(root, include_tests=False, include_visuals=False):
                 continue
             if name.lower().startswith(".env") or name.lower() in {"reference.md", "lesson.json", "progress.json", "credentials.json", "secrets.json"}:
                 continue
-            if path.suffix.lower() in ({".py", ".md", ".txt", ".json"} | ({".png", ".html"} if include_visuals else set())):
+            if path.suffix.lower() in ({".py", ".md", ".txt", ".json", ".csv", ".ipynb"} | ({".png", ".html"} if include_visuals else set())):
                 yield path
 
 
@@ -317,7 +317,7 @@ class Seminar:
                     "Student files exist without progress. Use a new workspace; these files were not overwritten.")
             source = child(self.root, self.week, "resources")
             require(source.is_dir(), "This lesson has no resource pack.")
-            files = list(resource_files(source, include_tests=self.week == "week02", include_visuals=self.week == "week02"))
+            files = list(resource_files(source, include_tests=self.week in ("week02", "week03"), include_visuals=self.week == "week02"))
             require(files, "Resource pack is empty.")
             self.resources.parent.mkdir(parents=True, exist_ok=True)
             ignore = child(self.base, ".gitignore")
@@ -789,14 +789,20 @@ class Seminar:
 # Week 2 adds local PyTorch teaching without changing Week 1's saved schema.
 sys.modules.setdefault("tutor", sys.modules[__name__])
 from week02_support import Week2Mixin
+from week03_support import Week3Mixin
 
 
 class Week2Seminar(Week2Mixin, Seminar):
     pass
 
 
+class Week3Seminar(Week3Mixin, Seminar):
+    pass
+
+
 def seminar_for(workspace, week="week01", root=ROOT, session=None):
-    return (Week2Seminar if week == "week02" else Seminar)(workspace, week, root=root, session=session)
+    cls = {"week02": Week2Seminar, "week03": Week3Seminar}.get(week, Seminar)
+    return cls(workspace, week, root=root, session=session)
 
 
 def compact_output(value):
@@ -818,7 +824,11 @@ def compact_output(value):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["list", "start", "restart", "sessions", "select-session", "status", "task", "code", "teach", "predict", "setup", "key-ready", "write-prompt", "run", "results", "explain", "answer", "assess", "complete", "save", "recover", "export", "review-questions", "review-answer", "review", "extension", "run-extension", "explain-extension", "concepts", "concept-choice", "diagram", "write-code", "reference-data", "reference-answer", "reference-assess"])
+    parser.add_argument("action", choices=["list", "start", "restart", "sessions", "select-session", "status", "task", "code", "teach", "predict", "setup", "key-ready", "write-prompt", "run", "results", "explain", "answer", "assess", "complete", "save", "recover", "export", "review-questions", "review-answer", "review", "extension", "run-extension", "explain-extension", "concepts", "concept-choice", "diagram", "write-code", "reference-data", "reference-answer", "reference-assess", "study-mode", "mcp-intro", "revisit", "lesson-step", "lesson-next", "lesson-answer", "lesson-hint", "lesson-solution", "lesson-assess"])
+    parser.add_argument("--step-id")
+    parser.add_argument("--code-offset",type=int,default=0)
+    parser.add_argument("--code-index",type=int,default=0)
+    parser.add_argument("--study-mode", choices=["review", "practice"], default="review")
     parser.add_argument("--reference-dir")
     parser.add_argument("--session")
     parser.add_argument("--workspace", default=str(Path.cwd()))
@@ -847,7 +857,18 @@ def main():
                         "Use a response-only .txt or .md file, not a credential or state file.")
                 require(args.input_file.stat().st_size <= 80000, "Response file is too large.")
                 args.text = args.input_file.read_text(encoding="utf-8")
-            if args.action in ("reference-data", "reference-answer", "reference-assess"):
+            if args.action in ("lesson-answer", "lesson-hint", "lesson-solution", "lesson-assess"):
+                require(week == "week03", "This action belongs to Week 3.")
+                method=getattr(seminar,args.action.replace('-','_'))
+                result=method(args.name,args.text,args.verdict) if args.action=='lesson-assess' else method(args.name,args.text)
+            elif args.action in ("lesson-step", "lesson-next"):
+                require(week == "week03", "This action belongs to Week 3.")
+                result = seminar.lesson_step(args.name,args.code_offset,args.code_index) if args.action == "lesson-step" else seminar.lesson_next(args.name,args.text)
+            elif args.action in ("study-mode", "mcp-intro", "revisit"):
+                require(week == "week03", "This action belongs to Week 3.")
+                result = (seminar.study_mode(args.study_mode) if args.action == "study-mode" else
+                          seminar.mcp_intro(args.text) if args.action == "mcp-intro" else seminar.revisit(args.task_id,args.step_id,args.code_offset,args.code_index))
+            elif args.action in ("reference-data", "reference-answer", "reference-assess"):
                 require(week == "week02", "Teacher device comparison belongs to Week 2.")
                 if args.action == "reference-data":
                     result = seminar.reference_data(args.reference_dir, args.text)
@@ -867,13 +888,13 @@ def main():
             elif args.action == "setup":
                 result = seminar.setup(args.python or sys.executable, install=args.install) if week == "week02" else seminar.setup(args.python or sys.executable)
             elif args.action in ("concepts", "diagram"):
-                require(week == "week02", "This action belongs to Week 2.")
+                require(week in ("week02", "week03") and (args.action != "diagram" or week == "week02"), "This action is unavailable for this week.")
                 result = getattr(seminar, args.action)()
             elif args.action == "concept-choice":
-                require(week == "week02", "Concept choices belong to Week 2.")
+                require(week in ("week02", "week03"), "Concept choices belong to Week 2 or Week 3.")
                 result = seminar.concept_choice(args.name, args.choice)
             elif args.action == "write-code":
-                require(week == "week02", "Code exercises belong to Week 2.")
+                require(week in ("week02", "week03"), "Code exercises belong to Week 2 or Week 3.")
                 result = seminar.write_code(args.name, args.text)
             elif args.action in ("code", "results"):
                 result = seminar.results(args.name, args.task_id) if week == "week02" and args.action == "results" else getattr(seminar, args.action)(args.name)

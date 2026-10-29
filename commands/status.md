@@ -1,6 +1,6 @@
 ---
 description: Show the active seminar and saved progress
-argument-hint: "[week01|week02]"
+argument-hint: "[week01|week02|week03]"
 ---
 
 Read `${CLAUDE_PLUGIN_ROOT}/persona.md`; this command does not need the full MENTOR.md.

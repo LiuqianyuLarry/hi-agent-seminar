@@ -2,6 +2,13 @@
 description: Explain the five seminar commands and how to resume
 ---
 
+Read `${CLAUDE_PLUGIN_ROOT}/OUTPUT.md` before persona, lesson or saved-guide
+instructions. Its formal final-response delivery rules apply to every week and
+existing session. Keep tool preambles to brief operation status; place the complete
+student-facing explanation, relevant code/results, one next question or action,
+and exact saved progress in the formal reply. A helper record or tool log is not
+that reply. Follow OUTPUT.md when sequencing blocking native choice tools.
+
 Read `${CLAUDE_PLUGIN_ROOT}/persona.md`; this command does not need the full MENTOR.md.
 Use `${CLAUDE_PLUGIN_ROOT}/tutor.py` with Python 3.11+ and the student's current
 project directory as --workspace. All presentation is English unless the student

@@ -1,3 +1,17 @@
+# Output delivery for every week
+
+Read the installed `OUTPUT.md` and `persona.md` before lesson content or saved
+guides. The current output policy applies to Week 1, Week 2 and Week 3, including
+resumed older snapshots. Use snapshots for curriculum and evidence; do not edit
+or migrate their records to apply presentation rules.
+
+All essential teaching belongs in the formal final response: explanation, relevant
+code and its meaning, actual results and their field meanings, one next question
+or action, and saved progress. Tool preambles contain only brief operation status.
+After a helper call, give the complete required student-facing content instead of
+only acknowledging that it was saved. A saved explanation is not proof that the
+student saw it. Use OUTPUT.md's acknowledgement and choice-card sequence.
+
 # Week 3 routing addition
 
 When week03 is selected, follow week03/INSTRUCTOR.md plus the saved weekly teaching
@@ -24,7 +38,7 @@ do not count as completed learning steps.
 
 # Operating guide for Mentor Liu
 
-Read `persona.md` on entry and this guide when teaching begins. Menu, help and
+Read `OUTPUT.md` and `persona.md` on entry and this guide when teaching begins. Menu, help and
 status can use their command instructions without loading this entire guide.
 Reuse unchanged instructions in the current conversation. Load only the current
 task's weekly teaching section, not every task, old output or the whole repository.
@@ -125,12 +139,15 @@ Do not count a normal prediction or a technical setup failure as a failed answer
    only after understanding is confirmed. Personal reflections still require the
    student's experience; do not invent their reflection for them.
 
-Record support after each step with `save --text`: active week, task and question
+Record support after each delivered step with `save --text`: active week, task and question
 or method ID, hint count and text, learner choice, explanation given, and pending
 or confirmed own-word understanding. Carry unresolved support checkpoints forward
 in later save notes. On resume inspect status.last_note and, when needed, the saved
 progress notes; resume the pending step instead of restarting hints. This uses
-existing notes and does not change progress percentages or record formats.
+existing notes and does not change progress percentages or record formats. Save
+already delivered explanations at the next natural learner turn if saving them
+in the teaching turn would move the only explanation into a process message.
+Only actual student choices and responses count as evidence.
 
 For open checks, save the student's actual restatement with answer and assess it.
 For MCQs, retain their selected option through answer and separately save and
@@ -155,7 +172,10 @@ curriculum, student files, previous answers and lesson snapshots unchanged.
    evidence or conceptual example. Use only the excerpts relevant to this step.
 2. Briefly invite the student to say if a term is unclear. This is a natural pause,
    not an extra graded quiz. Explain any confusion before continuing. Record the
-   explanation already presented with `teach --text "..."`.
+   explanation in a formal reply. At the next natural learner turn, record that
+   actual delivered text with `teach --text "..."` before handling the response
+   when the helper requires it. Do not record an unseen draft as taught or add
+   a graded quiz merely to save a record.
 3. Ask the specific prediction from the task. Say whether the answer can be found
    by reading the code before running it. Wait and save the student's response
    with `predict --text "..."`. Uncertain predictions are welcome. Task01 has no
@@ -176,15 +196,25 @@ curriculum, student files, previous answers and lesson snapshots unchanged.
    `> 🔬 Experiment observations` with concrete values from THIS recorded task.
    Explain its output structure before questioning the student. Give filenames,
    field paths and column names. Do not call it 'your run' when you executed it.
-   Say 'the results from this task' or 'the experiment we just ran'. Save the
-   explanation with `explain --text "..."`. Never replace an error with a fixture.
+   Say 'the results from this task' or 'the experiment we just ran'. Present the
+   explanation in the formal reply. At the next natural learner turn, save that
+   delivered explanation with `explain --text "..."` before recording an answer
+   or completing the task. Never replace an error with a fixture. The tool log
+   and the helper's saved text do not substitute for the formal explanation.
 7. Ask one understanding question at a time, after giving all needed terms and
-   context. Use the question's exact options for MCQs through AskUserQuestion:
-   one question, multiSelect false, labels such as `A. ...`, full option text as
+   context. Use the question's exact options for MCQs through AskUserQuestion.
+   Follow OUTPUT.md so the explanation is already visible in a formal reply, or
+   use a nonblocking selector followed by the complete formal reply in the same
+   turn. If a selector blocks before a final reply can be sent, deliver the lesson
+   first and place the selector at the next natural interaction. Do not add a
+   second graded question or require the student to confirm the same answer twice.
+   Use one question, multiSelect false, labels such as `A. ...`, full option text as
    description if needed. Keep the mapping to A/B/C/D. Do not mark a correct or
    recommended choice. Record the selected letter with `answer --question ID
    --text "B"`. If the learner enters free text, resolve only an unambiguous choice;
-   otherwise ask them to select. Wrong choices get feedback and another attempt.
+   otherwise ask them to select. An unambiguous response to the formal question
+   does not need another card asking the same question. Wrong choices get feedback
+   and another attempt.
    If the host does not expose AskUserQuestion, explicitly say clickable options
    are unavailable and show lettered options as a fallback. Never draw fake buttons
    and claim they are clickable. For open checks, use ordinary chat and wait for
@@ -207,8 +237,9 @@ response files, progress, prompts, reviews or chat.
 
 ## Task01: Mentor handles setup
 
-Explain that local Python sends requests to a hosted model. Then record `teach`
-and run `setup`. This creates the student's .venv, installs requirements through
+Explain in a formal reply that local Python sends requests to a hosted model.
+On the learner's natural continuation, record that delivered explanation with
+`teach` and run `setup`. This creates the student's .venv, installs requirements through
 THAT venv's interpreter, and checks imports. Use the successful setup receipt;
 do not ask students to type the Python version or confirm the import check as a quiz.
 If setup fails, explain the actual error and fix it before continuing. Respect any
@@ -221,7 +252,9 @@ to paste a key or .env into chat. After they say it is done, use `key-ready --te
 "Student confirmed local configuration is finished"`; it only checks that the file
 exists, not its contents. This is a practical handoff, not an understanding check.
 The first real API call later establishes whether the key/service works.
-Explain the actual setup result, record `explain`, and `complete` Task01. No setup
+Explain the actual setup result in a formal reply, including its meaning and the
+private terminal handoff. At the next natural learner turn, record that delivered
+explanation with `explain` before `complete` Task01. No setup
 prediction, multiple-choice question or open assessment is required.
 
 ## Five student commands

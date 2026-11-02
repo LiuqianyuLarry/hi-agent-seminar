@@ -823,6 +823,7 @@ def compact_output(value):
 
 
 def main():
+    from output_delivery import response_output, saved_progress
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["list", "start", "restart", "sessions", "select-session", "status", "task", "code", "teach", "predict", "setup", "key-ready", "write-prompt", "run", "results", "explain", "answer", "assess", "complete", "save", "recover", "export", "review-questions", "review-answer", "review", "extension", "run-extension", "explain-extension", "concepts", "concept-choice", "diagram", "write-code", "reference-data", "reference-answer", "reference-assess", "study-mode", "mcp-intro", "revisit", "lesson-step", "lesson-next", "lesson-answer", "lesson-hint", "lesson-solution", "lesson-assess"])
     parser.add_argument("--step-id")
@@ -846,6 +847,7 @@ def main():
     parser.add_argument("--choice", choices=["understand", "brief", "example"])
     parser.add_argument("--task-id")
     args = parser.parse_args()
+    seminar = None
     try:
         if args.action == "list":
             result = catalog(args.workspace)
@@ -905,10 +907,17 @@ def main():
                 result = seminar.run(args.python, args.intro, args.name if args.action == "run-extension" else None, args.prediction)
             else:
                 result = seminar.mutate(args.action, args.text, args.question, args.verdict, args.run_id, args.name)
-        print(json.dumps(compact_output(result), ensure_ascii=False, indent=2))
+        status = None
+        if seminar is not None and saved_progress(result) is None:
+            try:
+                status = seminar.status()
+            except (ValueError,OSError,json.JSONDecodeError,SyntaxError):
+                # Delivery guidance cannot repair or change an unreadable record.
+                pass
+        print(json.dumps(response_output(compact_output(result),ROOT,status), ensure_ascii=False, indent=2))
         return 0
     except (ValueError, OSError, json.JSONDecodeError, SyntaxError) as exc:
-        print(json.dumps({"error":redact(str(exc)), "progress_not_reset":True}, ensure_ascii=False), file=sys.stderr)
+        print(json.dumps(response_output({"error":redact(str(exc)), "progress_not_reset":True},ROOT), ensure_ascii=False), file=sys.stderr)
         return 1
 
 

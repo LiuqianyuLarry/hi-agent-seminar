@@ -3,6 +3,13 @@ description: Answer three reflection questions and save a local code snapshot
 argument-hint: "[week01|week02|week03]"
 ---
 
+Read `${CLAUDE_PLUGIN_ROOT}/OUTPUT.md` before persona, lesson or saved-guide
+instructions. Its formal final-response delivery rules apply to every week and
+existing session. Keep tool preambles to brief operation status; place the complete
+student-facing explanation, relevant code/results, one next question or action,
+and exact saved progress in the formal reply. A helper record or tool log is not
+that reply. Follow OUTPUT.md when sequencing blocking native choice tools.
+
 Read `${CLAUDE_PLUGIN_ROOT}/persona.md` and `${CLAUDE_PLUGIN_ROOT}/MENTOR.md`.
 Use `${CLAUDE_PLUGIN_ROOT}/tutor.py` with an available Python 3.11+ interpreter,
 the student's current project directory as --workspace, and the selected --week.

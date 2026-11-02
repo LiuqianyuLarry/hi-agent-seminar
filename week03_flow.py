@@ -63,7 +63,7 @@ def render_step(step,packs,offset=0,code_index=0):
         path=child(Path(packs['slides']),*relative.parts[1:])
         require(path.is_file(),'The saved slide image is missing; recover the snapshot before continuing.')
         result['slide_image']=str(path)
-        result['presentation']='Show or open the actual slide image, explain its figure and concept in plain English, then bridge to the next code step. Do not begin with Python syntax or dump this helper JSON.'
+        result['presentation']='In the final student-visible reply, show or link the actual slide, explain its figure and concept, then the code bridge. Do not leave teaching only in tool progress or dump this helper JSON.'
         return result
-    result['presentation']='Teach one idea, show one short code window, explain its inputs and result, then offer one choice. Do not dump this helper JSON.'
+    result['presentation']='In the final student-visible reply, teach one idea, show one short code window, explain its inputs and result, and give one next action. Do not leave teaching only in tool progress or dump this helper JSON.'
     return result

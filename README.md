@@ -1,8 +1,14 @@
-# hi-agent-seminar 2.7.0
+# hi-agent-seminar 2.7.1
 
 An English EEEE4149 teaching plugin for Claude Code, with guided seminars for
 Weeks 1-3. Students make their own attempts, run real experiments with the mentor,
 and explain the results. Learning records and code stay in the student workspace.
+
+Version 2.7.1 adds a shared response policy: the complete relevant lesson, code
+explanation, observed results and saved progress belong in the final student-visible
+reply. Helper responses link the current OUTPUT.md policy even when a saved older
+course is resumed. Existing records, lesson snapshots and student code stay in
+place; no reset or migration is needed for this update.
 
 Week 3 covers CONV-3 tools, DeepSeek function calling and MCP in two 50-minute
 sessions. Choose **Review lecture + code** to look at the original PPT pages,
@@ -192,7 +198,7 @@ claude plugin update hi-agent-seminar@hi-agent-seminar-marketplace
 If it points to another folder, inspect `claude plugin marketplace list` and update
 that source or use the explicit --plugin-dir loading method above. Do not assume
 editing source files changes an already installed cache. Restart the Claude Code
-session after an update. Confirm version 2.7.0 with `claude plugin list`.
+session after an update. Confirm version 2.7.1 with `claude plugin list`.
 
 Replace the whole plugin source folder with the extracted release folder, including
 the hidden .claude-plugin directory. Do not merge it into an old commands folder:
@@ -235,7 +241,7 @@ Optional progress does not change the core percentage.
 Confirmed learning steps save automatically. Ask Mentor Liu in chat to save a
 pause note or export an existing learning report; no extra slash command is needed.
 The review command always means three reflections plus a code snapshot.
-Version 2.7.0 resumes existing v2 progress in the same workspace; it does not reset it.
+Version 2.7.1 resumes existing v2 progress in the same workspace; it does not reset it.
 
 Course selection and multiple-choice checks use genuine AskUserQuestion selectors
 when available in the host. Open questions and reflections remain ordinary typed

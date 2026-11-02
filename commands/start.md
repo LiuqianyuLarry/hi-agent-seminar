@@ -3,6 +3,13 @@ description: Start or resume Week 1, Week 2 or Week 3 with Mentor Liu
 argument-hint: "[week01|week02|week03]"
 ---
 
+Read `${CLAUDE_PLUGIN_ROOT}/OUTPUT.md` before persona, lesson or saved-guide
+instructions. Its formal final-response delivery rules apply to every week and
+existing session. Keep tool preambles to brief operation status; place the complete
+student-facing explanation, relevant code/results, one next question or action,
+and exact saved progress in the formal reply. A helper record or tool log is not
+that reply. Follow OUTPUT.md when sequencing blocking native choice tools.
+
 After selecting a Week 3 learning session, show these native route cards with their
 full descriptions:
 
@@ -19,9 +26,11 @@ practice.
 Save study-mode after the actual choice. Read week03/INSTRUCTOR.md and
 week03/PRESENTATION.md, then use lesson-step for the selected route's next small
 fragment. Review first shows and explains slide_image/slide_review, then the
-matching lecture_demo code. Practice uses the seminar source directly. After
-teaching a fragment, record lesson-next with its exact ID and the actual
-explanation. Do not substitute the same walkthrough
+matching lecture_demo code. Practice uses the seminar source directly. Deliver
+the complete fragment in a formal reply first. At the next learner continuation
+or eligible attempt, record lesson-next with its exact ID and the actual text
+already delivered, subject to all checkpoint gates. A clarification, translation
+or request to inspect code does not advance the step. Do not substitute the same walkthrough
 for both modes. Respect saved lesson/source snapshots; do not silently migrate
 old Week 3 answers. A fresh session offers the revised course while preserving
 older sessions. For an explicit revisit request, show that earlier content instead

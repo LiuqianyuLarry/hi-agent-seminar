@@ -1,5 +1,28 @@
 # Week 3 presentation rules
 
+Read the installed OUTPUT.md before this guide or an older saved copy. The output
+delivery policy applies without changing any saved lesson or progress record.
+
+## Deliver the complete lesson in the formal reply
+
+The student must be able to read the current teaching step without opening the
+thinking panel, an execution update or a tool log. Put its concept explanation,
+code excerpt and code explanation, observed results and field meanings, one next
+question or action, and exact saved percentage in the formal final response.
+Include only the items relevant to that step; keep one manageable idea per reply.
+
+Read source and state before composing the final reply. Tool preambles may say
+what operation is running in one short sentence. They must not carry the only
+copy of a lesson, code walkthrough, experiment interpretation or progress footer.
+After a tool call, present the important evidence in the formal reply even when
+it appeared in the execution log. Do not finish with only a saving confirmation.
+
+Teach first in a formal reply. When the learner next continues or makes an
+eligible attempt, acknowledge the already delivered text with teach, explain or
+lesson-next as appropriate. Only advance lesson-next when its existing gates are
+met; questions, translations and code inspection do not advance it. Do not count
+an unseen draft as delivered teaching or introduce a quiz just to save a record.
+
 Teach one small idea at a time. The sequence is: a concrete engineering need,
 plain-language logic, the relevant source code, one input/output trace, and one
 learning check. Keep function calling and tool use visible throughout. Explain
@@ -31,6 +54,9 @@ slide_image, using an inline image or the host's image viewer. If the host canno
 display it, give a working file link and offer to open it; do not claim that an
 image was displayed. The nine images are bundled, so the learner does not need
 PowerPoint or the instructor's local file path.
+If a separate viewer or tool shows the image, the formal reply still includes
+its file link or supported inline image, the key diagram explanation and the
+code bridge. A viewer caption or collapsed tool output is not the lesson body.
 
 Guide attention through slide_review.visual_walkthrough. Explain the concept in
 plain language, give its concrete example, then use code_bridge to introduce the
@@ -77,6 +103,14 @@ Populate the option descriptions, not only their short labels. Do not draw fake
 buttons in Markdown or ask for A/B/C when working native cards are available.
 If the host has no such tool, say so once and offer clear numbered or lettered
 text choices. Do not claim that a native card was displayed when it was not.
+
+Follow OUTPUT.md's delivery order. A native selector is safe when the needed
+explanation was already delivered in a formal reply, or when the host supports
+a nonblocking card followed by the complete formal reply in the same turn. If a
+selector blocks the final reply while waiting, deliver the full lesson first and
+offer its card at the next natural interaction. Make the question and options
+self-contained. If the learner already gave an unambiguous answer to that formal
+question, save it and continue; do not ask the same question again through a card.
 
 Ask only one question at a time. An open explanation or code body belongs in
 ordinary chat. Do not offer a prewritten answer as a selectable substitute for

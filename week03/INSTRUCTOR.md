@@ -1,5 +1,10 @@
 # Week 3 mentor teaching workflow
 
+Read the installed OUTPUT.md before this workflow or any saved teaching guide.
+The shared formal final-response policy applies to both routes and older saved
+lessons without replacing their snapshots or learning records. It controls
+delivery order; it does not change the curriculum or completion gates.
+
 Keep the five seminar commands and guide the learner through real attempts,
 observed results and understanding checks. Follow the saved course and preserve
 previous progress, source files and learning sessions.
@@ -53,8 +58,10 @@ python tutor.py lesson-step --workspace PROJECT --week week03 --name STEP_ID --c
 python tutor.py lesson-next --workspace PROJECT --week week03 --name STEP_ID --text ACTUAL_EXPLANATION
 ```
 
-Teach the returned fragment before recording lesson-next. Record what was
-actually explained, not simply "done". Keep the node ID and mode aligned with
+Deliver the complete returned fragment in a formal reply first. At the next
+learner continuation or eligible attempt, record lesson-next with what was
+actually delivered, not simply "done". Do not advance it for a clarification,
+translation or request to inspect code. Keep the node ID and mode aligned with
 the helper. Do not mark a source as explained merely because it was opened.
 Use the helper's actual source excerpts and line numbers; source packs are
 lecture demo or student seminar, not interchangeable. Continue from the saved
@@ -86,8 +93,11 @@ python tutor.py lesson-answer --workspace PROJECT --week week03 --name STEP_ID -
 python tutor.py lesson-assess --workspace PROJECT --week week03 --name STEP_ID --verdict pass --text ACTUAL_FEEDBACK
 ```
 
-Save the learner's actual choice. On success, explain why it fits briefly, then
-record lesson-next with the actual explanation. A wrong answer does not pass and
+Save the learner's actual choice. On success, record lesson-next with the prior
+concept explanation already delivered in a formal reply, then include a brief
+confirmation and why the choice fits in the next formal reply. Follow all check
+gates; never record the new feedback as though it had already been delivered.
+A wrong answer does not pass and
 does not reveal the full answer. Give hint 1, wait for a response, then hint 2 if
 needed. After two hints, offer More hints / Explain the answer. Only invoke
 lesson-solution when the learner requests the explanation. That explanation
@@ -107,7 +117,9 @@ may skip a foundation refresher but must complete the core code and checks.
   backed up. `--name description` saves the student's revised tool description.
 - `predict`, `run --intro TASK_AND_PURPOSE`, `results`, `explain`, `answer`, `assess`
   and `complete` retain the supervised sequence. Explain actual output fields
-  before checking understanding. Do not save a worked answer as student work.
+  in a complete formal reply before checking understanding. At the next natural
+  learner turn, record that delivered explanation before handling the answer or
+  completing the task. Do not save a worked answer as student work.
 - `mcp-intro --text ACTUAL_EXPLANATION` records the full MCP introduction once it
   has actually been presented. Both modes need it before t08 practice.
 - `revisit --task-id t02` retrieves earlier content without redirecting to the

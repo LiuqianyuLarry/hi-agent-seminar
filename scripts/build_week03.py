@@ -185,6 +185,7 @@ ROOT.mkdir(exist_ok=True)
 (ROOT/'instructor').mkdir(exist_ok=True)
 (ROOT/'instructor/solutions.json').write_text(json.dumps(SOLUTIONS,indent=2)+'\n',encoding='utf-8')
 guide=['# Week 3 teaching script','',
+       'Apply the installed OUTPUT.md policy before this saved teaching guide. Required teaching, actual code explanations, observed results and saved progress belong together in the final student-visible response; process messages and tool logs do not replace it. Save a previous delivered explanation at the next natural learner response without skipping any learning gate.',
        'Both modes contain 2 x 50 minutes of core learning and use logic then detailed code. No required mathematics segment. Explain one concept and a 5-12-line excerpt at a time: inputs, variables, branches, return values and why each check exists. Never just read code aloud.',
        'Use the selected path below. Review first shows and explains the actual PPT page, its diagram and a concrete example, then connects the idea to lecture code and seminar practice. Practice starts from the seminar task and teaches its necessary concepts. Both include the complete MCP introduction with four short checks between explanations.',
        'Offer foundations: I understand - continue / Explain briefly / Show an example. Record the choice. MCP_GUIDE.md is required in BOTH modes before task t08 practice.',

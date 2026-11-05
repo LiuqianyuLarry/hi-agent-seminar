@@ -12,3 +12,4 @@ dist/
 .hi-agent-seminar-preview/
 traces/
 *.sqlite
+.hi-agent-seminar-instructor/

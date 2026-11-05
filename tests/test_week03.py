@@ -30,7 +30,7 @@ class Week3Tests(unittest.TestCase):
 
     def test_catalog_and_timing(self):
         courses=catalog(self.workspace)['courses']
-        self.assertEqual([c['id'] for c in courses],['week01','week02','week03'])
+        self.assertEqual([c['id'] for c in courses],['week01','week02','week03','week04'])
         course=seminar_for(self.workspace,'week03')
         for key in ['minutes','practice_minutes']:
             self.assertEqual(sum(t[key] for t in course.lesson['tasks'][:5]),50)

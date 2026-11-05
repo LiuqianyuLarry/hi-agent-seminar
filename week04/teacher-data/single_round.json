@@ -1,0 +1,530 @@
+{
+  "case": "one-shot",
+  "evidence_kind": "live_deepseek",
+  "provider": "DeepSeek",
+  "captured_at": "2026-11-05T13:26:28.156374+00:00",
+  "request": {
+    "model": "deepseek-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "Use the listed local classroom tools to answer the confirmed task. Do not invent values, limits or dates. A calculation must use observed readings and their reference limit. You may request independent tools together. The Python application executes them. Do not provide a private reasoning trace."
+      },
+      {
+        "role": "user",
+        "content": "{\"question\": \"Check the given machine and time window. Read its reference limit, calculate the share of readings strictly above it, and give a summary supported by evidence.\", \"goal\": \"report\", \"machine_id\": \"CONV-3\", \"start\": \"2026-03-02T10:00:00+08:00\", \"end\": \"2026-03-02T10:25:00+08:00\"}"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "temperature_stats",
+          "description": "Calculate the mean, maximum and share strictly above a given limit. Use actual observed Celsius readings and their registered limit. Does not read files or calculate duration.",
+          "parameters": {
+            "additionalProperties": false,
+            "properties": {
+              "values_c": {
+                "items": {
+                  "maximum": 1000,
+                  "minimum": -273.15,
+                  "type": "number"
+                },
+                "maxItems": 1000,
+                "minItems": 1,
+                "title": "Values C",
+                "type": "array"
+              },
+              "limit_c": {
+                "maximum": 1000,
+                "minimum": -273.15,
+                "title": "Limit C",
+                "type": "number"
+              }
+            },
+            "required": [
+              "values_c",
+              "limit_c"
+            ],
+            "title": "StatsArgs",
+            "type": "object"
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "query_temperature",
+          "description": "Read temperature measurements for a confirmed machine and timezone-aware time window [start,end). At most 24 hours and 100 rows. Does not return a reference limit.",
+          "parameters": {
+            "additionalProperties": false,
+            "properties": {
+              "machine_id": {
+                "pattern": "^CONV-[0-9]{1,2}$",
+                "title": "Machine Id",
+                "type": "string"
+              },
+              "start": {
+                "maxLength": 40,
+                "minLength": 20,
+                "title": "Start",
+                "type": "string"
+              },
+              "end": {
+                "maxLength": 40,
+                "minLength": 20,
+                "title": "End",
+                "type": "string"
+              }
+            },
+            "required": [
+              "machine_id",
+              "start",
+              "end"
+            ],
+            "title": "QueryArgs",
+            "type": "object"
+          }
+        }
+      },
+      {
+        "type": "function",
+        "function": {
+          "name": "get_machine_spec",
+          "description": "Read the reference temperature limit, source and version for a confirmed machine. This is a specification file, not a live measurement or maintenance log.",
+          "parameters": {
+            "additionalProperties": false,
+            "properties": {
+              "machine_id": {
+                "pattern": "^CONV-[0-9]{1,2}$",
+                "title": "Machine Id",
+                "type": "string"
+              }
+            },
+            "required": [
+              "machine_id"
+            ],
+            "title": "SpecArgs",
+            "type": "object"
+          }
+        }
+      }
+    ],
+    "tool_choice": "auto",
+    "max_tokens": 1024,
+    "extra_body": {
+      "thinking": {
+        "type": "disabled"
+      }
+    },
+    "timeout": 15.0
+  },
+  "response": {
+    "id": "44bba11f-9bca-4e51-88a1-a088cfddbba3",
+    "model": "deepseek-flash",
+    "message": {
+      "role": "assistant",
+      "content": "I'll read the reference limit and the readings for that window.",
+      "tool_calls": [
+        {
+          "id": "call_00_3eeqTsiuEMmQ3LQqI4k06225",
+          "type": "function",
+          "function": {
+            "name": "get_machine_spec",
+            "arguments": "{\"machine_id\": \"CONV-3\"}"
+          }
+        },
+        {
+          "id": "call_01_CrPmXgy7pYiJu0OXQ8Qq2336",
+          "type": "function",
+          "function": {
+            "name": "query_temperature",
+            "arguments": "{\"machine_id\": \"CONV-3\", \"start\": \"2026-03-02T10:00:00+08:00\", \"end\": \"2026-03-02T10:25:00+08:00\"}"
+          }
+        }
+      ]
+    },
+    "finish_reason": "tool_calls",
+    "usage": {
+      "total_tokens": 966
+    }
+  },
+  "actual_requests": 1,
+  "follow_up_requests": 0,
+  "requested_tool_calls": 2,
+  "tool_attempts": 2,
+  "before": {
+    "ready": false,
+    "missing": [
+      "spec",
+      "readings",
+      "stats"
+    ],
+    "progress": [],
+    "evidence_ids": [],
+    "facts": {}
+  },
+  "after": {
+    "ready": false,
+    "missing": [
+      "stats"
+    ],
+    "progress": [
+      "spec",
+      "readings"
+    ],
+    "evidence_ids": [
+      "obs_001",
+      "obs_002"
+    ],
+    "facts": {
+      "spec": {
+        "machine_id": "CONV-3",
+        "temperature_limit_c": 85.0,
+        "unit": "C"
+      },
+      "readings": {
+        "machine_id": "CONV-3",
+        "start": "2026-03-02T10:00:00+08:00",
+        "end": "2026-03-02T10:25:00+08:00",
+        "interval": "[start,end)",
+        "count": 5,
+        "records": [
+          {
+            "ts": "2026-03-02T10:00:00+08:00",
+            "temperature_c": 82.0
+          },
+          {
+            "ts": "2026-03-02T10:05:00+08:00",
+            "temperature_c": 87.0
+          },
+          {
+            "ts": "2026-03-02T10:10:00+08:00",
+            "temperature_c": 91.0
+          },
+          {
+            "ts": "2026-03-02T10:15:00+08:00",
+            "temperature_c": 94.0
+          },
+          {
+            "ts": "2026-03-02T10:20:00+08:00",
+            "temperature_c": 97.0
+          }
+        ],
+        "unit": "C"
+      }
+    }
+  },
+  "observations": [
+    {
+      "id": "obs_001",
+      "tool": "get_machine_spec",
+      "arguments": {
+        "machine_id": "CONV-3"
+      },
+      "result": {
+        "status": "ok",
+        "data": {
+          "machine_id": "CONV-3",
+          "temperature_limit_c": 85.0,
+          "unit": "C"
+        },
+        "source": "machine_specs.json",
+        "version": "classroom-v1",
+        "error": null
+      },
+      "reused": false
+    },
+    {
+      "id": "obs_002",
+      "tool": "query_temperature",
+      "arguments": {
+        "machine_id": "CONV-3",
+        "start": "2026-03-02T10:00:00+08:00",
+        "end": "2026-03-02T10:25:00+08:00"
+      },
+      "result": {
+        "status": "ok",
+        "data": {
+          "machine_id": "CONV-3",
+          "start": "2026-03-02T10:00:00+08:00",
+          "end": "2026-03-02T10:25:00+08:00",
+          "interval": "[start,end)",
+          "count": 5,
+          "records": [
+            {
+              "ts": "2026-03-02T10:00:00+08:00",
+              "temperature_c": 82.0
+            },
+            {
+              "ts": "2026-03-02T10:05:00+08:00",
+              "temperature_c": 87.0
+            },
+            {
+              "ts": "2026-03-02T10:10:00+08:00",
+              "temperature_c": 91.0
+            },
+            {
+              "ts": "2026-03-02T10:15:00+08:00",
+              "temperature_c": 94.0
+            },
+            {
+              "ts": "2026-03-02T10:20:00+08:00",
+              "temperature_c": 97.0
+            }
+          ],
+          "unit": "C"
+        },
+        "source": "engineering.sqlite/sensor_reading",
+        "version": "classroom-v1",
+        "error": null
+      },
+      "reused": false
+    }
+  ],
+  "next_messages_not_sent": [
+    {
+      "role": "system",
+      "content": "Use the listed local classroom tools to answer the confirmed task. Do not invent values, limits or dates. A calculation must use observed readings and their reference limit. You may request independent tools together. The Python application executes them. Do not provide a private reasoning trace."
+    },
+    {
+      "role": "user",
+      "content": "{\"question\": \"Check the given machine and time window. Read its reference limit, calculate the share of readings strictly above it, and give a summary supported by evidence.\", \"goal\": \"report\", \"machine_id\": \"CONV-3\", \"start\": \"2026-03-02T10:00:00+08:00\", \"end\": \"2026-03-02T10:25:00+08:00\"}"
+    },
+    {
+      "role": "assistant",
+      "content": "I'll read the reference limit and the readings for that window.",
+      "tool_calls": [
+        {
+          "id": "call_00_3eeqTsiuEMmQ3LQqI4k06225",
+          "type": "function",
+          "function": {
+            "name": "get_machine_spec",
+            "arguments": "{\"machine_id\": \"CONV-3\"}"
+          }
+        },
+        {
+          "id": "call_01_CrPmXgy7pYiJu0OXQ8Qq2336",
+          "type": "function",
+          "function": {
+            "name": "query_temperature",
+            "arguments": "{\"machine_id\": \"CONV-3\", \"start\": \"2026-03-02T10:00:00+08:00\", \"end\": \"2026-03-02T10:25:00+08:00\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_00_3eeqTsiuEMmQ3LQqI4k06225",
+      "content": "{\"status\": \"ok\", \"data\": {\"machine_id\": \"CONV-3\", \"temperature_limit_c\": 85.0, \"unit\": \"C\"}, \"source\": \"machine_specs.json\", \"version\": \"classroom-v1\", \"error\": null}"
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_01_CrPmXgy7pYiJu0OXQ8Qq2336",
+      "content": "{\"status\": \"ok\", \"data\": {\"machine_id\": \"CONV-3\", \"start\": \"2026-03-02T10:00:00+08:00\", \"end\": \"2026-03-02T10:25:00+08:00\", \"interval\": \"[start,end)\", \"count\": 5, \"records\": [{\"ts\": \"2026-03-02T10:00:00+08:00\", \"temperature_c\": 82.0}, {\"ts\": \"2026-03-02T10:05:00+08:00\", \"temperature_c\": 87.0}, {\"ts\": \"2026-03-02T10:10:00+08:00\", \"temperature_c\": 91.0}, {\"ts\": \"2026-03-02T10:15:00+08:00\", \"temperature_c\": 94.0}, {\"ts\": \"2026-03-02T10:20:00+08:00\", \"temperature_c\": 97.0}], \"unit\": \"C\"}, \"source\": \"engineering.sqlite/sensor_reading\", \"version\": \"classroom-v1\", \"error\": null}"
+    }
+  ],
+  "source_hashes": {
+    "data/sensor_readings.csv": "412f5c25bbc3a2ff4049cafb1c94ae08ad104c5e3a480747cd1dacb456a3b3b5",
+    "data/machine_specs.json": "9e2e78b8606188887f306d90d4a3a830001fe322f2b220d5c23684279c21b701",
+    "app.py": "8d651167d0837f245e73d9533e7ee3ced89f5a646fbed7e92c3024dec2a566e0",
+    "baseline.py": "9701b9c47332a522034caf63f1b5bbcfa929e93f92cb2fbe96607bd74c7409a8",
+    "build_data.py": "241db4f3e3534a14e71754d975afc3f3e7c06e9968a4cd8449739bbc43dbc5ed",
+    "check_tests.py": "ed09f1245ed46dc29c49122bef223bff3b58784b8ae276180d2b71519456e8d9",
+    "controls.py": "9d2c8230d8eb805e5c2189283654176d889f4f1ef0d425ebfbfccd1c5034e4f9",
+    "demos.py": "7b4a94b6d3abd677dacc3a3f87c2cd21de6839f46545531d20483965767b4baf",
+    "executor.py": "603bd932294503a383e0c5ccedeb16551113c11c458c3353f01749b99d3b477f",
+    "failure_demo.py": "4a656c4c03f90f4795e1378926641e696d477808e205ba834d39b87cdcad9855",
+    "gateway.py": "1060116378762084ca78bb755a9970403e84f48a7fc80da771512451c0349b57",
+    "live_planner.py": "115a58885520eb936629244b634dc77d8f6271b816e8cfeafaab1e4175c9b072",
+    "make_trace_html.py": "4b23232c950475a75f14696a73833d96c98b71c7536effebb4c478f825b1b986",
+    "planner.py": "72a421c530e450398a2c85ffa041e5ee1597969f6d81a337267f179d8fe54e15",
+    "preflight.py": "593b9d9553938b1362128b3b6073bf33a0e659554369cc433e14a97528a33a37",
+    "prompts.py": "10a222981f8a9f22b9c85ac87b1fa8ac474d70499415eadfbf5f2639b3660b64",
+    "provider.py": "171ab8076f94fc139374194fd54f4a1c11c1665f35d721f4777392cb5a0ebcad",
+    "runtime.py": "0a9235d2e4ef380fbd486d9ce6aef38062d45c49c2fc8551769b56ef953f6d1f",
+    "schemas.py": "e17e789b874b705fbb0731efc174388915c0bb0530d7386ea8ca6fc72debd705",
+    "seminar_step.py": "52b2a60681b44dd11c0390f7740778d543c29007fde0d2774ccd55dff1ef3378",
+    "state.py": "e03e232ca5c66d7b1b97a3f7b8a24ff7308d0c2d08870e8411e494587d65bf6a",
+    "student_observations.py": "d7e080bc7bd33d50a2ddabf0fd0e61bf1d5481517a6fda6b3b60b9d0520fb32d",
+    "tool_definitions.py": "b11a2ab1ab06aea4d0d7bea669dade155fc37e95082325ec47e4c4ab62c5d5b6",
+    "verification.py": "fdbcfe210750ad3c1a271f4dccea18589cce62e83d6b8c627d393940e82c20c3",
+    "worker.py": "ee0446a1cbc6a322e587082d76b7ca2871533f7487da0d92771c94393ff27a95",
+    "tools/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tools/calculation.py": "0f5e5e068970f985b62c77d5397517fc1310d47e8f8a5d7e2a022c0f8c5e89c1",
+    "tools/engineering.py": "423b407cd4bfab665762588c0a91779cb09d11553a21468a69eadc8ad8335e76",
+    "tools/sql_query.py": "9f3bcbcd72063f5b3a266a3dffd103c0023c6cc4e94faf1d04a441f9c030f682"
+  },
+  "trace": [
+    {
+      "event_id": 1,
+      "step": 0,
+      "event": "start",
+      "elapsed_s": 0.0,
+      "task": {
+        "question": "Check the given machine and time window. Read its reference limit, calculate the share of readings strictly above it, and give a summary supported by evidence.",
+        "goal": "report",
+        "machine_id": "CONV-3",
+        "start": "2026-03-02T10:00:00+08:00",
+        "end": "2026-03-02T10:25:00+08:00"
+      },
+      "mode": "live"
+    },
+    {
+      "event_id": 2,
+      "step": 1,
+      "event": "model_response",
+      "elapsed_s": 1.328,
+      "requested_tool_calls": 2,
+      "finish_reason": "tool_calls"
+    },
+    {
+      "event_id": 3,
+      "step": 1,
+      "event": "tool_attempt",
+      "elapsed_s": 1.328,
+      "tool": "get_machine_spec",
+      "attempt": 1,
+      "total_attempts": 1
+    },
+    {
+      "event_id": 4,
+      "step": 1,
+      "event": "observation",
+      "elapsed_s": 1.75,
+      "observation_id": "obs_001",
+      "tool": "get_machine_spec",
+      "arguments": {
+        "machine_id": "CONV-3"
+      },
+      "result": {
+        "status": "ok",
+        "data": {
+          "machine_id": "CONV-3",
+          "temperature_limit_c": 85.0,
+          "unit": "C"
+        },
+        "source": "machine_specs.json",
+        "version": "classroom-v1",
+        "error": null
+      },
+      "reused": false
+    },
+    {
+      "event_id": 5,
+      "step": 1,
+      "event": "tool_attempt",
+      "elapsed_s": 1.75,
+      "tool": "query_temperature",
+      "attempt": 1,
+      "total_attempts": 2
+    },
+    {
+      "event_id": 6,
+      "step": 1,
+      "event": "observation",
+      "elapsed_s": 2.156,
+      "observation_id": "obs_002",
+      "tool": "query_temperature",
+      "arguments": {
+        "machine_id": "CONV-3",
+        "start": "2026-03-02T10:00:00+08:00",
+        "end": "2026-03-02T10:25:00+08:00"
+      },
+      "result": {
+        "status": "ok",
+        "data": {
+          "machine_id": "CONV-3",
+          "start": "2026-03-02T10:00:00+08:00",
+          "end": "2026-03-02T10:25:00+08:00",
+          "interval": "[start,end)",
+          "count": 5,
+          "records": [
+            {
+              "ts": "2026-03-02T10:00:00+08:00",
+              "temperature_c": 82.0
+            },
+            {
+              "ts": "2026-03-02T10:05:00+08:00",
+              "temperature_c": 87.0
+            },
+            {
+              "ts": "2026-03-02T10:10:00+08:00",
+              "temperature_c": 91.0
+            },
+            {
+              "ts": "2026-03-02T10:15:00+08:00",
+              "temperature_c": 94.0
+            },
+            {
+              "ts": "2026-03-02T10:20:00+08:00",
+              "temperature_c": 97.0
+            }
+          ],
+          "unit": "C"
+        },
+        "source": "engineering.sqlite/sensor_reading",
+        "version": "classroom-v1",
+        "error": null
+      },
+      "reused": false
+    },
+    {
+      "event_id": 7,
+      "step": 1,
+      "event": "verify",
+      "elapsed_s": 2.156,
+      "ready": false,
+      "missing": [
+        "stats"
+      ],
+      "progress": [
+        "spec",
+        "readings"
+      ],
+      "evidence_ids": [
+        "obs_001",
+        "obs_002"
+      ],
+      "facts": {
+        "spec": {
+          "machine_id": "CONV-3",
+          "temperature_limit_c": 85.0,
+          "unit": "C"
+        },
+        "readings": {
+          "machine_id": "CONV-3",
+          "start": "2026-03-02T10:00:00+08:00",
+          "end": "2026-03-02T10:25:00+08:00",
+          "interval": "[start,end)",
+          "count": 5,
+          "records": [
+            {
+              "ts": "2026-03-02T10:00:00+08:00",
+              "temperature_c": 82.0
+            },
+            {
+              "ts": "2026-03-02T10:05:00+08:00",
+              "temperature_c": 87.0
+            },
+            {
+              "ts": "2026-03-02T10:10:00+08:00",
+              "temperature_c": 91.0
+            },
+            {
+              "ts": "2026-03-02T10:15:00+08:00",
+              "temperature_c": 94.0
+            },
+            {
+              "ts": "2026-03-02T10:20:00+08:00",
+              "temperature_c": 97.0
+            }
+          ],
+          "unit": "C"
+        }
+      }
+    }
+  ],
+  "summary": "One response was inspected. Allowed local tool requests ran, but their results were not sent in a second model request. Read the actual missing-evidence list; the API is not limited to one proposed tool call.",
+  "success": true
+}

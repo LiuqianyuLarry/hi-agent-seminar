@@ -1,2 +1,5 @@
 # Preserve release bytes across Windows and Unix checkouts for SHA256 verification.
 * -text
+
+# The supplied CSV bytes are pinned by the data manifests.
+week04/**/data/sensor_readings.csv whitespace=cr-at-eol

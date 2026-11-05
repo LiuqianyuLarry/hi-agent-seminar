@@ -109,3 +109,48 @@ local CPU/CUDA work still needs the student's approval before execution.
 Week 3 t08 has four required mini-checks between pairs of concepts. Use the
 lesson-answer/hint/solution/assess helpers and wait for real learner responses
 before lesson-next. A teaching acknowledgement alone cannot pass a check.
+
+## Week 4 learning route
+
+For week04, read week04/INSTRUCTOR.md and week04/PRESENTATION.md after the learner
+chooses a session. Use the route cards from the saved lesson. Review starts with
+Week 1's connection to a model and Week 3's tools, then follows a CONV-3 task that
+needs several connected actions. Let the learner see a single response, a short
+loop, and the repeat/early-finish problems before introducing the checks that fix
+them. Explain the relevant lecture picture and actual source at each point. Use
+ordinary English sentences and concrete examples; avoid slogans or compressed
+labels in place of an explanation. Practice begins with the matching exercise and
+keeps its necessary explanations and checks. Both routes take 2 x 50 minutes.
+
+Use lesson-step for one small part. before_run parts prepare the experiment.
+When needs_run is true, save the actual prediction and code if required, then run
+the experiment. Read its result before teaching after_run parts. Do not try to
+finish all path steps before running, and do not present expected values as
+observations. Save delivered teaching with lesson-next at the next natural reply.
+Week 4 uses lesson-answer/hint/solution/assess for checkpoints, and the support-*
+helpers for code or open questions. Give attempts between the two hints. After
+explaining an answer, check the learner's own explanation before continuing.
+
+Core includes a teacher's recorded real DeepSeek single-round request and local
+experiments. Label teacher records, local execution, injected faults and live
+requests separately. The recorded route requires no key or GPU. run --live on t02
+needs explicit approval for one request; it never silently falls back to a record.
+The API can return multiple tool requests. Our full teaching loop's one-action
+rule is an application choice, not an API restriction. The task uses three domain
+tools; a report is not necessarily a fourth tool call.
+
+Learning progress and learner code remain saved in v2. The example agent's run
+state is a separate topic: Week 4 does not implement checkpoint recovery. Use
+revisit for earlier explanations or restart for separate fresh exercises; keep
+every previous learning session. Do not use the Week 1 setup flow for Week 4.
+
+Week 4 lesson version 2 has two required code bodies in t06: W4.2A `verify` and
+W4.2B `stats_inputs` (`statistics_inputs_match`). Read `required_code_targets`
+from the saved task and `pending_code_targets` from the helper. After the
+preparation steps, ask for and save each actual learner body separately. Do not
+fill the second body yourself or treat the first submission as both. Explain why
+same count and even identical summary values do not prove identical source
+inputs. Both bodies, their tests, and the two understanding responses are required
+before completing t06. The task still takes 15 minutes within the 100-minute core.
+Older saved lessons keep their original requirements; offer a separate fresh
+session to experience version 2 rather than modifying their snapshots or code.

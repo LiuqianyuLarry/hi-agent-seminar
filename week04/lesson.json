@@ -1,0 +1,2534 @@
+{
+  "id": "week04",
+  "version": 2,
+  "title": "Build an agent loop that can finish a task and stop",
+  "language": "English; Chinese translation only on explicit request",
+  "requires_api_key": false,
+  "teaching_order": [
+    "problem",
+    "prediction",
+    "observed evidence",
+    "plain explanation",
+    "actual code",
+    "learner attempt",
+    "test",
+    "explain output"
+  ],
+  "modes": {
+    "review": "Follow the lecture story, inspect experiments, explain the code, then build each part.",
+    "practice": "Start from the exercises with the explanations and checks needed for each task."
+  },
+  "mode_cards": [
+    {
+      "id": "review",
+      "label": "Review lecture + code",
+      "description": "Follow the brain-and-hands story, see where a simple loop fails, revisit the slide diagrams, and build the missing checks with small code exercises."
+    },
+    {
+      "id": "practice",
+      "label": "Start seminar practice",
+      "description": "Start the same experiments and four coding groups, including two short parts in W4.2. Get short concept explanations when you need them, with the same understanding checks."
+    }
+  ],
+  "mode_common_note": "Both paths take two 50-minute sessions and use the same completion requirements. Core study needs no GPU or personal API key when the genuine teacher capture is available. Optional live runs are labelled and require your choice.",
+  "foundations": {
+    "messages": {
+      "id": "messages",
+      "title": "Requests, responses and conversation history",
+      "brief": "A request is information our program sends to a service. A response is what comes back. A tool request inside that response asks our program to do something; it is not the result of doing it.",
+      "example": "The model asks for get_machine_spec with CONV-3. Python runs that function. The returned record becomes a tool message with the matching tool_call_id. The next model request includes this exchange."
+    },
+    "functions": {
+      "id": "functions",
+      "title": "Functions, inputs and returned results",
+      "brief": "A function is a named piece of code. Arguments are the inputs given to it. return gives a result back to the caller. Printing a value only puts it on the screen.",
+      "example": "get_machine_spec(\"CONV-3\") receives one identifier and returns a dictionary. The calling program can read that dictionary before choosing another step."
+    },
+    "records": {
+      "id": "records",
+      "title": "Dictionaries and small Python classes",
+      "brief": "A dictionary stores named values, such as status and data. A class groups related values and operations. A dataclass helps define a small record without writing all the setup code yourself.",
+      "example": "An Observation keeps id, tool, arguments and result together. obs.result[\"status\"] reads one named field; it does not decide whether the entire task is finished."
+    },
+    "copies": {
+      "id": "copies",
+      "title": "Why a saved record needs its own copy",
+      "brief": "Two variables can refer to the same mutable object. If we save only another reference, a later change can also change what appears to be our history. A deep copy gives nested dictionaries and lists their own stored values.",
+      "example": "Save a result containing a list, then change that original list. The observation should still show what the tool returned at the time we saved it."
+    },
+    "conditions": {
+      "id": "conditions",
+      "title": "Conditions, loops and return",
+      "brief": "An if statement chooses a branch. A while loop repeats its body. return leaves the current function. None can mean that a function has no stopping reason to report yet.",
+      "example": "If steps is already at max_steps, stop_reason returns \"max_steps\". If no limit has been reached, it returns None and the caller may continue."
+    },
+    "validation": {
+      "id": "validation",
+      "title": "Valid data and the right data",
+      "brief": "Validation checks whether data follows the rules we specified. Some rules check its shape and types. Others check whether it belongs to this particular task. Passing one kind of check does not automatically pass the other.",
+      "example": "CONV-7 can be a correctly written machine identifier while still being wrong for a task about CONV-3."
+    },
+    "time": {
+      "id": "time",
+      "title": "Timeouts and elapsed time",
+      "brief": "A timeout limits how long we wait for one operation. A whole-run budget limits how long the overall attempt should continue. We need both because a loop counter cannot interrupt an operation that never returns.",
+      "example": "A limit of six decisions does not help if the first tool call hangs. The local tool subprocess also needs a timeout."
+    }
+  },
+  "code_targets": {
+    "record": [
+      "state.py",
+      "State.record"
+    ],
+    "verify": [
+      "verification.py",
+      "verify"
+    ],
+    "stats_inputs": [
+      "verification.py",
+      "statistics_inputs_match"
+    ],
+    "guards": [
+      "controls.py",
+      "stop_reason"
+    ],
+    "loop": [
+      "runtime.py",
+      "complete_tool_step"
+    ]
+  },
+  "code_support": {
+    "record": {
+      "hint1": "Look at the fields in Observation and the existing State.log method. Which inputs must the new record keep?",
+      "hint2": "Make an ID from the next position, deep-copy arguments and result, append the Observation, log the event and return the Observation.",
+      "explanation": "record stores what happened. Its deep copies protect the record from later changes. The ID lets a report refer back to one observation. It does not decide whether that observation completes the task.",
+      "rubric": "Explain why the inputs and result are copied, where the Observation is appended, and why recording is separate from verification."
+    },
+    "verify": {
+      "hint1": "Which evidence does each goal require? The matching helpers will supply suitable observations once you also complete the small input guard.",
+      "hint2": "Build a mapping of found evidence, choose the required names from the goal, and list missing names. A report with zero query rows also needs nonempty readings. Return the associated IDs and facts.",
+      "explanation": "verify expresses the task checklist. It uses matched observations rather than model confidence. Different goals need different evidence, and an empty query cannot support a percentage report.",
+      "rubric": "Explain the required evidence for report versus readings, how missing controls ready, and why evidence IDs identify actual matched observations."
+    },
+    "stats_inputs": {
+      "hint1": "Read obs.arguments. Which two named inputs should come from the saved query and specification?",
+      "hint2": "Build the expected argument dictionary from values and limit. Compare the whole dictionary, including every list value; a count or summary comparison is not enough.",
+      "explanation": "statistics_inputs_match connects a calculation to the values and limit collected for this task. Different lists can produce identical summaries. The caller rejects a mismatched input record before checking the returned arithmetic.",
+      "rubric": "Explain where values and limit come from, why the full argument dictionary is compared, and why a False return skips this observation even when its summary looks correct."
+    },
+    "guards": {
+      "hint1": "Read Config and compare its limits with the counters and elapsed time in State.",
+      "hint2": "Check the total deadline, step count, reported live-token threshold and enabled no-progress limit in the provided order. Reaching the boundary is enough; return None only if none applies.",
+      "explanation": "stop_reason reports why another attempt is no longer allowed. It does not claim success. Individual tool attempts and operation timeouts are also bounded by the existing runner.",
+      "rubric": "Explain an exact boundary, the None return, the special disabled no-progress value and why a stop reason is not verified completion."
+    },
+    "loop": {
+      "hint1": "Trace the action through the runner and ask who needs to see its returned observation next.",
+      "hint2": "Use runner.execute to obtain obs, give obs.result to the same planner, call _update_check on the updated State, and return what the caller expects.",
+      "explanation": "The helper connects execution to feedback and fresh verification. The runner records the result; the same planner receives feedback; the new check sees the evidence just collected.",
+      "rubric": "Explain the order execute, observe, update check; distinguish a stored observation from planner feedback and describe why an old check is insufficient."
+    }
+  },
+  "tasks": [
+    {
+      "id": "t01",
+      "title": "Why we need a loop",
+      "minutes": 8,
+      "practice_minutes": 8,
+      "weight": 8,
+      "purpose": "Connect the earlier weeks to a task with dependent tool actions.",
+      "logic": "In Week 1, we connected an LLM to a local Python program. You can think of this as giving the program a brain: it could understand a request and produce a response.\n\nIn Week 3, we gave it hands. The model could request a tool, and our Python program could run that tool.\n\nBut having a brain and hands does not automatically mean the program can finish a whole task.\n\nHere is the task we will work on today: Check CONV-3's temperature readings for 2 March 2026, 10:00 to 10:25 (UTC+08:00). Read its reference limit, calculate the share of readings above that limit, and give a summary we can check.\n\nBefore we run anything, think about what we would need to check the final answer. Temperature readings are one part. We also need the reference limit and a calculation that really uses those inputs.",
+      "code_walkthrough": [
+        "Use the concrete request before any source file. Locate the two inputs of the statistics tool on the slide."
+      ],
+      "worked_answer": "We still need the registered reference and a calculation using it with the queried readings. The report must cite those observations.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "Which parts of the CONV-3 task are still missing after a temperature query alone?",
+          "rubric": "Identify the registered reference, matching calculation and checked report; do not require a fourth domain tool.",
+          "hint1": "Read the verbs in the request.",
+          "hint2": "The query supplies readings, but not the reference or a statistics result.",
+          "worked_answer": "We still need the registered reference and a calculation using it with the queried readings. The report must cite those observations."
+        }
+      ],
+      "code_refs": [],
+      "concepts": [],
+      "code_target": null,
+      "requires_teaching": true,
+      "requires_prediction": false,
+      "requires_setup": false,
+      "commands": [],
+      "planned_calls": 0,
+      "paths": {
+        "review": [
+          {
+            "id": "t01.opening",
+            "title": "We have a brain and hands. What is missing?",
+            "phase": "before_run",
+            "logic": "In Week 1, we connected an LLM to a local Python program. You can think of this as giving the program a brain: it could understand a request and produce a response.",
+            "explanation": "In Week 1, we connected an LLM to a local Python program. You can think of this as giving the program a brain: it could understand a request and produce a response.\n\nIn Week 3, we gave it hands. The model could request a tool, and our Python program could run that tool.\n\nBut having a brain and hands does not automatically mean the program can finish a whole task.\n\nHere is the task we will work on today: Check CONV-3's temperature readings for 2 March 2026, 10:00 to 10:25 (UTC+08:00). Read its reference limit, calculate the share of readings above that limit, and give a summary we can check.\n\nBefore we run anything, think about what we would need to check the final answer. Temperature readings are one part. We also need the reference limit and a calculation that really uses those inputs.",
+            "student_script": [
+              "In Week 1, we connected an LLM to a local Python program. You can think of this as giving the program a brain: it could understand a request and produce a response.",
+              "In Week 3, we gave it hands. The model could request a tool, and our Python program could run that tool.",
+              "But having a brain and hands does not automatically mean the program can finish a whole task.",
+              "Here is the task we will work on today: Check CONV-3's temperature readings for 2 March 2026, 10:00 to 10:25 (UTC+08:00). Read its reference limit, calculate the share of readings above that limit, and give a summary we can check.",
+              "Before we run anything, think about what we would need to check the final answer. Temperature readings are one part. We also need the reference limit and a calculation that really uses those inputs."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [
+              2,
+              3,
+              4
+            ],
+            "one_next_action": null,
+            "evidence_fields": [],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week4_Lecture_Building_an_Agent_from_First_Principles.pdf",
+              "primary_slide": 2,
+              "title": "We have a brain and hands. What is missing?",
+              "image": "slides/slide-02.png",
+              "related_slides": [
+                3,
+                4
+              ],
+              "focus": "In Week 1, we connected an LLM to a local Python program. You can think of this as giving the program a brain: it could understand a request and produce a response.",
+              "visual_walkthrough": [
+                "Read the request first, before naming any software modules.",
+                "Point to FETCH, REFERENCE and COMPUTE. These describe three jobs done by the supplied tools.",
+                "Point to JUSTIFY. This asks us to show where the answer came from; it is not automatically a fourth tool."
+              ],
+              "explanation": "In Week 1, we connected an LLM to a local Python program. You can think of this as giving the program a brain: it could understand a request and produce a response.\n\nIn Week 3, we gave it hands. The model could request a tool, and our Python program could run that tool.\n\nBut having a brain and hands does not automatically mean the program can finish a whole task.\n\nHere is the task we will work on today: Check CONV-3's temperature readings for 2 March 2026, 10:00 to 10:25 (UTC+08:00). Read its reference limit, calculate the share of readings above that limit, and give a summary we can check.\n\nBefore we run anything, think about what we would need to check the final answer. Temperature readings are one part. We also need the reference limit and a calculation that really uses those inputs.",
+              "code_bridge": "Later, Task stores the confirmed machine, window and goal. Do not begin this opening by reading its class definition.",
+              "case_note": "The original slides call this synthetic teaching machine M12. Our exercises use CONV-3. Explain this once, then use CONV-3 consistently.",
+              "clarification": "Week 3 used a one-round teaching program. Function calling itself is not limited to one call. The Week 2 miniGPT is not the live tool-calling model used here; DeepSeek supplies the live planner."
+            }
+          },
+          {
+            "id": "t01.dependencies",
+            "title": "Follow the two inputs to the calculation",
+            "phase": "before_run",
+            "logic": "Follow the two arrows into temperature_stats. One brings the readings; the other brings the reference limit.",
+            "explanation": "Follow the two arrows into temperature_stats. One brings the readings; the other brings the reference limit.\n\nWe can read the reference before or after querying the temperatures. But we cannot use the actual values in the calculation until both results are available.\n\nFor this task we have three domain tools. The checked summary can be made by Python from their verified fields. A separate model request to write prose would not be a fourth tool call.",
+            "student_script": [
+              "Follow the two arrows into temperature_stats. One brings the readings; the other brings the reference limit.",
+              "We can read the reference before or after querying the temperatures. But we cannot use the actual values in the calculation until both results are available.",
+              "For this task we have three domain tools. The checked summary can be made by Python from their verified fields. A separate model request to write prose would not be a fourth tool call."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [
+              6
+            ],
+            "one_next_action": null,
+            "evidence_fields": [],
+            "check": {
+              "type": "mcq",
+              "prompt": "We have the five temperature readings but have not read the reference file. What can we say at this point?",
+              "options": {
+                "A": "The full report is finished because the query worked.",
+                "B": "We have one part of the evidence; the reference and checked calculation are still missing.",
+                "C": "The program must guess the reference so that it can finish."
+              },
+              "correct": "B",
+              "explanation": "The query gives readings. It does not supply the registered reference or prove that a calculation used the correct inputs.",
+              "hint1": "Read the original request again. Which parts are not answered by a list of temperatures?",
+              "hint2": "The calculation has two inputs: readings and a limit. We have only the readings so far.",
+              "required": true,
+              "estimated_seconds": 45,
+              "id": "t01.dependencies.check"
+            },
+            "slide_review": {
+              "source_deck": "EEEE4149_Week4_Lecture_Building_an_Agent_from_First_Principles.pdf",
+              "primary_slide": 6,
+              "title": "Follow the two inputs to the calculation",
+              "image": "slides/slide-06.png",
+              "related_slides": [],
+              "focus": "Follow the two arrows into temperature_stats. One brings the readings; the other brings the reference limit.",
+              "visual_walkthrough": [
+                "Trace query_temperature to VALUES, then get_machine_spec to LIMIT.",
+                "Pause where the arrows meet. Ask what would be missing if either source had not returned.",
+                "Follow the final arrow to SUMMARY and explain that its numbers must point back to the records."
+              ],
+              "explanation": "Follow the two arrows into temperature_stats. One brings the readings; the other brings the reference limit.\n\nWe can read the reference before or after querying the temperatures. But we cannot use the actual values in the calculation until both results are available.\n\nFor this task we have three domain tools. The checked summary can be made by Python from their verified fields. A separate model request to write prose would not be a fourth tool call.",
+              "code_bridge": "Task.goal names what we are trying to finish; verify will later express the required evidence in Python.",
+              "case_note": "The original slides call this synthetic teaching machine M12. Our exercises use CONV-3. Explain this once, then use CONV-3 consistently."
+            }
+          }
+        ],
+        "practice": [
+          {
+            "id": "t01.practice_opening",
+            "title": "What would finish this request?",
+            "phase": "before_run",
+            "logic": "In Week 1, we connected an LLM to a local Python program. You can think of this as giving the program a brain: it could understand a request and produce a response.",
+            "explanation": "In Week 1, we connected an LLM to a local Python program. You can think of this as giving the program a brain: it could understand a request and produce a response.\n\nIn Week 3, we gave it hands. The model could request a tool, and our Python program could run that tool.\n\nBut having a brain and hands does not automatically mean the program can finish a whole task.\n\nToday we will use that connection to work on a longer request: Check CONV-3's temperature readings for 2 March 2026, 10:00 to 10:25 (UTC+08:00). Read its reference limit, calculate the share of readings above that limit, and give a summary we can check.\n\nList what you would need before signing off the answer. Then we will inspect a single API request and see which pieces it actually supplies.",
+            "student_script": [
+              "In Week 1, we connected an LLM to a local Python program. You can think of this as giving the program a brain: it could understand a request and produce a response.",
+              "In Week 3, we gave it hands. The model could request a tool, and our Python program could run that tool.",
+              "But having a brain and hands does not automatically mean the program can finish a whole task.",
+              "Today we will use that connection to work on a longer request: Check CONV-3's temperature readings for 2 March 2026, 10:00 to 10:25 (UTC+08:00). Read its reference limit, calculate the share of readings above that limit, and give a summary we can check.",
+              "List what you would need before signing off the answer. Then we will inspect a single API request and see which pieces it actually supplies."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": [],
+            "check": {
+              "type": "mcq",
+              "prompt": "We have the five temperature readings but have not read the reference file. What can we say at this point?",
+              "options": {
+                "A": "The full report is finished because the query worked.",
+                "B": "We have one part of the evidence; the reference and checked calculation are still missing.",
+                "C": "The program must guess the reference so that it can finish."
+              },
+              "correct": "B",
+              "explanation": "The query gives readings. It does not supply the registered reference or prove that a calculation used the correct inputs.",
+              "hint1": "Read the original request again. Which parts are not answered by a list of temperatures?",
+              "hint2": "The calculation has two inputs: readings and a limit. We have only the readings so far.",
+              "required": true,
+              "estimated_seconds": 45,
+              "id": "t01.practice_opening.check"
+            }
+          },
+          {
+            "id": "t01.practice_task",
+            "title": "Keep the task fixed while you investigate",
+            "phase": "before_run",
+            "logic": "The task names a machine, a time window and a goal. Keep those fields fixed while checking each result.",
+            "explanation": "The task names a machine, a time window and a goal. Keep those fields fixed while checking each result.\n\nThe time window includes 10:00 and excludes 10:25. A result for another machine or another window does not answer this request, even if the data looks sensible.\n\nYou can look at the task file before running anything. You do not need to rewrite the three tools from Week 3.",
+            "student_script": [
+              "The task names a machine, a time window and a goal. Keep those fields fixed while checking each result.",
+              "The time window includes 10:00 and excludes 10:25. A result for another machine or another window does not answer this request, even if the data looks sensible.",
+              "You can look at the task file before running anything. You do not need to rewrite the three tools from Week 3."
+            ],
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "state.py",
+                "symbol": "Task",
+                "slice_start": 0,
+                "max_lines": 8
+              }
+            ],
+            "code_walkthrough": [
+              "Read goal, machine_id, start and end as the confirmed request fields.",
+              "The class describes the task; defining it does not query any records."
+            ],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": []
+          }
+        ]
+      },
+      "output_fields": "Read the actual task report, evidence label, relevant results and any failed check. Show the important fields in the formal reply.",
+      "output_walkthrough": [],
+      "hint1": "Read the verbs in the request.",
+      "hint2": "The query supplies readings, but not the reference or a statistics result."
+    },
+    {
+      "id": "t02",
+      "title": "Inspect one real API request",
+      "minutes": 8,
+      "practice_minutes": 8,
+      "weight": 8,
+      "purpose": "Separate a model proposal from local execution and later feedback.",
+      "logic": "Last week our teaching program stopped after one round of tool use. This was a choice in the program, not a limit of function calling.\n\nNow we will inspect one DeepSeek request. We will pause when the response arrives, then inspect what our local tool execution adds. We will not ask the model for another step in this experiment.\n\nThe response may contain no tool request, one request or several. We will read what actually came back instead of trying to make the model fit a prepared story.",
+      "code_walkthrough": [
+        "Read the single-request function, distinguish the model response from local execution, then inspect the actual report."
+      ],
+      "worked_answer": "The model response contains requests or text. Python performs the allowed local actions. A later model decision needs their results in the conversation. Use the actual report to supply the counts.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "Using the actual request report, explain what the model proposed, what Python executed, and what would need another round.",
+          "rubric": "Use the real evidence label and counts. Separate model requests, tool proposals, executions and feedback. Do not claim one call per response.",
+          "hint1": "Read the model response and local results as two different stages.",
+          "hint2": "Point to one proposed tool name and then to its execution result or rejection.",
+          "worked_answer": "The model response contains requests or text. Python performs the allowed local actions. A later model decision needs their results in the conversation. Use the actual report to supply the counts."
+        }
+      ],
+      "code_refs": [
+        [
+          "demos.py",
+          "single_round_request"
+        ]
+      ],
+      "concepts": [
+        "messages"
+      ],
+      "code_target": null,
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t02"
+        ]
+      ],
+      "planned_calls": 0,
+      "paths": {
+        "review": [
+          {
+            "id": "t02.one_round",
+            "title": "What comes back from one API request?",
+            "phase": "before_run",
+            "logic": "Last week our teaching program stopped after one round of tool use. This was a choice in the program, not a limit of function calling.",
+            "explanation": "Last week our teaching program stopped after one round of tool use. This was a choice in the program, not a limit of function calling.\n\nNow we will inspect one DeepSeek request. We will pause when the response arrives, then inspect what our local tool execution adds. We will not ask the model for another step in this experiment.\n\nThe response may contain no tool request, one request or several. We will read what actually came back instead of trying to make the model fit a prepared story.",
+            "student_script": [
+              "Last week our teaching program stopped after one round of tool use. This was a choice in the program, not a limit of function calling.",
+              "Now we will inspect one DeepSeek request. We will pause when the response arrives, then inspect what our local tool execution adds. We will not ask the model for another step in this experiment.",
+              "The response may contain no tool request, one request or several. We will read what actually came back instead of trying to make the model fit a prepared story."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [
+              4
+            ],
+            "one_next_action": null,
+            "evidence_fields": [],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week4_Lecture_Building_an_Agent_from_First_Principles.pdf",
+              "primary_slide": 4,
+              "title": "What comes back from one API request?",
+              "image": "slides/slide-04.png",
+              "related_slides": [],
+              "focus": "Last week our teaching program stopped after one round of tool use. This was a choice in the program, not a limit of function calling.",
+              "visual_walkthrough": [
+                "Locate the point where the Week 3 program asks for prose and stops continuing the task.",
+                "Compare the checklist on the right with the information obtained so far.",
+                "Ask who would have to start the next request: our Python application, or a function definition sitting in a prompt?"
+              ],
+              "explanation": "Last week our teaching program stopped after one round of tool use. This was a choice in the program, not a limit of function calling.\n\nNow we will inspect one DeepSeek request. We will pause when the response arrives, then inspect what our local tool execution adds. We will not ask the model for another step in this experiment.\n\nThe response may contain no tool request, one request or several. We will read what actually came back instead of trying to make the model fit a prepared story.",
+              "code_bridge": "demos.single_round_request sends one request, records the proposed calls, and shows what the application executed.",
+              "case_note": "The original slides call this synthetic teaching machine M12. Our exercises use CONV-3. Explain this once, then use CONV-3 consistently.",
+              "clarification": "The original slide uses a single-tool teaching cut. A response can propose multiple tools. A tool proposal is still not the same as a returned local tool result."
+            }
+          },
+          {
+            "id": "t02.read_request",
+            "title": "Read the request and the two pause points",
+            "phase": "before_run",
+            "logic": "The program sends the task and the available tool definitions. The model response names what it wants the application to do.",
+            "explanation": "The program sends the task and the available tool definitions. The model response names what it wants the application to do.\n\nThe application still checks and executes local functions. It must send their results back in another model request if the next decision needs those results.\n\nChoose a recorded teacher request or one live request with your own configured key. A teacher record is a saved real exchange. It is not a new call from your computer, and it is not a scripted model reply.",
+            "student_script": [
+              "The program sends the task and the available tool definitions. The model response names what it wants the application to do.",
+              "The application still checks and executes local functions. It must send their results back in another model request if the next decision needs those results.",
+              "Choose a recorded teacher request or one live request with your own configured key. A teacher record is a saved real exchange. It is not a new call from your computer, and it is not a scripted model reply."
+            ],
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "demos.py",
+                "symbol": "single_round_request",
+                "slice_start": 14,
+                "max_lines": 10
+              },
+              {
+                "pack": "lecture",
+                "file": "demos.py",
+                "symbol": "single_round_request",
+                "slice_start": 31,
+                "max_lines": 12
+              }
+            ],
+            "code_walkthrough": [
+              "Find the API request before reading the handling of tool_calls.",
+              "Find the local execution after the response. Count proposed requests and actual executions separately.",
+              "This experiment does not send the execution results to a second model request."
+            ],
+            "slides": [],
+            "one_next_action": "Predict what information the first response can contain and what still needs local execution.",
+            "evidence_fields": []
+          },
+          {
+            "id": "t02.actual_response",
+            "title": "What did this particular request do?",
+            "phase": "after_run",
+            "logic": "Read the actual report with me. First locate the evidence label: a live run or a saved teacher API exchange.",
+            "explanation": "Read the actual report with me. First locate the evidence label: a live run or a saved teacher API exchange.\n\nNow count the proposed tool calls and inspect their names and arguments. Do not assume the count is one. Next look at which calls were actually executed and what they returned.\n\nCompare the evidence now available with the task checklist. We are studying the missing execution and feedback steps, not claiming that every model response has the same number of calls.\n\nIf you selected the bundled teacher record, point to its two requests: get_machine_spec and query_temperature. After Python ran both, the saved check still listed stats as missing. The record contains no second model request. For a new live run, explain its actual calls and missing list instead.",
+            "student_script": [
+              "Read the actual report with me. First locate the evidence label: a live run or a saved teacher API exchange.",
+              "Now count the proposed tool calls and inspect their names and arguments. Do not assume the count is one. Next look at which calls were actually executed and what they returned.",
+              "Compare the evidence now available with the task checklist. We are studying the missing execution and feedback steps, not claiming that every model response has the same number of calls.",
+              "If you selected the bundled teacher record, point to its two requests: get_machine_spec and query_temperature. After Python ran both, the saved check still listed stats as missing. The record contains no second model request. For a new live run, explain its actual calls and missing list instead."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": "Explain one difference between the API response and the result of running a local function.",
+            "evidence_fields": [
+              "evidence label",
+              "model request count",
+              "proposed calls",
+              "executed calls",
+              "tool results",
+              "missing evidence"
+            ]
+          }
+        ],
+        "practice": [
+          {
+            "id": "t02.practice_request",
+            "title": "Inspect one request before adding a loop",
+            "phase": "before_run",
+            "logic": "We will send one DeepSeek request, or read a saved real teacher request, and inspect it in two stages: the model response and the local tool results.",
+            "explanation": "We will send one DeepSeek request, or read a saved real teacher request, and inspect it in two stages: the model response and the local tool results.\n\nLook for tool_calls in the code. These entries ask the application to run functions. They are not temperature measurements.\n\nThere is no follow-up model request in this experiment. Predict what information cannot reach a later model decision until we add that step.",
+            "student_script": [
+              "We will send one DeepSeek request, or read a saved real teacher request, and inspect it in two stages: the model response and the local tool results.",
+              "Look for tool_calls in the code. These entries ask the application to run functions. They are not temperature measurements.",
+              "There is no follow-up model request in this experiment. Predict what information cannot reach a later model decision until we add that step."
+            ],
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "demos.py",
+                "symbol": "single_round_request",
+                "slice_start": 14,
+                "max_lines": 10
+              }
+            ],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": "Choose teacher-record or live mode, then predict the missing feedback step.",
+            "evidence_fields": []
+          },
+          {
+            "id": "t02.practice_observed",
+            "title": "Read your request report",
+            "phase": "after_run",
+            "logic": "Check whether this is a live exchange or an inspected teacher record. Keep that label in your explanation.",
+            "explanation": "Check whether this is a live exchange or an inspected teacher record. Keep that label in your explanation.\n\nFind the proposed calls, the real local results, and any missing evidence. If the model proposed two calls, say two. If it returned text instead, report that too.\n\nWhich information would we need to include when asking the model what to do next?",
+            "student_script": [
+              "Check whether this is a live exchange or an inspected teacher record. Keep that label in your explanation.",
+              "Find the proposed calls, the real local results, and any missing evidence. If the model proposed two calls, say two. If it returned text instead, report that too.",
+              "Which information would we need to include when asking the model what to do next?"
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": [
+              "evidence label",
+              "proposed calls",
+              "executed calls",
+              "missing evidence"
+            ]
+          }
+        ]
+      },
+      "output_fields": "Read the actual task report, evidence label, relevant results and any failed check. Show the important fields in the formal reply.",
+      "output_walkthrough": [
+        [
+          "lesson_result.json: evidence_kind",
+          "Whether this was a new live exchange or inspection of a saved teacher exchange."
+        ],
+        [
+          "teacher route: observation.requests_made_now",
+          "How many API requests this student action made; reading a record makes none."
+        ],
+        [
+          "single-round record: requested_tool_calls and response.message.tool_calls",
+          "How many calls the actual response proposed, and their names and arguments."
+        ],
+        [
+          "single-round record: tool_attempts and observations",
+          "What local tool code actually ran and the results or refusals that were saved."
+        ],
+        [
+          "single-round record: after.ready and after.missing",
+          "What the verifier can conclude after those results, and which evidence is still absent."
+        ],
+        [
+          "single-round record: next_messages_not_sent",
+          "The prepared continuation was not sent in this one-request experiment."
+        ]
+      ],
+      "hint1": "Read the model response and local results as two different stages.",
+      "hint2": "Point to one proposed tool name and then to its execution result or rejection.",
+      "default_route": "teacher",
+      "available_routes": [
+        "teacher",
+        "live"
+      ],
+      "live_planned_calls": 1,
+      "teacher_data_required": true,
+      "teacher_data_file": "teacher-data/single_round.json",
+      "teacher_data_manifest": "teacher-data/SOURCE.json",
+      "evidence_rule": "A teacher route must read a saved real API exchange and retain its provenance. It must not substitute a scripted reply when real evidence is missing. A live route requires explicit selection and privately configured credentials."
+    },
+    {
+      "id": "t03",
+      "title": "Find two problems in a small loop",
+      "minutes": 10,
+      "practice_minutes": 10,
+      "weight": 10,
+      "purpose": "Observe repeated work and unsupported completion in bounded fault demonstrations.",
+      "logic": "The simplest idea is to repeat four actions: ask for a next step, run it, read the result, and ask again.\n\nKeep the same conversation history. That means keeping the original task, the model request and its matching tool result, rather than starting over with only the first question.\n\nA fixed workflow can also have conditions. For a small task it may be the simpler solution. Today we are learning to control a loop whose next action is proposed while it runs.",
+      "code_walkthrough": [
+        "Read the small bounded demonstration, predict repeat and early-finish behaviour, then locate the missing internal checks."
+      ],
+      "worked_answer": "The repeating case needs progress and resource limits; the early-finish case needs an evidence check. The outside limit only bounded the experiment.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "What was missing from each deliberately weak loop, and what did the outside limit prove?",
+          "rubric": "Distinguish evidence-based completion from progress/budget limits. Label scripted fault injection and external containment honestly.",
+          "hint1": "One case continued too long; the other accepted completion too soon.",
+          "hint2": "The outside harness ended the demonstration. It did not repair the inner loop.",
+          "worked_answer": "The repeating case needs progress and resource limits; the early-finish case needs an evidence check. The outside limit only bounded the experiment."
+        }
+      ],
+      "code_refs": [
+        [
+          "demos.py",
+          "bare_loop"
+        ]
+      ],
+      "concepts": [
+        "conditions"
+      ],
+      "code_target": null,
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t03"
+        ]
+      ],
+      "planned_calls": 0,
+      "paths": {
+        "review": [
+          {
+            "id": "t03.small_loop",
+            "title": "Try the smallest loop first",
+            "phase": "before_run",
+            "logic": "The simplest idea is to repeat four actions: ask for a next step, run it, read the result, and ask again.",
+            "explanation": "The simplest idea is to repeat four actions: ask for a next step, run it, read the result, and ask again.\n\nKeep the same conversation history. That means keeping the original task, the model request and its matching tool result, rather than starting over with only the first question.\n\nA fixed workflow can also have conditions. For a small task it may be the simpler solution. Today we are learning to control a loop whose next action is proposed while it runs.",
+            "student_script": [
+              "The simplest idea is to repeat four actions: ask for a next step, run it, read the result, and ask again.",
+              "Keep the same conversation history. That means keeping the original task, the model request and its matching tool result, rather than starting over with only the first question.",
+              "A fixed workflow can also have conditions. For a small task it may be the simpler solution. Today we are learning to control a loop whose next action is proposed while it runs."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [
+              8,
+              17
+            ],
+            "one_next_action": null,
+            "evidence_fields": [],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week4_Lecture_Building_an_Agent_from_First_Principles.pdf",
+              "primary_slide": 8,
+              "title": "Try the smallest loop first",
+              "image": "slides/slide-08.png",
+              "related_slides": [
+                17
+              ],
+              "focus": "The simplest idea is to repeat four actions: ask for a next step, run it, read the result, and ask again.",
+              "visual_walkthrough": [
+                "Start at PLAN and follow one trip around the circle.",
+                "At OBSERVE, point back toward the next PLAN. The return value changes what can sensibly happen next.",
+                "The Verify and stop rules on this teaching diagram are what we are about to build, not features that appear merely because we wrote while."
+              ],
+              "explanation": "The simplest idea is to repeat four actions: ask for a next step, run it, read the result, and ask again.\n\nKeep the same conversation history. That means keeping the original task, the model request and its matching tool result, rather than starting over with only the first question.\n\nA fixed workflow can also have conditions. For a small task it may be the simpler solution. Today we are learning to control a loop whose next action is proposed while it runs.",
+              "code_bridge": "demos.bare_loop lets us inspect a small loop with deliberately weak completion logic.",
+              "case_note": "The original slides call this synthetic teaching machine M12. Our exercises use CONV-3. Explain this once, then use CONV-3 consistently.",
+              "clarification": "The four named stages are this course's explanation of the loop. ReAct does not mean that we should save or display private model reasoning."
+            }
+          },
+          {
+            "id": "t03.predict_failures",
+            "title": "What could go wrong with that loop?",
+            "phase": "before_run",
+            "logic": "We will try two deliberately difficult planners. One keeps asking for the same file. The other asks to finish before collecting the evidence.",
+            "explanation": "We will try two deliberately difficult planners. One keeps asking for the same file. The other asks to finish before collecting the evidence.\n\nThese are scripted fault injections so that everyone can inspect the same control problems. They do not measure how often a real model makes these mistakes.\n\nAn outside step and time limit will end the demonstration. We will never leave an unbounded loop running against a paid API.",
+            "student_script": [
+              "We will try two deliberately difficult planners. One keeps asking for the same file. The other asks to finish before collecting the evidence.",
+              "These are scripted fault injections so that everyone can inspect the same control problems. They do not measure how often a real model makes these mistakes.",
+              "An outside step and time limit will end the demonstration. We will never leave an unbounded loop running against a paid API."
+            ],
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "demos.py",
+                "symbol": "bare_loop",
+                "slice_start": 8,
+                "max_lines": 12
+              },
+              {
+                "pack": "lecture",
+                "file": "demos.py",
+                "symbol": "bare_loop",
+                "slice_start": 25,
+                "max_lines": 4
+              }
+            ],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": "Predict what is missing in each case: a completion check, a limit on continued work, or both.",
+            "evidence_fields": []
+          },
+          {
+            "id": "t03.inspect_failures",
+            "title": "One loop repeats; the other stops too soon",
+            "phase": "after_run",
+            "logic": "Read the two actual traces. In the repeat case, identify what useful evidence was added and what was only repeated.",
+            "explanation": "Read the two actual traces. In the repeat case, identify what useful evidence was added and what was only repeated.\n\nIn the early-finish case, compare the claimed ending with the evidence still missing. A request to finish is not proof that the task is finished.\n\nThe outside limit stopped our demonstration safely. That is different from the learner's loop correctly deciding when to stop. We need to add those checks inside the application.",
+            "student_script": [
+              "Read the two actual traces. In the repeat case, identify what useful evidence was added and what was only repeated.",
+              "In the early-finish case, compare the claimed ending with the evidence still missing. A request to finish is not proof that the task is finished.",
+              "The outside limit stopped our demonstration safely. That is different from the learner's loop correctly deciding when to stop. We need to add those checks inside the application."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": [
+              "scenario",
+              "events",
+              "claimed ending",
+              "missing evidence",
+              "outer limit"
+            ],
+            "check": {
+              "type": "mcq",
+              "prompt": "Which pair of additions addresses the two demonstrated problems?",
+              "options": {
+                "A": "A longer prompt and a more confident final sentence.",
+                "B": "An evidence check for completion, and limits on unproductive or excessive work.",
+                "C": "Always stop after the first successful tool call."
+              },
+              "correct": "B",
+              "explanation": "An evidence check prevents unsupported success. Progress and resource limits prevent the run from continuing without a useful reason.",
+              "hint1": "Treat stopping too early and continuing too long as two separate problems.",
+              "hint2": "One check asks whether the task is done. Another asks whether we may keep trying.",
+              "required": true,
+              "estimated_seconds": 45,
+              "id": "t03.inspect_failures.check"
+            }
+          }
+        ],
+        "practice": [
+          {
+            "id": "t03.practice_loop",
+            "title": "Test two bad next-step proposals",
+            "phase": "before_run",
+            "logic": "Read the small loop, then predict what it will do with a planner that repeats one request and a planner that asks to finish too soon.",
+            "explanation": "Read the small loop, then predict what it will do with a planner that repeats one request and a planner that asks to finish too soon.\n\nWe use known scripted proposals to test the program. The demonstration has an outside limit even though its own teaching logic is deliberately incomplete.",
+            "student_script": [
+              "Read the small loop, then predict what it will do with a planner that repeats one request and a planner that asks to finish too soon.",
+              "We use known scripted proposals to test the program. The demonstration has an outside limit even though its own teaching logic is deliberately incomplete."
+            ],
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "demos.py",
+                "symbol": "bare_loop",
+                "slice_start": 8,
+                "max_lines": 12
+              }
+            ],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": "Predict the two failure modes before running the bounded demonstration.",
+            "evidence_fields": []
+          },
+          {
+            "id": "t03.practice_failures",
+            "title": "Locate the missing check in each trace",
+            "phase": "after_run",
+            "logic": "Find the first repeated action with no useful new evidence. Then inspect the other run's finish request and list the evidence it did not collect.",
+            "explanation": "Find the first repeated action with no useful new evidence. Then inspect the other run's finish request and list the evidence it did not collect.\n\nExplain which part of the program should decide whether that finish request is accepted. The outside demonstration limit is not evidence that the internal loop works.",
+            "student_script": [
+              "Find the first repeated action with no useful new evidence. Then inspect the other run's finish request and list the evidence it did not collect.",
+              "Explain which part of the program should decide whether that finish request is accepted. The outside demonstration limit is not evidence that the internal loop works."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": [
+              "scenario",
+              "events",
+              "missing evidence",
+              "outer limit"
+            ]
+          }
+        ]
+      },
+      "output_fields": "Read the actual task report, evidence label, relevant results and any failed check. Show the important fields in the formal reply.",
+      "output_walkthrough": [
+        [
+          "demo.json: case and evidence_kind",
+          "Which deliberately scripted test this is; it is not a live model failure."
+        ],
+        [
+          "decisions and tool_attempts",
+          "Separate requests for a next step from actual local executions."
+        ],
+        [
+          "naive_status and diagnostic_check",
+          "Compare what the weak loop claimed with what the outside evidence check found."
+        ],
+        [
+          "ending and external_demo_cap",
+          "Identify the outside limit that contained a repeated loop. It does not repair the inner logic."
+        ]
+      ],
+      "hint1": "One case continued too long; the other accepted completion too soon.",
+      "hint2": "The outside harness ended the demonstration. It did not repair the inner loop."
+    },
+    {
+      "id": "t04",
+      "title": "Check a proposal before it runs",
+      "minutes": 9,
+      "practice_minutes": 9,
+      "weight": 9,
+      "purpose": "Inspect the execution checks and their effect on real tool attempts.",
+      "logic": "Before we fix the whole loop, there is a smaller question: is this particular action allowed to run?\n\nThe program accepts only registered tool names. It checks the argument types and values, then checks that the requested machine and window match the task the user confirmed.\n\nA correctly written request about another machine is still the wrong request for this task. A rejection should be recorded and returned as feedback; it must not execute the tool.",
+      "code_walkthrough": [
+        "Find allowed names, argument validation and task-scope checks before the worker starts."
+      ],
+      "worked_answer": "The allowed-tool, argument or task-scope check refused the request before execution. The report must show that refusal and no invented tool attempt.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "Use one rejected request to explain why the tool did not run and how you can tell from the output.",
+          "rubric": "Name the specific name/argument/task-scope check and cite actual rejection plus attempt evidence.",
+          "hint1": "Look for the error code and the real execution count.",
+          "hint2": "A request may be recorded before any worker starts. Which condition rejected this one?",
+          "worked_answer": "The allowed-tool, argument or task-scope check refused the request before execution. The report must show that refusal and no invented tool attempt."
+        }
+      ],
+      "code_refs": [
+        [
+          "gateway.py",
+          "ToolRunner.execute"
+        ]
+      ],
+      "concepts": [
+        "validation"
+      ],
+      "code_target": null,
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t04"
+        ]
+      ],
+      "planned_calls": 0,
+      "paths": {
+        "review": [
+          {
+            "id": "t04.execution_gate",
+            "title": "Should this proposed action be allowed to run?",
+            "phase": "before_run",
+            "logic": "Before we fix the whole loop, there is a smaller question: is this particular action allowed to run?",
+            "explanation": "Before we fix the whole loop, there is a smaller question: is this particular action allowed to run?\n\nThe program accepts only registered tool names. It checks the argument types and values, then checks that the requested machine and window match the task the user confirmed.\n\nA correctly written request about another machine is still the wrong request for this task. A rejection should be recorded and returned as feedback; it must not execute the tool.",
+            "student_script": [
+              "Before we fix the whole loop, there is a smaller question: is this particular action allowed to run?",
+              "The program accepts only registered tool names. It checks the argument types and values, then checks that the requested machine and window match the task the user confirmed.",
+              "A correctly written request about another machine is still the wrong request for this task. A rejection should be recorded and returned as feedback; it must not execute the tool."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [
+              26
+            ],
+            "one_next_action": null,
+            "evidence_fields": [],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week4_Lecture_Building_an_Agent_from_First_Principles.pdf",
+              "primary_slide": 26,
+              "title": "Should this proposed action be allowed to run?",
+              "image": "slides/slide-26.png",
+              "related_slides": [],
+              "focus": "Before we fix the whole loop, there is a smaller question: is this particular action allowed to run?",
+              "visual_walkthrough": [
+                "Read the three allowed tool names. There is no route here for arbitrary Python text.",
+                "Follow the wrong-machine example and stop before execution.",
+                "Separate these execution checks from the later check that statistics use the collected readings."
+              ],
+              "explanation": "Before we fix the whole loop, there is a smaller question: is this particular action allowed to run?\n\nThe program accepts only registered tool names. It checks the argument types and values, then checks that the requested machine and window match the task the user confirmed.\n\nA correctly written request about another machine is still the wrong request for this task. A rejection should be recorded and returned as feedback; it must not execute the tool.",
+              "code_bridge": "ToolRunner.execute performs the execution checks before starting a local worker.",
+              "case_note": "The original slides call this synthetic teaching machine M12. Our exercises use CONV-3. Explain this once, then use CONV-3 consistently.",
+              "clarification": "In this implementation, matching_stats checks the statistics' link to collected evidence after execution. Do not claim the input-provenance check already happened at the execution gate."
+            }
+          },
+          {
+            "id": "t04.gate_code",
+            "title": "Find the check before the worker starts",
+            "phase": "before_run",
+            "logic": "Read the beginning of ToolRunner.execute. The name is checked against the allowed set, and the argument model validates the proposed values.",
+            "explanation": "Read the beginning of ToolRunner.execute. The name is checked against the allowed set, and the argument model validates the proposed values.\n\nNext inspect the task checks. They compare the requested machine and time window with the confirmed task.\n\nPredict what the actual tool-attempt counter will do for a rejected request, then run the small gate demonstration.",
+            "student_script": [
+              "Read the beginning of ToolRunner.execute. The name is checked against the allowed set, and the argument model validates the proposed values.",
+              "Next inspect the task checks. They compare the requested machine and time window with the confirmed task.",
+              "Predict what the actual tool-attempt counter will do for a rejected request, then run the small gate demonstration."
+            ],
+            "code_refs": [
+              {
+                "pack": "lecture",
+                "file": "gateway.py",
+                "symbol": "ToolRunner.execute",
+                "slice_start": 1,
+                "max_lines": 11
+              },
+              {
+                "pack": "lecture",
+                "file": "gateway.py",
+                "symbol": "ToolRunner.execute",
+                "slice_start": 13,
+                "max_lines": 7
+              }
+            ],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": "Choose one invalid request and predict whether any tool code will run.",
+            "evidence_fields": []
+          },
+          {
+            "id": "t04.gate_result",
+            "title": "A refused request is still useful feedback",
+            "phase": "after_run",
+            "logic": "Read the rejection code and message in the actual output. Check the number of real tool attempts rather than guessing from the number of requests.",
+            "explanation": "Read the rejection code and message in the actual output. Check the number of real tool attempts rather than guessing from the number of requests.\n\nThe program can explain why it refused a request. Recording that refusal does not turn it into successful equipment data.",
+            "student_script": [
+              "Read the rejection code and message in the actual output. Check the number of real tool attempts rather than guessing from the number of requests.",
+              "The program can explain why it refused a request. Recording that refusal does not turn it into successful equipment data."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": [
+              "validation result",
+              "error code",
+              "tool attempts"
+            ],
+            "check": {
+              "type": "mcq",
+              "prompt": "A proposed request uses the wrong machine and is rejected before execution. What should happen?",
+              "options": {
+                "A": "Record the rejection and return feedback, without counting a tool execution that never happened.",
+                "B": "Run it anyway because the machine identifier has the correct type.",
+                "C": "Treat the error message as the requested machine specification."
+              },
+              "correct": "A",
+              "explanation": "The refusal is a real event worth recording. It is not a tool execution and it does not supply the requested equipment evidence.",
+              "hint1": "Separate a proposed action from code that actually ran.",
+              "hint2": "The gate rejected the request before the worker started. What can the attempt counter honestly count?",
+              "required": true,
+              "estimated_seconds": 45,
+              "id": "t04.gate_result.check"
+            }
+          }
+        ],
+        "practice": [
+          {
+            "id": "t04.practice_gate",
+            "title": "Will this request reach a tool?",
+            "phase": "before_run",
+            "logic": "Inspect the execution checks, then classify the supplied unknown-tool, wrong-argument and wrong-machine requests.",
+            "explanation": "Inspect the execution checks, then classify the supplied unknown-tool, wrong-argument and wrong-machine requests.\n\nFor each one, predict whether the worker should start. We will check the actual attempt counter after running the gate demonstration.",
+            "student_script": [
+              "Inspect the execution checks, then classify the supplied unknown-tool, wrong-argument and wrong-machine requests.",
+              "For each one, predict whether the worker should start. We will check the actual attempt counter after running the gate demonstration."
+            ],
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "gateway.py",
+                "symbol": "ToolRunner.execute",
+                "slice_start": 1,
+                "max_lines": 11
+              },
+              {
+                "pack": "seminar",
+                "file": "gateway.py",
+                "symbol": "ToolRunner.execute",
+                "slice_start": 13,
+                "max_lines": 7
+              }
+            ],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": "Predict one rejection and explain which condition should cause it.",
+            "evidence_fields": []
+          },
+          {
+            "id": "t04.practice_result",
+            "title": "Check whether your predicted rejection happened",
+            "phase": "after_run",
+            "logic": "Compare the real rejection message and attempt count with your prediction.",
+            "explanation": "Compare the real rejection message and attempt count with your prediction.\n\nIf a request is well formed but belongs to another task, identify the task-scope check. A type check alone is not enough.",
+            "student_script": [
+              "Compare the real rejection message and attempt count with your prediction.",
+              "If a request is well formed but belongs to another task, identify the task-scope check. A type check alone is not enough."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": [
+              "validation result",
+              "error code",
+              "tool attempts"
+            ]
+          }
+        ]
+      },
+      "output_fields": "Read the actual task report, evidence label, relevant results and any failed check. Show the important fields in the formal reply.",
+      "output_walkthrough": [
+        [
+          "demo.json: rows[].arguments",
+          "The actual proposed inputs for each gate test."
+        ],
+        [
+          "rows[].result.status and rows[].result.error",
+          "Whether the request was refused and the stated reason."
+        ],
+        [
+          "rows[].tool_attempts",
+          "Whether any local tool execution occurred. A recorded refusal need not be an execution."
+        ]
+      ],
+      "hint1": "Look for the error code and the real execution count.",
+      "hint2": "A request may be recorded before any worker starts. Which condition rejected this one?"
+    },
+    {
+      "id": "t05",
+      "title": "Keep the result in a reliable record",
+      "minutes": 15,
+      "practice_minutes": 15,
+      "weight": 15,
+      "purpose": "Write State.record and check that later edits cannot alter the saved observation.",
+      "logic": "We can now decide whether a request may run. After it runs, we need to keep what actually happened.\n\nThink of State as the program's notebook. It contains the confirmed task, the observations and the counters that control the run.\n\nAn Observation is one entry in that notebook. Context is the part of the notebook we choose to show the planner. These are related, but they are not the same object.",
+      "code_walkthrough": [
+        "Explain Observation and the supplied log method, then let the learner write record and test independent copies."
+      ],
+      "worked_answer": "A deep copy keeps later changes to the original object from changing the saved history. Recording preserves the event; verification decides what that event proves for this task.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "Why did the saved observation need its own copy, and why is recording a result different from verifying it?",
+          "rubric": "Explain mutable-object independence and separate record keeping from task-completion judgement using the actual test.",
+          "hint1": "Think about two names referring to one nested dictionary.",
+          "hint2": "The copied record preserves what was returned; a later checker decides whether it answers this task.",
+          "worked_answer": "A deep copy keeps later changes to the original object from changing the saved history. Recording preserves the event; verification decides what that event proves for this task."
+        }
+      ],
+      "code_refs": [
+        [
+          "state.py",
+          "Observation"
+        ],
+        [
+          "state.py",
+          "State.log"
+        ]
+      ],
+      "concepts": [
+        "records",
+        "copies"
+      ],
+      "code_target": "record",
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t05"
+        ]
+      ],
+      "planned_calls": 0,
+      "paths": {
+        "review": [
+          {
+            "id": "t05.state",
+            "title": "Where do we keep what happened?",
+            "phase": "before_run",
+            "logic": "We can now decide whether a request may run. After it runs, we need to keep what actually happened.",
+            "explanation": "We can now decide whether a request may run. After it runs, we need to keep what actually happened.\n\nThink of State as the program's notebook. It contains the confirmed task, the observations and the counters that control the run.\n\nAn Observation is one entry in that notebook. Context is the part of the notebook we choose to show the planner. These are related, but they are not the same object.",
+            "student_script": [
+              "We can now decide whether a request may run. After it runs, we need to keep what actually happened.",
+              "Think of State as the program's notebook. It contains the confirmed task, the observations and the counters that control the run.",
+              "An Observation is one entry in that notebook. Context is the part of the notebook we choose to show the planner. These are related, but they are not the same object."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [
+              23,
+              22,
+              24
+            ],
+            "one_next_action": null,
+            "evidence_fields": [],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week4_Lecture_Building_an_Agent_from_First_Principles.pdf",
+              "primary_slide": 23,
+              "title": "Where do we keep what happened?",
+              "image": "slides/slide-23.png",
+              "related_slides": [
+                22,
+                24
+              ],
+              "focus": "We can now decide whether a request may run. After it runs, we need to keep what actually happened.",
+              "visual_walkthrough": [
+                "Read the State column as information owned by Python.",
+                "Follow context() across the diagram. It selects and copies information for the next decision.",
+                "Point out that a claim in a model message cannot directly change the runtime's status or counters."
+              ],
+              "explanation": "We can now decide whether a request may run. After it runs, we need to keep what actually happened.\n\nThink of State as the program's notebook. It contains the confirmed task, the observations and the counters that control the run.\n\nAn Observation is one entry in that notebook. Context is the part of the notebook we choose to show the planner. These are related, but they are not the same object.",
+              "code_bridge": "Observation defines one record; State.context selects information for the planner.",
+              "case_note": "The original slides call this synthetic teaching machine M12. Our exercises use CONV-3. Explain this once, then use CONV-3 consistently.",
+              "clarification": "Use field(default_factory=list) for separate lists in the executable dataclass. The slide's shortened default-value display is not code to copy unchanged."
+            }
+          },
+          {
+            "id": "t05.two_routes",
+            "title": "The result has two places to go",
+            "phase": "before_run",
+            "logic": "Follow the upper arrow first. The result goes into the program's record so that the verifier and a human can inspect it later.",
+            "explanation": "Follow the upper arrow first. The result goes into the program's record so that the verifier and a human can inspect it later.\n\nNow follow the lower arrow. The result also goes back to the planner so that its next decision can use it.\n\nObserve keeps the result, including an error or refusal. It does not decide that the task is complete. We will write that separate decision next.",
+            "student_script": [
+              "Follow the upper arrow first. The result goes into the program's record so that the verifier and a human can inspect it later.",
+              "Now follow the lower arrow. The result also goes back to the planner so that its next decision can use it.",
+              "Observe keeps the result, including an error or refusal. It does not decide that the task is complete. We will write that separate decision next."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [
+              25
+            ],
+            "one_next_action": null,
+            "evidence_fields": [],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week4_Lecture_Building_an_Agent_from_First_Principles.pdf",
+              "primary_slide": 25,
+              "title": "The result has two places to go",
+              "image": "slides/slide-25.png",
+              "related_slides": [],
+              "focus": "Follow the upper arrow first. The result goes into the program's record so that the verifier and a human can inspect it later.",
+              "visual_walkthrough": [
+                "Trace the result into the ledger. Name the observation ID, inputs and returned value.",
+                "Trace the other route into the conversation. A tool message must match the original tool-call ID.",
+                "Ask what each route is for before introducing any new class syntax."
+              ],
+              "explanation": "Follow the upper arrow first. The result goes into the program's record so that the verifier and a human can inspect it later.\n\nNow follow the lower arrow. The result also goes back to the planner so that its next decision can use it.\n\nObserve keeps the result, including an error or refusal. It does not decide that the task is complete. We will write that separate decision next.",
+              "code_bridge": "State.record saves the observation; planner.observe returns feedback. State.context also supplies a selected view of evidence.",
+              "case_note": "The original slides call this synthetic teaching machine M12. Our exercises use CONV-3. Explain this once, then use CONV-3 consistently.",
+              "clarification": "The scripted planner can read State directly. Removing observe from it does not prove model amnesia. Check actual message pairing when examining the live interface."
+            }
+          },
+          {
+            "id": "t05.record_code",
+            "title": "Save a small record without changing its history",
+            "phase": "before_run",
+            "logic": "Look at Observation. Its fields tell us which tool was requested, which inputs were used, and what came back.",
+            "explanation": "Look at Observation. Its fields tell us which tool was requested, which inputs were used, and what came back.\n\nWhen we save arguments and results, we need our own copies. Otherwise a later edit to a nested dictionary or list could also change what looks like an old observation.\n\nComplete State.record in three small steps: give the observation an ID, store separate copies, and add the record and its event. Keep the provided function signature.",
+            "student_script": [
+              "Look at Observation. Its fields tell us which tool was requested, which inputs were used, and what came back.",
+              "When we save arguments and results, we need our own copies. Otherwise a later edit to a nested dictionary or list could also change what looks like an old observation.",
+              "Complete State.record in three small steps: give the observation an ID, store separate copies, and add the record and its event. Keep the provided function signature."
+            ],
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "state.py",
+                "symbol": "Observation",
+                "slice_start": 0,
+                "max_lines": 8
+              },
+              {
+                "pack": "seminar",
+                "file": "state.py",
+                "symbol": "State.log",
+                "slice_start": 0,
+                "max_lines": 6
+              }
+            ],
+            "code_walkthrough": [
+              "Observation describes the fields, not the decision about completion.",
+              "State.log already shows how copy.deepcopy protects event fields.",
+              "Use the existing fields and log method; do not replace the whole State class."
+            ],
+            "slides": [],
+            "one_next_action": "Write the body of State.record in chat, then predict what should happen if the original dictionary changes.",
+            "evidence_fields": []
+          },
+          {
+            "id": "t05.record_output",
+            "title": "Did the saved observation keep its own values?",
+            "phase": "after_run",
+            "logic": "Read the state-test results and the saved observation example. Locate the ID, tool, arguments, result and reused fields.",
+            "explanation": "Read the state-test results and the saved observation example. Locate the ID, tool, arguments, result and reused fields.\n\nInspect the result of changing the original nested object after it was recorded. Explain why the saved observation should keep the earlier values.\n\nA new log entry only tells us that something was recorded. Whether it adds useful evidence is a later check.",
+            "student_script": [
+              "Read the state-test results and the saved observation example. Locate the ID, tool, arguments, result and reused fields.",
+              "Inspect the result of changing the original nested object after it was recorded. Explain why the saved observation should keep the earlier values.",
+              "A new log entry only tells us that something was recorded. Whether it adds useful evidence is a later check."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": [
+              "test results",
+              "observation ID",
+              "arguments",
+              "result",
+              "copy check",
+              "reused"
+            ]
+          }
+        ],
+        "practice": [
+          {
+            "id": "t05.practice_record",
+            "title": "Keep the tool result so that we can check it later",
+            "phase": "before_run",
+            "logic": "Your first code task is State.record. It receives a tool name, arguments, a result and a reused flag.",
+            "explanation": "Your first code task is State.record. It receives a tool name, arguments, a result and a reused flag.\n\nRead Observation and the existing log method. Use them to give the result an ID, keep separate copies, and append a record and event.\n\nBefore coding, choose whether you want a short explanation of dictionaries, dataclasses or deep copies.",
+            "student_script": [
+              "Your first code task is State.record. It receives a tool name, arguments, a result and a reused flag.",
+              "Read Observation and the existing log method. Use them to give the result an ID, keep separate copies, and append a record and event.",
+              "Before coding, choose whether you want a short explanation of dictionaries, dataclasses or deep copies."
+            ],
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "state.py",
+                "symbol": "Observation",
+                "slice_start": 0,
+                "max_lines": 8
+              },
+              {
+                "pack": "seminar",
+                "file": "state.py",
+                "symbol": "State.log",
+                "slice_start": 0,
+                "max_lines": 6
+              }
+            ],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": "Write a small function body, then predict the saved value after the original object is changed.",
+            "evidence_fields": []
+          },
+          {
+            "id": "t05.practice_result",
+            "title": "Inspect the copy test and one saved observation",
+            "phase": "after_run",
+            "logic": "Check which tests passed and which still need work. Use the actual observation fields to explain where the tool inputs and outputs are kept.",
+            "explanation": "Check which tests passed and which still need work. Use the actual observation fields to explain where the tool inputs and outputs are kept.\n\nThen explain the copy test. Do not just report that it is green: tell me what could have gone wrong if two variables referred to the same nested object.",
+            "student_script": [
+              "Check which tests passed and which still need work. Use the actual observation fields to explain where the tool inputs and outputs are kept.",
+              "Then explain the copy test. Do not just report that it is green: tell me what could have gone wrong if two variables referred to the same nested object."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": [
+              "test results",
+              "observation ID",
+              "copy check"
+            ]
+          }
+        ]
+      },
+      "output_fields": "Read the actual task report, evidence label, relevant results and any failed check. Show the important fields in the formal reply.",
+      "output_walkthrough": [
+        [
+          "lesson_result.json: checks[].passed and checks[].log",
+          "The test outcome and where to read a failed assertion."
+        ],
+        [
+          "student_observation.json: observation",
+          "The ID, tool, arguments and result saved by the learner's own function."
+        ],
+        [
+          "original_arguments_after_edit and original_result_after_edit",
+          "Compare the changed original objects with the unchanged saved values."
+        ],
+        [
+          "input_is_teaching_example",
+          "This small mutation check uses deliberate teaching inputs; it is not a sensor measurement."
+        ]
+      ],
+      "hint1": "Think about two names referring to one nested dictionary.",
+      "hint2": "The copied record preserves what was returned; a later checker decides whether it answers this task."
+    },
+    {
+      "id": "t06",
+      "title": "Check the task and the calculation inputs",
+      "minutes": 15,
+      "practice_minutes": 15,
+      "weight": 15,
+      "purpose": "Write the goal checklist and the exact statistics-input comparison as two short subparts.",
+      "logic": "We can store results now. But a pile of records does not tell us whether the task is complete.\n\nRead the checklist with me. We need the right readings, the registered reference, a calculation using those inputs, and a report whose numbers point back to those records.\n\nYour first small function, verify, will decide which pieces this goal requires and name any gaps. A readings query can finish with an empty list; a percentage report cannot turn no readings into 0%.",
+      "code_walkthrough": [
+        "Connect page 9 to the verify checklist and page 14 to statistics_inputs_match. Let the learner write both short bodies, then compare actual cases with matching summaries but different inputs."
+      ],
+      "worked_answer": "The readings task asks for the matching records, so an empty list can answer it. The report needs nonempty readings and matching statistics, so no data cannot be presented as 0% above the reference.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "Explain why an empty query can finish a readings task but cannot finish the requested percentage report.",
+          "rubric": "Relate evidence requirements to goal; empty query is a valid query outcome but does not provide denominator for report. Do not invent 0%.",
+          "hint1": "Compare what the two task goals ask for.",
+          "hint2": "A list can be empty. A percentage requires actual readings to count.",
+          "worked_answer": "The readings task asks for the matching records, so an empty list can answer it. The report needs nonempty readings and matching statistics, so no data cannot be presented as 0% above the reference."
+        },
+        {
+          "id": "q2",
+          "type": "open",
+          "prompt": "In the same_count_same_summary_wrong_values case, why must we reject the statistics even though its count, mean, maximum and above-limit fraction match? Explain which inputs your guard compares.",
+          "rubric": "Use the actual comparison row, explain that identical summaries can come from different values, and identify both the observed values and registered limit as required arguments. Distinguish input matching from numerical validation.",
+          "hint1": "Look for the changed values in arguments, then compare inputs_match with same_summary_as_correct.",
+          "hint2": "The returned summary describes the supplied arguments. Does it establish that those arguments came from the saved task observations?",
+          "worked_answer": "The call used different values from the saved readings. Equal summaries do not prove equal inputs. My guard compares the complete argument record with values from the matching query and the limit from the matching specification. The numerical checks still verify the returned arithmetic after the inputs match."
+        }
+      ],
+      "code_refs": [
+        [
+          "verification.py",
+          "Check"
+        ],
+        [
+          "verification.py",
+          "matching_stats"
+        ],
+        [
+          "verification.py",
+          "statistics_inputs_match"
+        ]
+      ],
+      "concepts": [
+        "validation"
+      ],
+      "code_target": "verify",
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t06"
+        ]
+      ],
+      "planned_calls": 0,
+      "paths": {
+        "review": [
+          {
+            "id": "t06.acceptance",
+            "title": "W4.2A: what would let us accept the report?",
+            "phase": "before_run",
+            "logic": "We can store results now. But a pile of records does not tell us whether the task is complete.",
+            "explanation": "We can store results now. But a pile of records does not tell us whether the task is complete.\n\nRead the checklist with me. We need the right readings, the registered reference, a calculation using those inputs, and a report whose numbers point back to those records.\n\nYour first small function, verify, will decide which pieces this goal requires and name any gaps. A readings query can finish with an empty list; a percentage report cannot turn no readings into 0%.",
+            "student_script": [
+              "We can store results now. But a pile of records does not tell us whether the task is complete.",
+              "Read the checklist with me. We need the right readings, the registered reference, a calculation using those inputs, and a report whose numbers point back to those records.",
+              "Your first small function, verify, will decide which pieces this goal requires and name any gaps. A readings query can finish with an empty list; a percentage report cannot turn no readings into 0%."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [
+              9
+            ],
+            "one_next_action": null,
+            "evidence_fields": [],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week4_Lecture_Building_an_Agent_from_First_Principles.pdf",
+              "primary_slide": 9,
+              "title": "W4.2A: what would let us accept the report?",
+              "image": "slides/slide-09.png",
+              "related_slides": [],
+              "focus": "We can store results now. But a pile of records does not tell us whether the task is complete.",
+              "visual_walkthrough": [
+                "Read each row as a question we can ask about the collected observations.",
+                "Point to the observation-ID slots. They link a fact to the record that supports it.",
+                "Separate the checklist from the next question: did the calculation actually use those records?"
+              ],
+              "explanation": "We can store results now. But a pile of records does not tell us whether the task is complete.\n\nRead the checklist with me. We need the right readings, the registered reference, a calculation using those inputs, and a report whose numbers point back to those records.\n\nYour first small function, verify, will decide which pieces this goal requires and name any gaps. A readings query can finish with an empty list; a percentage report cannot turn no readings into 0%.",
+              "code_bridge": "W4.2A completes verify and returns Check. W4.2B will supply the input comparison used by matching_stats.",
+              "case_note": "The original slides call this synthetic teaching machine M12. Our exercises use CONV-3. Explain this once, then use CONV-3 consistently."
+            }
+          },
+          {
+            "id": "t06.wrong_numbers",
+            "title": "W4.2B: the same answer can come from different inputs",
+            "phase": "before_run",
+            "logic": "The slide uses [1, 2] as an obvious example of wrong inputs. Now try a harder case: our saved readings are [82, 87, 91, 94, 97], but the calculation used [82, 88, 90, 94, 97].",
+            "explanation": "The slide uses [1, 2] as an obvious example of wrong inputs. Now try a harder case: our saved readings are [82, 87, 91, 94, 97], but the calculation used [82, 88, 90, 94, 97].\n\nBoth lists have five readings. Both give a mean of 90.2, a maximum of 97, and four readings above 85. Even all of those matching results would not prove that the calculation used our saved readings.\n\nThe arguments record what the tool was given. Compare that whole record with the saved list of values and the saved limit. This is the small check you will write in statistics_inputs_match.",
+            "student_script": [
+              "The slide uses [1, 2] as an obvious example of wrong inputs. Now try a harder case: our saved readings are [82, 87, 91, 94, 97], but the calculation used [82, 88, 90, 94, 97].",
+              "Both lists have five readings. Both give a mean of 90.2, a maximum of 97, and four readings above 85. Even all of those matching results would not prove that the calculation used our saved readings.",
+              "The arguments record what the tool was given. Compare that whole record with the saved list of values and the saved limit. This is the small check you will write in statistics_inputs_match."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [
+              14
+            ],
+            "one_next_action": null,
+            "evidence_fields": [],
+            "check": {
+              "type": "mcq",
+              "prompt": "The count, mean, maximum and above-limit fraction all match, but two input values differ from the saved readings. What should we do?",
+              "options": {
+                "A": "Accept the report because every displayed statistic matches.",
+                "B": "Reject this statistics record because its inputs differ from the saved readings.",
+                "C": "Accept it if the model says the differences are unimportant."
+              },
+              "correct": "B",
+              "explanation": "The same summary can describe different inputs. The argument record must match the observed values and registered limit before this calculation counts as evidence.",
+              "hint1": "Compare the two lists position by position, rather than comparing their length or mean.",
+              "hint2": "Which record tells us what was sent into the calculation: its arguments, or its summary output?",
+              "required": true,
+              "estimated_seconds": 45,
+              "id": "t06.wrong_numbers.check"
+            },
+            "slide_review": {
+              "source_deck": "EEEE4149_Week4_Lecture_Building_an_Agent_from_First_Principles.pdf",
+              "primary_slide": 14,
+              "title": "W4.2B: the same answer can come from different inputs",
+              "image": "slides/slide-14.png",
+              "related_slides": [],
+              "focus": "The slide uses [1, 2] as an obvious example of wrong inputs. Now try a harder case: our saved readings are [82, 87, 91, 94, 97], but the calculation used [82, 88, 90, 94, 97].",
+              "visual_walkthrough": [
+                "Compare the observed readings with the arguments passed to the calculation.",
+                "Locate the slide's if obs.arguments != {...} check. It asks whether the input record matches, not whether the list lengths match.",
+                "Then follow the numerical checks. We still need them: correct inputs do not excuse an incorrect output."
+              ],
+              "explanation": "The slide uses [1, 2] as an obvious example of wrong inputs. Now try a harder case: our saved readings are [82, 87, 91, 94, 97], but the calculation used [82, 88, 90, 94, 97].\n\nBoth lists have five readings. Both give a mean of 90.2, a maximum of 97, and four readings above 85. Even all of those matching results would not prove that the calculation used our saved readings.\n\nThe arguments record what the tool was given. Compare that whole record with the saved list of values and the saved limit. This is the small check you will write in statistics_inputs_match.",
+              "code_bridge": "matching_stats calls the new statistics_inputs_match before checking the returned numbers. You implement the input guard as well as the goal checklist.",
+              "case_note": "The original slides call this synthetic teaching machine M12. Our exercises use CONV-3. Explain this once, then use CONV-3 consistently."
+            }
+          },
+          {
+            "id": "t06.verify_code",
+            "title": "Prepare the two short function bodies",
+            "phase": "before_run",
+            "logic": "Look at Check first. ready says whether the required evidence is present. missing names the gaps. evidence_ids links the accepted facts to their observations.",
+            "explanation": "Look at Check first. ready says whether the required evidence is present. missing names the gaps. evidence_ids links the accepted facts to their observations.\n\nFor W4.2A, use matching_sources and matching_stats in verify, then choose the required pieces from the goal. The report goal also needs nonempty readings.\n\nFor W4.2B, statistics_inputs_match receives an observation, the values taken from the matching query, and the limit taken from the specification. Its job is to return True only when the observation arguments match both inputs.\n\nA dictionary holds named values; a list holds the ordered readings. Comparing the dictionaries checks their fields and the list contents. A length comparison cannot do that job.\n\nThe caller skips a statistics observation when this helper returns False, then continues looking for suitable evidence. It still checks the numerical output after a True result.",
+            "student_script": [
+              "Look at Check first. ready says whether the required evidence is present. missing names the gaps. evidence_ids links the accepted facts to their observations.",
+              "For W4.2A, use matching_sources and matching_stats in verify, then choose the required pieces from the goal. The report goal also needs nonempty readings.",
+              "For W4.2B, statistics_inputs_match receives an observation, the values taken from the matching query, and the limit taken from the specification. Its job is to return True only when the observation arguments match both inputs.",
+              "A dictionary holds named values; a list holds the ordered readings. Comparing the dictionaries checks their fields and the list contents. A length comparison cannot do that job.",
+              "The caller skips a statistics observation when this helper returns False, then continues looking for suitable evidence. It still checks the numerical output after a True result."
+            ],
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "verification.py",
+                "symbol": "Check",
+                "slice_start": 0,
+                "max_lines": 8
+              },
+              {
+                "pack": "seminar",
+                "file": "verification.py",
+                "symbol": "matching_stats",
+                "slice_start": 0,
+                "max_lines": 12
+              },
+              {
+                "pack": "seminar",
+                "file": "verification.py",
+                "symbol": "statistics_inputs_match",
+                "slice_start": 0,
+                "max_lines": 8
+              }
+            ],
+            "code_walkthrough": [
+              "Follow values back to query records and limit back to the specification.",
+              "Read obs.arguments as what this particular tool call received, not as a remembered expected answer.",
+              "The supplied caller handles searching and numerical checks; do not remove them.",
+              "Check.progress tracks evidence types, not the seminar percentage."
+            ],
+            "slides": [],
+            "one_next_action": "After these preparation steps, write your verify body first. Mentor saves it and then asks separately for statistics_inputs_match. Both are required before the t06 tests run.",
+            "evidence_fields": []
+          },
+          {
+            "id": "t06.verify_output",
+            "title": "Read the two checks separately",
+            "phase": "after_run",
+            "logic": "Read the actual comparison_rows. Start with the correct-input case and identify its arguments, inputs_match and check.ready.",
+            "explanation": "Read the actual comparison_rows. Start with the correct-input case and identify its arguments, inputs_match and check.ready.\n\nNext find same_count_same_summary_wrong_values. Compare its tool_statistics with the correct case. Then read same_summary_as_correct, inputs_match and check.missing. Use the observed values; do not merely repeat the expected answer.\n\nThe wrong-limit case checks the other input. The empty-data cases check the goal checklist. These are different reasons for refusing a report.\n\nNow read your saved statistics_inputs_match and follow its return value into matching_stats. Explain why the input comparison and numerical checks are both needed.",
+            "student_script": [
+              "Read the actual comparison_rows. Start with the correct-input case and identify its arguments, inputs_match and check.ready.",
+              "Next find same_count_same_summary_wrong_values. Compare its tool_statistics with the correct case. Then read same_summary_as_correct, inputs_match and check.missing. Use the observed values; do not merely repeat the expected answer.",
+              "The wrong-limit case checks the other input. The empty-data cases check the goal checklist. These are different reasons for refusing a report.",
+              "Now read your saved statistics_inputs_match and follow its return value into matching_stats. Explain why the input comparison and numerical checks are both needed."
+            ],
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "verification.py",
+                "symbol": "statistics_inputs_match",
+                "slice_start": 0,
+                "max_lines": 10
+              },
+              {
+                "pack": "seminar",
+                "file": "verification.py",
+                "symbol": "matching_stats",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": [
+              "comparison_rows",
+              "inputs_match",
+              "same_summary_as_correct",
+              "ready",
+              "missing",
+              "evidence_ids",
+              "facts"
+            ]
+          }
+        ],
+        "practice": [
+          {
+            "id": "t06.practice_verify",
+            "title": "W4.2A: choose what this goal needs",
+            "phase": "before_run",
+            "logic": "We will complete two short functions in this task. First, verify chooses what evidence the current goal needs. Second, statistics_inputs_match checks which values and limit went into a calculation.",
+            "explanation": "We will complete two short functions in this task. First, verify chooses what evidence the current goal needs. Second, statistics_inputs_match checks which values and limit went into a calculation.\n\nRead Check to see what verify must return. A specification lookup needs its matching specification; a readings query needs its matching query result; a report needs both sources and matching statistics.\n\nAn empty query can answer a readings request. A percentage report still needs actual readings to count. We will test that difference after saving both functions.",
+            "student_script": [
+              "We will complete two short functions in this task. First, verify chooses what evidence the current goal needs. Second, statistics_inputs_match checks which values and limit went into a calculation.",
+              "Read Check to see what verify must return. A specification lookup needs its matching specification; a readings query needs its matching query result; a report needs both sources and matching statistics.",
+              "An empty query can answer a readings request. A percentage report still needs actual readings to count. We will test that difference after saving both functions."
+            ],
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "verification.py",
+                "symbol": "Check",
+                "slice_start": 0,
+                "max_lines": 8
+              }
+            ],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": "Explain which evidence the report goal needs before looking at the input comparison.",
+            "evidence_fields": []
+          },
+          {
+            "id": "t06.practice_inputs",
+            "title": "W4.2B: check what the calculation received",
+            "phase": "before_run",
+            "logic": "Our query returned [82, 87, 91, 94, 97]. A different call used [82, 88, 90, 94, 97], with the same limit of 85. Both have count 5, mean 90.2, maximum 97 and above-limit fraction 0.8.",
+            "explanation": "Our query returned [82, 87, 91, 94, 97]. A different call used [82, 88, 90, 94, 97], with the same limit of 85. Both have count 5, mean 90.2, maximum 97 and above-limit fraction 0.8.\n\nThat is why checking the count, or even checking every summary value, is not enough. Compare obs.arguments with the complete expected argument record built from values and limit.\n\nA dictionary comparison checks the named fields and the values they hold. The list inside it must contain the saved readings. The limit must also match the specification.\n\nRead how matching_stats uses the Boolean returned by statistics_inputs_match. False skips this record; True allows the separate numerical checks to follow.",
+            "student_script": [
+              "Our query returned [82, 87, 91, 94, 97]. A different call used [82, 88, 90, 94, 97], with the same limit of 85. Both have count 5, mean 90.2, maximum 97 and above-limit fraction 0.8.",
+              "That is why checking the count, or even checking every summary value, is not enough. Compare obs.arguments with the complete expected argument record built from values and limit.",
+              "A dictionary comparison checks the named fields and the values they hold. The list inside it must contain the saved readings. The limit must also match the specification.",
+              "Read how matching_stats uses the Boolean returned by statistics_inputs_match. False skips this record; True allows the separate numerical checks to follow."
+            ],
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "verification.py",
+                "symbol": "statistics_inputs_match",
+                "slice_start": 0,
+                "max_lines": 8
+              },
+              {
+                "pack": "seminar",
+                "file": "verification.py",
+                "symbol": "matching_stats",
+                "slice_start": 0,
+                "max_lines": 12
+              }
+            ],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": "After preparation, write your verify body first. Mentor then asks separately for statistics_inputs_match and a prediction before running the tests.",
+            "evidence_fields": [],
+            "check": {
+              "type": "mcq",
+              "prompt": "Five readings produced the same summary as our saved readings. Which check is still necessary?",
+              "options": {
+                "A": "Check only that the tool response has status ok.",
+                "B": "Compare the full calculation arguments with the observed values and reference limit.",
+                "C": "Check the number of readings one more time."
+              },
+              "correct": "B",
+              "explanation": "Equal summaries can hide different input values. Match the argument record before using the statistics as evidence.",
+              "hint1": "Look at the two lists: which values changed while their summaries stayed the same?",
+              "hint2": "The input dictionary names values_c and limit_c. Both must come from the saved sources.",
+              "required": true,
+              "estimated_seconds": 45,
+              "id": "t06.practice_inputs.check"
+            }
+          },
+          {
+            "id": "t06.practice_result",
+            "title": "Explain why each record was accepted or rejected",
+            "phase": "after_run",
+            "logic": "Read the actual comparison_rows and find the case whose summary matches despite different inputs. Explain its inputs_match and check.missing fields.",
+            "explanation": "Read the actual comparison_rows and find the case whose summary matches despite different inputs. Explain its inputs_match and check.missing fields.\n\nThen compare the wrong-limit case and the two empty-data goals. Identify which small function checks each issue.\n\nUse your saved guard to explain why correct arithmetic alone cannot show that a result answers this task.",
+            "student_script": [
+              "Read the actual comparison_rows and find the case whose summary matches despite different inputs. Explain its inputs_match and check.missing fields.",
+              "Then compare the wrong-limit case and the two empty-data goals. Identify which small function checks each issue.",
+              "Use your saved guard to explain why correct arithmetic alone cannot show that a result answers this task."
+            ],
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "verification.py",
+                "symbol": "statistics_inputs_match",
+                "slice_start": 0,
+                "max_lines": 10
+              }
+            ],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": [
+              "comparison_rows",
+              "inputs_match",
+              "same_summary_as_correct",
+              "ready",
+              "missing",
+              "evidence_ids",
+              "facts"
+            ]
+          }
+        ]
+      },
+      "output_fields": "Read the actual task report, evidence label, relevant results and any failed check. Show the important fields in the formal reply.",
+      "output_walkthrough": [
+        [
+          "student_observation.json: stages[].check",
+          "Watch ready, missing, progress, evidence_ids and facts change as actual tool results are added."
+        ],
+        [
+          "comparison_rows[].arguments and tool_statistics",
+          "Compare what each call received with the summary it returned. These cases are deliberate local teaching inputs."
+        ],
+        [
+          "comparison_rows[].inputs_match and same_summary_as_correct",
+          "Separate the input comparison from an equal-looking summary. The same-summary wrong-input case makes this difference visible."
+        ],
+        [
+          "comparison_rows[].check.ready and check.missing",
+          "Read whether that case supplies acceptable evidence for the report."
+        ],
+        [
+          "observations",
+          "The actual local results used for the checks."
+        ],
+        [
+          "empty_report_goal_check and empty_readings_goal_check",
+          "Compare the completion decisions for the same empty query under two different goals."
+        ]
+      ],
+      "hint1": "Compare what the two task goals ask for.",
+      "hint2": "A list can be empty. A percentage requires actual readings to count.",
+      "required_code_targets": [
+        "verify",
+        "stats_inputs"
+      ],
+      "code_exercises": [
+        {
+          "id": "W4.2A",
+          "target": "verify",
+          "prompt": "Write the goal checklist in verify and return the required evidence, gaps, IDs and facts."
+        },
+        {
+          "id": "W4.2B",
+          "target": "stats_inputs",
+          "prompt": "Write statistics_inputs_match so it compares the calculation argument record with the saved values and registered limit."
+        }
+      ],
+      "time_plan_minutes": {
+        "explanation": 3,
+        "W4.2A": 4,
+        "W4.2B": 3,
+        "tests_and_output": 3,
+        "understanding": 2
+      }
+    },
+    {
+      "id": "t07",
+      "title": "Set limits on continued work",
+      "minutes": 10,
+      "practice_minutes": 10,
+      "weight": 10,
+      "purpose": "Write the stopping checks without confusing a limit with success.",
+      "logic": "The verifier stops us from declaring success too early. It does not give us permission to keep trying forever.\n\nRead the four endings. Completed means the evidence passed. Stopped means a limit ended the run. Failed means an operation could not be completed. Needs_human means someone must clarify or supply something.\n\nThese endings ask for different follow-up work. The word stopped by itself does not tell us that we have a usable report.",
+      "code_walkthrough": [
+        "Read Config and remaining_seconds, then let the learner write the limit comparisons and test exact boundaries."
+      ],
+      "worked_answer": "A limit ends continued attempts when the configured boundary is reached. It does not supply missing observations. Only the task verifier can establish completion.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "Explain one tested limit and why it ends an attempt without proving that the task succeeded.",
+          "rubric": "Use an actual tested boundary and distinguish stop reason from verified task completion.",
+          "hint1": "Find the configuration value and the current value in that test.",
+          "hint2": "Does hitting this limit supply the missing evidence, or only end further attempts?",
+          "worked_answer": "A limit ends continued attempts when the configured boundary is reached. It does not supply missing observations. Only the task verifier can establish completion."
+        }
+      ],
+      "code_refs": [
+        [
+          "controls.py",
+          "Config"
+        ],
+        [
+          "controls.py",
+          "remaining_seconds"
+        ]
+      ],
+      "concepts": [
+        "conditions",
+        "time"
+      ],
+      "code_target": "guards",
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t07"
+        ]
+      ],
+      "planned_calls": 0,
+      "paths": {
+        "review": [
+          {
+            "id": "t07.endings",
+            "title": "Not finished, but not allowed to run forever",
+            "phase": "before_run",
+            "logic": "The verifier stops us from declaring success too early. It does not give us permission to keep trying forever.",
+            "explanation": "The verifier stops us from declaring success too early. It does not give us permission to keep trying forever.\n\nRead the four endings. Completed means the evidence passed. Stopped means a limit ended the run. Failed means an operation could not be completed. Needs_human means someone must clarify or supply something.\n\nThese endings ask for different follow-up work. The word stopped by itself does not tell us that we have a usable report.",
+            "student_script": [
+              "The verifier stops us from declaring success too early. It does not give us permission to keep trying forever.",
+              "Read the four endings. Completed means the evidence passed. Stopped means a limit ended the run. Failed means an operation could not be completed. Needs_human means someone must clarify or supply something.",
+              "These endings ask for different follow-up work. The word stopped by itself does not tell us that we have a usable report."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [
+              28,
+              29,
+              36
+            ],
+            "one_next_action": null,
+            "evidence_fields": [],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week4_Lecture_Building_an_Agent_from_First_Principles.pdf",
+              "primary_slide": 28,
+              "title": "Not finished, but not allowed to run forever",
+              "image": "slides/slide-28.png",
+              "related_slides": [
+                29,
+                36
+              ],
+              "focus": "The verifier stops us from declaring success too early. It does not give us permission to keep trying forever.",
+              "visual_walkthrough": [
+                "Compare completed with stopped before reading the other two boxes.",
+                "For each example, point to both the status and the reason.",
+                "Ask what the user would need to do next for a missing machine identifier."
+              ],
+              "explanation": "The verifier stops us from declaring success too early. It does not give us permission to keep trying forever.\n\nRead the four endings. Completed means the evidence passed. Stopped means a limit ended the run. Failed means an operation could not be completed. Needs_human means someone must clarify or supply something.\n\nThese endings ask for different follow-up work. The word stopped by itself does not tell us that we have a usable report.",
+              "code_bridge": "stop_reason returns a limit reason or None. The runtime chooses an honest ending.",
+              "case_note": "The original slides call this synthetic teaching machine M12. Our exercises use CONV-3. Explain this once, then use CONV-3 consistently."
+            }
+          },
+          {
+            "id": "t07.no_progress",
+            "title": "More requests do not always mean more progress",
+            "phase": "before_run",
+            "logic": "The program reads the same frozen specification again. What useful evidence did the second request add?",
+            "explanation": "The program reads the same frozen specification again. What useful evidence did the second request add?\n\nA repeated request can increase the decision count while the real execution count stays the same because a saved result was reused.\n\nKeep steps, tool_attempts and no_progress separate. They answer different questions: how many choices, how many executions, and how many rounds without useful new evidence.",
+            "student_script": [
+              "The program reads the same frozen specification again. What useful evidence did the second request add?",
+              "A repeated request can increase the decision count while the real execution count stays the same because a saved result was reused.",
+              "Keep steps, tool_attempts and no_progress separate. They answer different questions: how many choices, how many executions, and how many rounds without useful new evidence."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [
+              31,
+              34,
+              35
+            ],
+            "one_next_action": null,
+            "evidence_fields": [],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week4_Lecture_Building_an_Agent_from_First_Principles.pdf",
+              "primary_slide": 31,
+              "title": "More requests do not always mean more progress",
+              "image": "slides/slide-31.png",
+              "related_slides": [
+                34,
+                35
+              ],
+              "focus": "The program reads the same frozen specification again. What useful evidence did the second request add?",
+              "visual_walkthrough": [
+                "Follow the first specification read and its new evidence.",
+                "Compare the next two observations with the first one. New IDs do not make the same information new evidence.",
+                "Read the no-progress count beside each round."
+              ],
+              "explanation": "The program reads the same frozen specification again. What useful evidence did the second request add?\n\nA repeated request can increase the decision count while the real execution count stays the same because a saved result was reused.\n\nKeep steps, tool_attempts and no_progress separate. They answer different questions: how many choices, how many executions, and how many rounds without useful new evidence.",
+              "code_bridge": "Config sets the limits; stop_reason checks the current state; the runner separately bounds individual attempts and timeouts.",
+              "case_note": "The original slides call this synthetic teaching machine M12. Our exercises use CONV-3. Explain this once, then use CONV-3 consistently."
+            }
+          },
+          {
+            "id": "t07.guard_code",
+            "title": "Write a stop reason, not a success message",
+            "phase": "before_run",
+            "logic": "Read Config first. Its limits are ordinary values the program can compare with the current run.",
+            "explanation": "Read Config first. Its limits are ordinary values the program can compare with the current run.\n\nComplete stop_reason so it returns the appropriate limit reason, or None if the run may continue. Follow the provided order when more than one limit has been reached.\n\nThe loop needs its whole-run limit, and each operation needs a timeout too. A counter cannot interrupt the first tool if that tool never returns. Token usage is reported after a response, so its threshold cannot guarantee a prepaid spending cap.",
+            "student_script": [
+              "Read Config first. Its limits are ordinary values the program can compare with the current run.",
+              "Complete stop_reason so it returns the appropriate limit reason, or None if the run may continue. Follow the provided order when more than one limit has been reached.",
+              "The loop needs its whole-run limit, and each operation needs a timeout too. A counter cannot interrupt the first tool if that tool never returns. Token usage is reported after a response, so its threshold cannot guarantee a prepaid spending cap."
+            ],
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "controls.py",
+                "symbol": "Config",
+                "slice_start": 0,
+                "max_lines": 12
+              },
+              {
+                "pack": "seminar",
+                "file": "controls.py",
+                "symbol": "remaining_seconds",
+                "slice_start": 0,
+                "max_lines": 4
+              }
+            ],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": "Write the guard conditions and predict what happens at exactly max_steps, not just above it.",
+            "evidence_fields": []
+          },
+          {
+            "id": "t07.guard_output",
+            "title": "Which limit stopped this case?",
+            "phase": "after_run",
+            "logic": "Read the actual boundary tests. Notice the equal-to-limit case and the difference between a disabled no-progress check and the step limit that remains active.",
+            "explanation": "Read the actual boundary tests. Notice the equal-to-limit case and the difference between a disabled no-progress check and the step limit that remains active.\n\nA returned limit reason says why we must stop trying. It does not supply any missing readings or make a report complete.",
+            "student_script": [
+              "Read the actual boundary tests. Notice the equal-to-limit case and the difference between a disabled no-progress check and the step limit that remains active.",
+              "A returned limit reason says why we must stop trying. It does not supply any missing readings or make a report complete."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": [
+              "test results",
+              "configured limits",
+              "stop reason"
+            ]
+          }
+        ],
+        "practice": [
+          {
+            "id": "t07.practice_guards",
+            "title": "Stop a run that cannot usefully continue",
+            "phase": "before_run",
+            "logic": "The task may still be incomplete when a step or time limit is reached. Complete stop_reason without changing that situation into success.",
+            "explanation": "The task may still be incomplete when a step or time limit is reached. Complete stop_reason without changing that situation into success.\n\nUse Config and remaining_seconds to read the existing limits. Keep the limit comparisons in the documented order.\n\nPredict the boundary at steps equal to max_steps, then run the guard tests after saving your code.",
+            "student_script": [
+              "The task may still be incomplete when a step or time limit is reached. Complete stop_reason without changing that situation into success.",
+              "Use Config and remaining_seconds to read the existing limits. Keep the limit comparisons in the documented order.",
+              "Predict the boundary at steps equal to max_steps, then run the guard tests after saving your code."
+            ],
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "controls.py",
+                "symbol": "Config",
+                "slice_start": 0,
+                "max_lines": 12
+              },
+              {
+                "pack": "seminar",
+                "file": "controls.py",
+                "symbol": "remaining_seconds",
+                "slice_start": 0,
+                "max_lines": 4
+              }
+            ],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": "Write the stopping conditions and explain what None means to their caller.",
+            "evidence_fields": []
+          },
+          {
+            "id": "t07.practice_results",
+            "title": "Read the boundary cases",
+            "phase": "after_run",
+            "logic": "Find the actual result for each tested limit and explain one boundary in your own words.",
+            "explanation": "Find the actual result for each tested limit and explain one boundary in your own words.\n\nExplain why reaching that limit is a stopped run rather than a completed report.",
+            "student_script": [
+              "Find the actual result for each tested limit and explain one boundary in your own words.",
+              "Explain why reaching that limit is a stopped run rather than a completed report."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": [
+              "test results",
+              "configured limits",
+              "stop reason"
+            ]
+          }
+        ]
+      },
+      "output_fields": "Read the actual task report, evidence label, relevant results and any failed check. Show the important fields in the formal reply.",
+      "output_walkthrough": [
+        [
+          "student_observation.json: config",
+          "The limits used in this boundary demonstration."
+        ],
+        [
+          "rows[].steps, no_progress and elapsed_at_least_seconds",
+          "The deliberately constructed boundary values."
+        ],
+        [
+          "rows[].returned_stop_reason",
+          "What the learner's function returned for that case."
+        ],
+        [
+          "inputs_are_boundary_examples",
+          "These are test situations, not measurements of a long real run."
+        ]
+      ],
+      "hint1": "Find the configuration value and the current value in that test.",
+      "hint2": "Does hitting this limit supply the missing evidence, or only end further attempts?"
+    },
+    {
+      "id": "t08",
+      "title": "Connect the pieces inside the loop",
+      "minutes": 13,
+      "practice_minutes": 13,
+      "weight": 13,
+      "purpose": "Connect execution, feedback and a fresh check in the provided runtime.",
+      "logic": "We now have the pieces. Let us follow one round and decide where each belongs.\n\nAt Gate A, the program checks the evidence, limits and run status. It may continue, complete the task, stop at a limit, report a failure, or ask for help.\n\nIf it continues, the planner proposes an action. Gate B checks whether a proposed tool request may run. The tool returns a result; Observe records and returns it; Verify checks what the new result proves. Then we return to Gate A.",
+      "code_walkthrough": [
+        "Read the surrounding loop and _update_check, then let the learner connect the small tool-step helper."
+      ],
+      "worked_answer": "The runner records the result, feedback returns to the planner, and _update_check verifies the updated State. The runtime checks completion before requesting another action.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "Where does the new result enter the next check, and what stops an unnecessary action after completion?",
+          "rubric": "Trace execute, record, feedback and fresh verification. Explain the completion decision before another planner request.",
+          "hint1": "Follow the observation returned by the runner.",
+          "hint2": "Compare a check made before the action with the new check after it.",
+          "worked_answer": "The runner records the result, feedback returns to the planner, and _update_check verifies the updated State. The runtime checks completion before requesting another action."
+        }
+      ],
+      "code_refs": [
+        [
+          "runtime.py",
+          "_update_check"
+        ],
+        [
+          "runtime.py",
+          "complete_tool_step"
+        ]
+      ],
+      "concepts": [
+        "functions"
+      ],
+      "code_target": "loop",
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t08"
+        ]
+      ],
+      "planned_calls": 0,
+      "paths": {
+        "review": [
+          {
+            "id": "t08.join_loop",
+            "title": "Put the checks in the right places",
+            "phase": "before_run",
+            "logic": "We now have the pieces. Let us follow one round and decide where each belongs.",
+            "explanation": "We now have the pieces. Let us follow one round and decide where each belongs.\n\nAt Gate A, the program checks the evidence, limits and run status. It may continue, complete the task, stop at a limit, report a failure, or ask for help.\n\nIf it continues, the planner proposes an action. Gate B checks whether a proposed tool request may run. The tool returns a result; Observe records and returns it; Verify checks what the new result proves. Then we return to Gate A.",
+            "student_script": [
+              "We now have the pieces. Let us follow one round and decide where each belongs.",
+              "At Gate A, the program checks the evidence, limits and run status. It may continue, complete the task, stop at a limit, report a failure, or ask for help.",
+              "If it continues, the planner proposes an action. Gate B checks whether a proposed tool request may run. The tool returns a result; Observe records and returns it; Verify checks what the new result proves. Then we return to Gate A."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [
+              27
+            ],
+            "one_next_action": null,
+            "evidence_fields": [],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week4_Lecture_Building_an_Agent_from_First_Principles.pdf",
+              "primary_slide": 27,
+              "title": "Put the checks in the right places",
+              "image": "slides/slide-27.png",
+              "related_slides": [],
+              "focus": "We now have the pieces. Let us follow one round and decide where each belongs.",
+              "visual_walkthrough": [
+                "Begin at the completion check before the next planner request.",
+                "Follow the loop to the runner, then follow the result into observe and the next verification.",
+                "Return to the top. Ask where a fourth unnecessary action would be prevented."
+              ],
+              "explanation": "We now have the pieces. Let us follow one round and decide where each belongs.\n\nAt Gate A, the program checks the evidence, limits and run status. It may continue, complete the task, stop at a limit, report a failure, or ask for help.\n\nIf it continues, the planner proposes an action. Gate B checks whether a proposed tool request may run. The tool returns a result; Observe records and returns it; Verify checks what the new result proves. Then we return to Gate A.",
+              "code_bridge": "run_agent keeps the control branches. complete_tool_step joins execution, feedback and the updated check.",
+              "case_note": "The original slides call this synthetic teaching machine M12. Our exercises use CONV-3. Explain this once, then use CONV-3 consistently.",
+              "clarification": "Gate A and Gate B are teaching names for the control decision and execution checks. They are not two extra models. finish and human are control requests, not ordinary tools."
+            }
+          },
+          {
+            "id": "t08.loop_code",
+            "title": "Connect the result to the next check",
+            "phase": "before_run",
+            "logic": "Read _update_check. It compares the kinds of evidence now available with the previous check, updates no_progress and records what the verifier found.",
+            "explanation": "Read _update_check. It compares the kinds of evidence now available with the previous check, updates no_progress and records what the verifier found.\n\nThe provided run_agent handles completion, limits and error endings. Your small helper needs to run the allowed action, return its result to the same planner, and get a fresh check.\n\nUse the new check after execution. A check made before the action cannot describe evidence that has only just arrived.",
+            "student_script": [
+              "Read _update_check. It compares the kinds of evidence now available with the previous check, updates no_progress and records what the verifier found.",
+              "The provided run_agent handles completion, limits and error endings. Your small helper needs to run the allowed action, return its result to the same planner, and get a fresh check.",
+              "Use the new check after execution. A check made before the action cannot describe evidence that has only just arrived."
+            ],
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "runtime.py",
+                "symbol": "_update_check",
+                "slice_start": 0,
+                "max_lines": 10
+              },
+              {
+                "pack": "seminar",
+                "file": "runtime.py",
+                "symbol": "complete_tool_step",
+                "slice_start": 0,
+                "max_lines": 10
+              }
+            ],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": "Write complete_tool_step in chat. Predict why using the old check after execution could cause an unnecessary next round.",
+            "evidence_fields": []
+          },
+          {
+            "id": "t08.loop_results",
+            "title": "Did every result reach the next decision?",
+            "phase": "after_run",
+            "logic": "Read the runtime test results. Find the checks for a normal completion, a refused early finish and no extra action after completion.",
+            "explanation": "Read the runtime test results. Find the checks for a normal completion, a refused early finish and no extra action after completion.\n\nExplain where the result is recorded and where feedback reaches the planner. In a live exchange, the tool message must match the model request it answers.\n\nThe scripted planner can inspect State directly, so a fake memory experiment that merely deletes observe would be misleading. Use the actual protocol tests to check the live message connection.",
+            "student_script": [
+              "Read the runtime test results. Find the checks for a normal completion, a refused early finish and no extra action after completion.",
+              "Explain where the result is recorded and where feedback reaches the planner. In a live exchange, the tool message must match the model request it answers.",
+              "The scripted planner can inspect State directly, so a fake memory experiment that merely deletes observe would be misleading. Use the actual protocol tests to check the live message connection."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": [
+              "test results",
+              "runtime events",
+              "feedback",
+              "completion check"
+            ]
+          }
+        ],
+        "practice": [
+          {
+            "id": "t08.practice_connect",
+            "title": "Connect execution, feedback and the new check",
+            "phase": "before_run",
+            "logic": "Complete the small helper inside the existing runtime. The surrounding branches for completion, errors and limits stay in place.",
+            "explanation": "Complete the small helper inside the existing runtime. The surrounding branches for completion, errors and limits stay in place.\n\nFollow an action through runner.execute, planner.observe and _update_check. Return the observation and updated check in the form used by the caller.\n\nPredict what could go wrong if the caller used a check made before the tool ran.",
+            "student_script": [
+              "Complete the small helper inside the existing runtime. The surrounding branches for completion, errors and limits stay in place.",
+              "Follow an action through runner.execute, planner.observe and _update_check. Return the observation and updated check in the form used by the caller.",
+              "Predict what could go wrong if the caller used a check made before the tool ran."
+            ],
+            "code_refs": [
+              {
+                "pack": "seminar",
+                "file": "runtime.py",
+                "symbol": "complete_tool_step",
+                "slice_start": 0,
+                "max_lines": 10
+              },
+              {
+                "pack": "seminar",
+                "file": "runtime.py",
+                "symbol": "_update_check",
+                "slice_start": 0,
+                "max_lines": 10
+              }
+            ],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": "Save your helper body, then run the runtime tests.",
+            "evidence_fields": []
+          },
+          {
+            "id": "t08.practice_result",
+            "title": "Explain a runtime test using the actual calls",
+            "phase": "after_run",
+            "logic": "Inspect the actual runtime test output and choose a case that checks feedback or completion.",
+            "explanation": "Inspect the actual runtime test output and choose a case that checks feedback or completion.\n\nPoint to the operation that gives the next check its new evidence. Explain why a finish request still needs verification.",
+            "student_script": [
+              "Inspect the actual runtime test output and choose a case that checks feedback or completion.",
+              "Point to the operation that gives the next check its new evidence. Explain why a finish request still needs verification."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": [
+              "test results",
+              "runtime events",
+              "feedback"
+            ]
+          }
+        ]
+      },
+      "output_fields": "Read the actual task report, evidence label, relevant results and any failed check. Show the important fields in the formal reply.",
+      "output_walkthrough": [
+        [
+          "student_observation.json: run.status and run.reason",
+          "How the local run ended and why."
+        ],
+        [
+          "run.steps, run.tool_attempts and run.trace",
+          "Follow proposals, actual executions, feedback and fresh checks."
+        ],
+        [
+          "run.report and planner_kind",
+          "Read the checked report while retaining the scripted-planner label."
+        ]
+      ],
+      "hint1": "Follow the observation returned by the runner.",
+      "hint2": "Compare a check made before the action with the new check after it."
+    },
+    {
+      "id": "t09",
+      "title": "Rerun the cases and read the evidence",
+      "minutes": 8,
+      "practice_minutes": 8,
+      "weight": 8,
+      "purpose": "Use actual traces to compare a complete task with stopped or rejected attempts.",
+      "logic": "Return to the cases we used before adding the controls. This time your saved code will run them.\n\nPredict the normal task, the repeating planner and the planner that asks to finish too early. We will compare their actual evidence and ending reasons.\n\nRead the slide as a reference design, not as a result from your computer. The exact counts we discuss must come from your run. Keep the outside test limit in place.",
+      "code_walkthrough": [
+        "Use current student code to rerun the original cases; explain actual ending reasons and counts."
+      ],
+      "worked_answer": "Use the recorded status, reason and counters for the chosen run. Trace them to a verified result, repeated lack of progress, a limit, an error or a request for human input. Do not label an outside watchdog termination as successful internal control.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "Choose one actual comparison run. Explain its ending, its decision and execution counts, and the event that caused that ending.",
+          "rubric": "Use observed values rather than reference counts; distinguish completed/stopped/failed/needs_human and outside watchdog; connect cause to trace.",
+          "hint1": "Start with status and reason, then look earlier in the trace.",
+          "hint2": "Find the first event that explains the missing evidence or stopping condition.",
+          "worked_answer": "Use the recorded status, reason and counters for the chosen run. Trace them to a verified result, repeated lack of progress, a limit, an error or a request for human input. Do not label an outside watchdog termination as successful internal control."
+        }
+      ],
+      "code_refs": [],
+      "concepts": [],
+      "code_target": null,
+      "requires_teaching": true,
+      "requires_prediction": true,
+      "requires_setup": true,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--task",
+          "t09"
+        ]
+      ],
+      "planned_calls": 0,
+      "paths": {
+        "review": [
+          {
+            "id": "t09.rerun",
+            "title": "Try the original cases with the completed loop",
+            "phase": "before_run",
+            "logic": "Return to the cases we used before adding the controls. This time your saved code will run them.",
+            "explanation": "Return to the cases we used before adding the controls. This time your saved code will run them.\n\nPredict the normal task, the repeating planner and the planner that asks to finish too early. We will compare their actual evidence and ending reasons.\n\nRead the slide as a reference design, not as a result from your computer. The exact counts we discuss must come from your run. Keep the outside test limit in place.",
+            "student_script": [
+              "Return to the cases we used before adding the controls. This time your saved code will run them.",
+              "Predict the normal task, the repeating planner and the planner that asks to finish too early. We will compare their actual evidence and ending reasons.",
+              "Read the slide as a reference design, not as a result from your computer. The exact counts we discuss must come from your run. Keep the outside test limit in place."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [
+              38,
+              18,
+              17
+            ],
+            "one_next_action": null,
+            "evidence_fields": [],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week4_Lecture_Building_an_Agent_from_First_Principles.pdf",
+              "primary_slide": 38,
+              "title": "Try the original cases with the completed loop",
+              "image": "slides/slide-38.png",
+              "related_slides": [
+                18,
+                17
+              ],
+              "focus": "Return to the cases we used before adding the controls. This time your saved code will run them.",
+              "visual_walkthrough": [
+                "Read the scenario column before looking at the reference outcome.",
+                "Keep decisions and actual attempts in separate columns.",
+                "Ask which check should end each scenario and what evidence would justify that ending."
+              ],
+              "explanation": "Return to the cases we used before adding the controls. This time your saved code will run them.\n\nPredict the normal task, the repeating planner and the planner that asks to finish too early. We will compare their actual evidence and ending reasons.\n\nRead the slide as a reference design, not as a result from your computer. The exact counts we discuss must come from your run. Keep the outside test limit in place.",
+              "code_bridge": "The comparison driver runs the student loop and writes the counts and ending reasons for inspection.",
+              "case_note": "The original slides call this synthetic teaching machine M12. Our exercises use CONV-3. Explain this once, then use CONV-3 consistently."
+            }
+          },
+          {
+            "id": "t09.trace",
+            "title": "Find the event that explains the ending",
+            "phase": "after_run",
+            "logic": "Read the actual normal run first. Follow a decision to its tool result, then to the verifier event that records what is still missing.",
+            "explanation": "Read the actual normal run first. Follow a decision to its tool result, then to the verifier event that records what is still missing.\n\nNow read the bounded failure comparisons. For a refused early finish, locate the missing evidence and the feedback. For a repeat, distinguish another request from another real tool execution.\n\nFind the first event that explains the ending, not just the last line. If an outside watchdog ended a test, report that as a failed internal control, not as successful stopping logic.",
+            "student_script": [
+              "Read the actual normal run first. Follow a decision to its tool result, then to the verifier event that records what is still missing.",
+              "Now read the bounded failure comparisons. For a refused early finish, locate the missing evidence and the feedback. For a repeat, distinguish another request from another real tool execution.",
+              "Find the first event that explains the ending, not just the last line. If an outside watchdog ended a test, report that as a failed internal control, not as successful stopping logic."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": "Use one actual trace to explain why this run ended where it did.",
+            "evidence_fields": [
+              "status",
+              "reason",
+              "steps",
+              "tool_attempts",
+              "no_progress",
+              "evidence IDs",
+              "report facts",
+              "outside watchdog"
+            ]
+          }
+        ],
+        "practice": [
+          {
+            "id": "t09.practice_compare",
+            "title": "Predict and run the complete comparison",
+            "phase": "before_run",
+            "logic": "Your four code changes are now in place. Predict the result of the normal request, a repeated request and an unsupported finish request.",
+            "explanation": "Your four code changes are now in place. Predict the result of the normal request, a repeated request and an unsupported finish request.\n\nUse the same supplied tools and data. We want to see what the controls changed, not change the task to make the result look better.",
+            "student_script": [
+              "Your four code changes are now in place. Predict the result of the normal request, a repeated request and an unsupported finish request.",
+              "Use the same supplied tools and data. We want to see what the controls changed, not change the task to make the result look better."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": "Make a short prediction for the scenarios, then run the bounded comparison.",
+            "evidence_fields": []
+          },
+          {
+            "id": "t09.practice_trace",
+            "title": "Explain what your program actually did",
+            "phase": "after_run",
+            "logic": "Read the actual comparison rows and open the relevant trace when a row needs explanation.",
+            "explanation": "Read the actual comparison rows and open the relevant trace when a row needs explanation.\n\nExplain a status, its reason, the decision count and the actual execution count. Point to the evidence behind a completed report or to the missing evidence behind an unfinished run.",
+            "student_script": [
+              "Read the actual comparison rows and open the relevant trace when a row needs explanation.",
+              "Explain a status, its reason, the decision count and the actual execution count. Point to the evidence behind a completed report or to the missing evidence behind an unfinished run."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": [
+              "status",
+              "reason",
+              "steps",
+              "tool_attempts",
+              "evidence IDs",
+              "outside watchdog"
+            ]
+          }
+        ]
+      },
+      "output_fields": "Read the actual task report, evidence label, relevant results and any failed check. Show the important fields in the formal reply.",
+      "output_walkthrough": [
+        [
+          "demo.json: rows[].condition",
+          "The test situation used for this comparison."
+        ],
+        [
+          "rows[].status and rows[].reason",
+          "The actual ending, not a generic success message."
+        ],
+        [
+          "rows[].decisions and rows[].tool_attempts",
+          "Compare requests for a next step with actual tool executions."
+        ],
+        [
+          "linked run.json: trace and report.evidence",
+          "Find the event that explains the ending and the source IDs used in any report."
+        ]
+      ],
+      "hint1": "Start with status and reason, then look earlier in the trace.",
+      "hint2": "Find the first event that explains the missing evidence or stopping condition."
+    },
+    {
+      "id": "t10",
+      "title": "Explain what your loop now does",
+      "minutes": 4,
+      "practice_minutes": 4,
+      "weight": 4,
+      "purpose": "Return to the original task and save a brief learning reflection.",
+      "logic": "Return to the request we started with. At first, our program could ask a model and run a tool. Now it can keep results, check what they prove, and decide whether another action is needed and allowed.\n\nExplain the loop to a classmate using this CONV-3 example. Name where an action is checked, where its result is saved and returned, and where completion is decided.\n\nYour seminar progress, code and answers are saved. The small agent you built is a different program: it does not yet resume a partly executed run after the process closes. We will study that problem in Week 5.",
+      "code_walkthrough": [
+        "Use the saved trace to explain the full path and select a next topic."
+      ],
+      "worked_answer": "The loop connects each proposed action to real results, keeps them available, checks whether the task is complete and limits further work. Use your own experiment and choose a next topic such as live planning, handoff or retries.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "open",
+          "prompt": "In a few sentences: what does the loop add, which check mattered in your experiment, and what would you like to practise next?",
+          "rubric": "Connect actions to recorded feedback, evidence verification and bounded continuation; name an actual example and a next topic. Separate seminar save from agent checkpoint.",
+          "hint1": "Start with the original multi-step request.",
+          "hint2": "Describe what happens after one tool returns, then name the check that decides whether to continue.",
+          "worked_answer": "The loop connects each proposed action to real results, keeps them available, checks whether the task is complete and limits further work. Use your own experiment and choose a next topic such as live planning, handoff or retries."
+        }
+      ],
+      "code_refs": [],
+      "concepts": [],
+      "code_target": null,
+      "requires_teaching": true,
+      "requires_prediction": false,
+      "requires_setup": false,
+      "commands": [],
+      "planned_calls": 0,
+      "paths": {
+        "review": [
+          {
+            "id": "t10.return_to_request",
+            "title": "What did we add to the brain and hands?",
+            "phase": "before_run",
+            "logic": "Return to the request we started with. At first, our program could ask a model and run a tool. Now it can keep results, check what they prove, and decide whether another action is needed and allowed.",
+            "explanation": "Return to the request we started with. At first, our program could ask a model and run a tool. Now it can keep results, check what they prove, and decide whether another action is needed and allowed.\n\nExplain the loop to a classmate using this CONV-3 example. Name where an action is checked, where its result is saved and returned, and where completion is decided.\n\nYour seminar progress, code and answers are saved. The small agent you built is a different program: it does not yet resume a partly executed run after the process closes. We will study that problem in Week 5.",
+            "student_script": [
+              "Return to the request we started with. At first, our program could ask a model and run a tool. Now it can keep results, check what they prove, and decide whether another action is needed and allowed.",
+              "Explain the loop to a classmate using this CONV-3 example. Name where an action is checked, where its result is saved and returned, and where completion is decided.",
+              "Your seminar progress, code and answers are saved. The small agent you built is a different program: it does not yet resume a partly executed run after the process closes. We will study that problem in Week 5."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [
+              39,
+              36
+            ],
+            "one_next_action": null,
+            "evidence_fields": [],
+            "slide_review": {
+              "source_deck": "EEEE4149_Week4_Lecture_Building_an_Agent_from_First_Principles.pdf",
+              "primary_slide": 39,
+              "title": "What did we add to the brain and hands?",
+              "image": "slides/slide-39.png",
+              "related_slides": [
+                36
+              ],
+              "focus": "Return to the request we started with. At first, our program could ask a model and run a tool. Now it can keep results, check what they prove, and decide whether another action is needed and allowed.",
+              "visual_walkthrough": [
+                "Follow the three evidence records back to the original task.",
+                "Point to the ending and ask what made completed justified.",
+                "Use the next-week note to separate learning progress from agent execution checkpoints."
+              ],
+              "explanation": "Return to the request we started with. At first, our program could ask a model and run a tool. Now it can keep results, check what they prove, and decide whether another action is needed and allowed.\n\nExplain the loop to a classmate using this CONV-3 example. Name where an action is checked, where its result is saved and returned, and where completion is decided.\n\nYour seminar progress, code and answers are saved. The small agent you built is a different program: it does not yet resume a partly executed run after the process closes. We will study that problem in Week 5.",
+              "code_bridge": "Save the current work and use the existing review command for a longer reflection when you want one.",
+              "case_note": "The original slides call this synthetic teaching machine M12. Our exercises use CONV-3. Explain this once, then use CONV-3 consistently."
+            }
+          }
+        ],
+        "practice": [
+          {
+            "id": "t10.practice_recap",
+            "title": "Explain your loop using the experiment you just ran",
+            "phase": "before_run",
+            "logic": "Use your own trace to explain how a tool result changed the next decision or the ending.",
+            "explanation": "Use your own trace to explain how a tool result changed the next decision or the ending.\n\nName one check that prevents false completion and one that stops a run from continuing too long.\n\nYour learning session is saved. Resuming this seminar is separate from resuming a half-executed agent run; the latter is a Week 5 topic.",
+            "student_script": [
+              "Use your own trace to explain how a tool result changed the next decision or the ending.",
+              "Name one check that prevents false completion and one that stops a run from continuing too long.",
+              "Your learning session is saved. Resuming this seminar is separate from resuming a half-executed agent run; the latter is a Week 5 topic."
+            ],
+            "code_refs": [],
+            "code_walkthrough": [],
+            "slides": [],
+            "one_next_action": null,
+            "evidence_fields": []
+          }
+        ]
+      },
+      "output_fields": "Read the actual task report, evidence label, relevant results and any failed check. Show the important fields in the formal reply.",
+      "output_walkthrough": [],
+      "hint1": "Start with the original multi-step request.",
+      "hint2": "Describe what happens after one tool returns, then name the check that decides whether to continue."
+    }
+  ],
+  "presentation": {
+    "one_active_question": true,
+    "code_lines_per_excerpt": 12,
+    "final_reply_required": true,
+    "read_slide_before_code_in_review": true,
+    "student_style": "Use ordinary words and connected sentences. Explain what just happened and why the next step helps. Avoid slogans, compressed labels, unexplained jargon and repeated confirmation questions."
+  },
+  "progress_policy": "Use the helper's saved core_percent for the active week and session. Teaching steps, tool calls and optional work do not by themselves award task completion.",
+  "source_deck": "EEEE4149_Week4_Lecture_Building_an_Agent_from_First_Principles.pdf",
+  "extensions": [
+    {
+      "id": "live_loop",
+      "title": "Try your loop with DeepSeek",
+      "purpose": "Use a real model to propose actions while keeping the tested runtime, verifier and limits.",
+      "planned_calls": 6,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--case",
+          "live-loop",
+          "--mode",
+          "live"
+        ]
+      ],
+      "code_refs": [],
+      "guide": "Explain the task and purpose, save a prediction, run only the selected extension, read the actual evidence and explain the output. Optional work never changes core completion.",
+      "requires_live_approval": true
+    },
+    {
+      "id": "retry",
+      "title": "Compare a temporary and a lasting error",
+      "purpose": "Inspect what changes after one bounded retry and count the actual attempts.",
+      "planned_calls": 0,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--case",
+          "retry"
+        ]
+      ],
+      "code_refs": [],
+      "guide": "Explain the task and purpose, save a prediction, run only the selected extension, read the actual evidence and explain the output. Optional work never changes core completion.",
+      "requires_live_approval": false
+    },
+    {
+      "id": "timeout",
+      "title": "End a tool call that takes too long",
+      "purpose": "Inspect a local subprocess timeout and distinguish it from a whole-run limit.",
+      "planned_calls": 0,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--case",
+          "timeout"
+        ]
+      ],
+      "code_refs": [],
+      "guide": "Explain the task and purpose, save a prediction, run only the selected extension, read the actual evidence and explain the output. Optional work never changes core completion.",
+      "requires_live_approval": false
+    },
+    {
+      "id": "handoff",
+      "title": "Ask for missing information",
+      "purpose": "Inspect empty data or missing task fields, then read the specific handoff question.",
+      "planned_calls": 0,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--case",
+          "handoff"
+        ]
+      ],
+      "code_refs": [],
+      "guide": "Explain the task and purpose, save a prediction, run only the selected extension, read the actual evidence and explain the output. Optional work never changes core completion.",
+      "requires_live_approval": false
+    },
+    {
+      "id": "workflow",
+      "title": "Compare with a fixed workflow",
+      "purpose": "Compare the same task with a straightforward fixed Python workflow, which can also have conditions.",
+      "planned_calls": 0,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--case",
+          "workflow"
+        ]
+      ],
+      "code_refs": [],
+      "guide": "Explain the task and purpose, save a prediction, run only the selected extension, read the actual evidence and explain the output. Optional work never changes core completion.",
+      "requires_live_approval": false
+    },
+    {
+      "id": "boundaries",
+      "title": "Try more boundary tests",
+      "purpose": "Inspect additional cases without removing the outside test limits.",
+      "planned_calls": 0,
+      "commands": [
+        [
+          "seminar_step.py",
+          "--case",
+          "boundaries"
+        ]
+      ],
+      "code_refs": [],
+      "guide": "Explain the task and purpose, save a prediction, run only the selected extension, read the actual evidence and explain the output. Optional work never changes core completion.",
+      "requires_live_approval": false
+    }
+  ]
+}

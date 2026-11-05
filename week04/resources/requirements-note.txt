@@ -1,0 +1,4 @@
+Core packages: Pydantic 2 and pytest. Reuse an existing compatible environment.
+The optional OpenAI Python SDK is used as a DeepSeek Chat Completions client.
+No GPU, agent framework or MCP SDK is required.
+No packages are installed automatically by the seminar helper.

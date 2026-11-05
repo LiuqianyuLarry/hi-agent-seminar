@@ -1,7 +1,7 @@
 {
   "name": "hi-agent-seminar",
-  "version": "2.7.1",
-  "description": "English engineering seminars with Mentor Liu: Weeks 1-3, guided practice, original lecture slides, DeepSeek tools and MCP, and preserved learning progress.",
+  "version": "2.8.2",
+  "description": "English engineering seminars with Mentor Liu: Weeks 1-4, lecture review, guided code, DeepSeek tools, MCP, agent loops and preserved learning progress.",
   "author": {
     "name": "EEEE4149 Teaching Team"
   }

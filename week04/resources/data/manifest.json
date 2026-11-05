@@ -1,0 +1,11 @@
+{
+  "synthetic": true,
+  "timezone": "+08:00",
+  "query_interval": "[start,end)",
+  "purpose": "Synthetic classroom data. Renamed to CONV-3 for continuity; not real equipment history.",
+  "files": {
+    "sensor_readings.csv": "412f5c25bbc3a2ff4049cafb1c94ae08ad104c5e3a480747cd1dacb456a3b3b5",
+    "machine_specs.json": "9e2e78b8606188887f306d90d4a3a830001fe322f2b220d5c23684279c21b701"
+  },
+  "generated": "engineering.sqlite is built locally by build_data.py; it is not distributed."
+}

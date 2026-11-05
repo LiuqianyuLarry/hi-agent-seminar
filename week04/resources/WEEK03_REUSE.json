@@ -1,0 +1,10 @@
+{
+  "source": "Supplied Week 4 teaching pack, originally adapted from Week 3 classroom tools.",
+  "adaptations": [
+    "M12 renamed CONV-3; M07 renamed CONV-7; M99 renamed CONV-99",
+    "English messages and DeepSeek Chat Completions",
+    "CSV/JSON preserved as text; local SQLite built on setup"
+  ],
+  "byte_identical_to_original": false,
+  "data_manifest": "data/manifest.json"
+}

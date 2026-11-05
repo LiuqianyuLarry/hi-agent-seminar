@@ -22,9 +22,9 @@ has its own setup and percentage. Show exactly these five commands and their use
 | Command | Purpose |
 | --- | --- |
 | /hi-agent-seminar:menu | Browse weeks, saved progress and optional topics |
-| /hi-agent-seminar:start [week01, week02 or week03] | Start or resume the selected week |
-| /hi-agent-seminar:status [week01, week02 or week03] | Show saved progress and the next step |
-| /hi-agent-seminar:review [week01, week02 or week03] | Answer three reflections and save a local code snapshot |
+| /hi-agent-seminar:start [week01, week02, week03 or week04] | Start or resume the selected week |
+| /hi-agent-seminar:status [week01, week02, week03 or week04] | Show saved progress and the next step |
+| /hi-agent-seminar:review [week01, week02, week03 or week04] | Answer three reflections and save a local code snapshot |
 | /hi-agent-seminar:help | Show this guide |
 
 Optional sampling, reasoning, Memory, RAG, workflow/Agent comparison and extra
@@ -63,3 +63,5 @@ to use a revised lesson when the saved session still uses an older snapshot.
 The four MCP mini-checks require actual learner responses before continuing.
 The mentor saves answers, hints and explanations so students can pause and resume
 without losing their place.
+
+Week 4 builds an agent loop in two 50-minute sessions. Review follows the lecture story and demonstrations before the coding exercises; practice starts from the exercises. Four coding groups cover observations, verification, stopping and connecting the loop. W4.2 has two short required parts: the goal checklist and exact source-input matching. Students can complete the core using the teacher's genuine recorded API experiment and real local tools, with no GPU or private key. Live DeepSeek practice is optional and requires approval. Earlier progress is preserved.

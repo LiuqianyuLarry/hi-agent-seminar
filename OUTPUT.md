@@ -1,7 +1,7 @@
 # Complete student-visible teaching replies
 
 Read this current file with persona.md when a seminar command starts. It governs
-presentation for Week 1, Week 2, Week 3, optional practice, help and reflection.
+presentation for Week 1, Week 2, Week 3, Week 4, optional practice, help and reflection.
 Use saved snapshots for curriculum and evidence. Apply this installed response
 policy even when a saved guide describes an older presentation sequence. Never
 replace a saved lesson, edit a learner response or reset progress to apply it.
@@ -103,3 +103,17 @@ evidence. It does not verify that a host rendered a final answer or that a
 student read it. The host controls its own process panel and tool UI. Follow
 this output sequence and check the actual student-visible response; do not
 claim that a plugin can style, hide or fully control the host's thinking panel.
+
+## Week 4 experiment phases
+
+Use the saved before_run and after_run lesson parts. Finish the preparation and
+wait for the prediction/code, then run the experiment. Only then explain the
+actual results and ask the after_run checks. A needs_run response is a handoff to
+the experiment, not a lesson to improvise. A new run has its own observations and
+understanding checks; do not use an older run's explanation as evidence for it.
+
+Keep the language conversational. Explain unfamiliar words with a small example.
+Say what the code does to the input and why that matters for this task. Do not
+replace explanation with phrases such as "evidence-linked orchestration" or a
+list of module names. Show the actual key result fields in the formal reply,
+including the evidence label and any failure.

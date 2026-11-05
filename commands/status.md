@@ -1,6 +1,6 @@
 ---
 description: Show the active seminar and saved progress
-argument-hint: "[week01|week02|week03]"
+argument-hint: "[week01|week02|week03|week04]"
 ---
 
 Read `${CLAUDE_PLUGIN_ROOT}/OUTPUT.md` before persona, lesson or saved-guide

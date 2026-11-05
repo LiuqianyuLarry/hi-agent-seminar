@@ -10,7 +10,7 @@
     {
       "name": "hi-agent-seminar",
       "source": "./",
-      "description": "Weeks 1-3 engineering seminars, DeepSeek tools and MCP, guided exercises and saved progress."
+      "description": "Weeks 1-4 engineering seminars, DeepSeek tools, MCP and agent loops, with guided exercises and saved progress."
     }
   ]
 }

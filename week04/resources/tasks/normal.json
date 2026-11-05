@@ -1,0 +1,7 @@
+{
+  "question": "Check the given machine and time window. Read its reference limit, calculate the share of readings strictly above it, and give a summary supported by evidence.",
+  "goal": "report",
+  "machine_id": "CONV-3",
+  "start": "2026-03-02T10:00:00+08:00",
+  "end": "2026-03-02T10:25:00+08:00"
+}

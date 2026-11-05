@@ -1,0 +1,7 @@
+{
+  "question": "Read the reference limit for the given machine.",
+  "goal": "spec",
+  "machine_id": "CONV-99",
+  "start": null,
+  "end": null
+}

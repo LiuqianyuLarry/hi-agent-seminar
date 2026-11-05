@@ -1,5 +1,17 @@
 # Release verification
 
+## Version 2.8.2 student Week 4 release, 5 November 2026
+
+All 130 plugin tests passed, including real Week 2 CPU execution, both complete
+Week 4 routes, separate W4.2 code submissions, and a real v1 Week 4 archive upgrade
+that preserves saved code and snapshots. The completed Week 4 resource suite passed
+72 tests. The same-summary wrong-input case fails when only the input guard is
+bypassed, demonstrating why numerical checks alone are insufficient.
+
+The student package retains five commands and excludes teacher-preview helpers,
+state and routes. Existing progress uses the unchanged v2 storage namespace and
+schema 2. See week04/VERIFICATION.md for the API evidence and check boundaries.
+
 ## Version 2.3.0 no-GPU access update, 22 October 2026
 
 The reference path preserves the local awaiting_gpu receipt and requires an actual

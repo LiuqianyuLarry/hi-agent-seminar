@@ -1,0 +1,7 @@
+{
+  "question": "Check the given machine and time window. Read its reference limit, calculate the share of readings strictly above it, and give a summary supported by evidence.",
+  "goal": "report",
+  "machine_id": null,
+  "start": null,
+  "end": null
+}

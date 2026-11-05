@@ -1,0 +1,20 @@
+{
+  "evidence_kind": "live_deepseek",
+  "provider": "DeepSeek",
+  "captured_at": "2026-11-05T13:26:28.156374+00:00",
+  "model": "deepseek-flash",
+  "files": {
+    "single_round.json": "3d1a8c36779f84cbcbb7dff67a17efab07bcf463e3135a990949cd166edaef3c"
+  },
+  "method": "One real Chat Completions request, followed by local execution of the returned allowed tools. No second model request. The configured course key was supplied only through the process environment.",
+  "actual_requests": 1,
+  "follow_up_requests": 0,
+  "observed_tool_names": [
+    "get_machine_spec",
+    "query_temperature"
+  ],
+  "missing_after_local_execution": [
+    "stats"
+  ],
+  "source_hashes": "The capture records the source hashes used at the time of the experiment. Later course files can change without changing this historical record."
+}

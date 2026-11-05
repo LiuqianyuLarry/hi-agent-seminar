@@ -1,8 +1,37 @@
-# hi-agent-seminar 2.7.1
+# hi-agent-seminar 2.8.2
 
 An English EEEE4149 teaching plugin for Claude Code, with guided seminars for
-Weeks 1-3. Students make their own attempts, run real experiments with the mentor,
+Weeks 1-4. Students make their own attempts, run real experiments with the mentor,
 and explain the results. Learning records and code stay in the student workspace.
+
+Version 2.8.2 adds the student Week 4 course and makes its two verification jobs
+separate coding requirements. W4.2A builds the task checklist; W4.2B compares the
+actual calculation arguments with the observed readings and registered limit.
+A same-length list can produce the same summary while using different readings,
+so the exercise tests input matching as well as numerical results. This is a
+student distribution with no teacher preview or answer shortcut.
+
+Week 4 follows a CONV-3 task from one API response to a checked agent loop. Review
+uses the actual lecture pictures and small code examples: see what is missing,
+try a simple loop, observe repeated calls and an early finish, then add the
+execution checks, observation record, verifier and limits. Practice starts with
+the same four coding groups, with two short parts in W4.2. Both routes take 2 x 50 minutes.
+
+Start the Week 4 course in a student workspace outside the plugin:
+
+```text
+/hi-agent-seminar:start week04
+```
+
+Existing Weeks 1-4 records and code stay in place. A saved Week 4 session keeps
+its original lesson and requirements. Choose **Start again from the beginning**
+for a separate session with the revised W4.2; the older session remains available.
+
+Core practice needs Python, Pydantic and pytest, with no GPU or private API key.
+It uses a teacher's saved genuine DeepSeek single-round experiment and real local
+tool executions; injected failures are labelled. Optional live requests need a
+private key and approval. The example agent has no cross-process checkpoint
+recovery yet. This does not affect seminar progress saving.
 
 Version 2.7.1 adds a shared response policy: the complete relevant lesson, code
 explanation, observed results and saved progress belong in the final student-visible
@@ -81,7 +110,7 @@ outside the plugin/repository, launch Claude Code there, and enter this in chat:
 /hi-agent-seminar:menu
 ```
 
-The menu offers Weeks 1-3 with separate progress and optional topics.
+The menu offers Weeks 1-4 with separate progress and optional topics.
 Use the same student folder every time to resume your learning.
 
 ## Week 2: inside the model
@@ -198,7 +227,7 @@ claude plugin update hi-agent-seminar@hi-agent-seminar-marketplace
 If it points to another folder, inspect `claude plugin marketplace list` and update
 that source or use the explicit --plugin-dir loading method above. Do not assume
 editing source files changes an already installed cache. Restart the Claude Code
-session after an update. Confirm version 2.7.1 with `claude plugin list`.
+session after an update. Confirm the installed version with `claude plugin list`.
 
 Replace the whole plugin source folder with the extracted release folder, including
 the hidden .claude-plugin directory. Do not merge it into an old commands folder:
@@ -226,9 +255,9 @@ All commands begin with `/hi-agent-seminar:`.
 | Command | Purpose |
 | --- | --- |
 | `menu` | Browse weeks, saved progress and optional topics; start or continue learning |
-| `start [week01, week02 or week03]` | Start a chosen week or resume the active week |
-| `status [week01, week02 or week03]` | Show saved percentage and next step without advancing |
-| `review [week01, week02 or week03]` | Answer three reflection questions; save answers and a code snapshot locally |
+| `start [week01, week02, week03 or week04]` | Start a chosen week or resume the active week |
+| `status [week01, week02, week03 or week04]` | Show saved percentage and next step without advancing |
+| `review [week01, week02, week03 or week04]` | Answer three reflection questions; save answers and a code snapshot locally |
 | `help` | Show these five commands and usage guidance |
 
 In menu, choose a week, then Optional topics for sampling, reasoning, Memory, RAG,
@@ -241,7 +270,7 @@ Optional progress does not change the core percentage.
 Confirmed learning steps save automatically. Ask Mentor Liu in chat to save a
 pause note or export an existing learning report; no extra slash command is needed.
 The review command always means three reflections plus a code snapshot.
-Version 2.7.1 resumes existing v2 progress in the same workspace; it does not reset it.
+Version 2.8.2 resumes existing v2 progress in the same workspace; it does not reset it.
 
 Course selection and multiple-choice checks use genuine AskUserQuestion selectors
 when available in the host. Open questions and reflections remain ordinary typed

@@ -59,6 +59,16 @@ answer privately in the learning record when appropriate.
   Use logic then code; no compulsory mathematics segment. Show what information
   enters, what the important code does, and where the result goes next.
 
+- In Week 4, follow the problem before naming the module. Start with the model
+  connection from Week 1 and the tools from Week 3. Let students see what a single
+  response leaves unfinished, what a simple loop can do, and how it can repeat
+  or finish too early. Then explain the relevant lecture diagram, the matching
+  code and the small exercise that addresses that problem. Use everyday English:
+  "We have the readings, but we still need the limit" is more useful than
+  "insufficient evidence coverage". Give each unfamiliar term a concrete meaning.
+  Keep observed local results, recorded teacher API responses and scripted fault
+  injection clearly labelled. Use the saved lesson phases and support helpers.
+
 ## Presentation
 
 Put the complete student-facing lesson in the formal final response. Include the

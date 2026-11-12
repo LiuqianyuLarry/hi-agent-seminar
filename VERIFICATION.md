@@ -1,5 +1,67 @@
 # Release verification
 
+## Version 2.9.4 Week 5 local verification
+
+Both routes reached 100% with the real local experiments and workflow. The
+tests checked both bilingual cues, old learner records, the unified step ID,
+and the next teaching step returned on entry, successful runs and completion.
+Failed runs do not advance. Earlier lesson snapshots remain readable.
+
+On a fresh Review workspace, three calls to 2.9.3 returned three t02 code
+windows in about 33 KB. Version 2.9.4 supplied the same number of windows
+in one response of about 8.6 KB. The t05 Review script went from 819 words to
+464. These are local helper measurements. Claude's interactive response time
+was not measured with a live model in this verification.
+
+## Version 2.9.1 Week 5 local verification, 12 November 2026
+
+The revised Review and Practice routes each reached 100% in a disposable
+learner session. Each ran Crash, Decide and Redo and completed the four code
+exercises. The exact-step CLI returned the requested t02 step while t01 was
+active, reported unknown IDs and withheld post-run teaching before an actual
+run. Both routes returned their two exact bilingual cue pairs. The tests used
+fixture replies and did not play the optional external recording.
+
+The isolated Redo examples reproduced the unknown-node error and the wrong
+USD 180 total versus the independent USD 1,140 total. The simulation reported
+`wrong_spent=0` in that incorrect case. The LangGraph interrupt demonstration
+ran the line before the pause twice and the line after it once. The separate
+CONV-3 test resumed from another process and reused the only ticket. A
+same-ID request with different content failed in an isolated ticket store,
+leaving its original row intact.
+
+A session started from the 2.9.0 archive retained its lesson snapshot, records
+and edited source byte for byte when opened with 2.9.1. The tests also checked
+earlier weeks and the completed Week 5 Review session after starting a new
+Practice session. These checks exercise the local plugin helper and its real
+Python programs. Claude Code's live reply rendering was not part of the tests.
+
+## Version 2.9.0 Week 5 local verification, 12 November 2026
+
+Both Week 5 routes reached 100% in disposable learner workspaces. The tests
+saved code in the four student targets, ran the actual local programs, checked
+the results, and exercised the lesson gates. A wrong W5.4 body was rejected in
+the same task; a corrected submission was saved and retested. Earlier weeks'
+progress, snapshots and work files were compared byte for byte before and after
+Week 5. Starting a separate practice session also preserved the review session.
+
+The seed-7 Crash run averaged 15.842 versus 9.974 attempts per trip over 2,000
+simulated trips. In Decide, the sold-out plan-execute policy completed 13/30
+tasks with zero replans and 28/30 with one replan. In Redo, separating the state
+update removed 281 wrong states; a stable action key then suppressed all 315
+repeated requests in that run. These are local rule-based simulations.
+
+Python 3.12.14, LangGraph 1.2.12 and SQLite checkpointer 3.1.1 ran the CONV-3
+workflow. Independent process IDs reopened the same waiting checkpoint with
+the same three observations. Approval created one ticket; rejection created
+none. A malformed decision left the waiting checkpoint unchanged. After an
+injected failure after the ticket write, another process reused the exact row;
+the count stayed at one and none of the three tools ran again. The W5.4 unit
+check alone uses a stand-in graph and is separate from this process evidence.
+
+Learner responses in the regression tests are test data. These checks do not
+measure Claude Code's live conversation timing or the host's rendering of cards.
+
 ## Version 2.8.2 student Week 4 release, 5 November 2026
 
 All 130 plugin tests passed, including real Week 2 CPU execution, both complete

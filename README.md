@@ -1,8 +1,44 @@
-# hi-agent-seminar 2.8.2
+# hi-agent-seminar 2.9.6
 
 An English EEEE4149 teaching plugin for Claude Code, with guided seminars for
-Weeks 1-4. Students make their own attempts, run real experiments with the mentor,
+Weeks 1-5. Students make their own attempts, run real experiments with the mentor,
 and explain the results. Learning records and code stay in the student workspace.
+
+## Week 5: State machines, approval and recovery
+
+```text
+/hi-agent-seminar:start week05
+```
+
+Week 5 opens with a note from the instructor and a booking that stops midway.
+The booking example explains why we need a state machine and a checkpoint.
+Redo uses runnable counterexamples
+and two short bilingual cues to connect state updates with external actions.
+Both routes use the same examples.
+The music link is optional. Recent saved Week 5 sessions (lesson versions
+3–6) show the revised explanations as you continue or revisit a step. To
+experience the opening again or replay an older session with the new script,
+choose **Start again from the beginning**. Your saved session stays available.
+
+In the first 50 minutes, run the Crash and Decide simulations, write the route
+and graph edges, and run Redo to separate state updates from duplicate external
+actions. In the second 50 minutes, write the approval validation and resume code,
+pause a CONV-3 report, inspect the saved checkpoint from another process, and
+test approval, rejection and an invalid decision. After an intentional failure
+just after the ticket is written, start another process and verify that recovery
+leaves exactly one ticket.
+
+**Review lecture + code** explains the original lecture slides and shows the
+matching Python directly before each experiment. **Start seminar practice**
+begins with the exercises and explains the code needed for each. Both routes
+use the same local runs, predictions and checks. Optional explanations help
+learners who are new to state machines, SQLite or process restarts.
+
+Python 3.11+ runs the simulations with no extra packages. The workflow exercises
+use the pinned LangGraph and SQLite checkpointer dependencies in
+`week05/resources/workflow/requirements.txt`. Use an isolated environment; no
+API key or GPU is needed. Choose the same learner workspace to resume. Earlier
+weeks keep their progress, code and results in the existing v2 layout.
 
 Version 2.8.2 adds the student Week 4 course and makes its two verification jobs
 separate coding requirements. W4.2A builds the task checklist; W4.2B compares the
@@ -110,7 +146,7 @@ outside the plugin/repository, launch Claude Code there, and enter this in chat:
 /hi-agent-seminar:menu
 ```
 
-The menu offers Weeks 1-4 with separate progress and optional topics.
+The menu offers Weeks 1-5 with separate progress and optional topics.
 Use the same student folder every time to resume your learning.
 
 ## Week 2: inside the model
@@ -255,9 +291,9 @@ All commands begin with `/hi-agent-seminar:`.
 | Command | Purpose |
 | --- | --- |
 | `menu` | Browse weeks, saved progress and optional topics; start or continue learning |
-| `start [week01, week02, week03 or week04]` | Start a chosen week or resume the active week |
-| `status [week01, week02, week03 or week04]` | Show saved percentage and next step without advancing |
-| `review [week01, week02, week03 or week04]` | Answer three reflection questions; save answers and a code snapshot locally |
+| `start [week01, week02, week03, week04 or week05]` | Start a chosen week or resume the active week |
+| `status [week01, week02, week03, week04 or week05]` | Show saved percentage and next step without advancing |
+| `review [week01, week02, week03, week04 or week05]` | Answer three reflection questions; save answers and a code snapshot locally |
 | `help` | Show these five commands and usage guidance |
 
 In menu, choose a week, then Optional topics for sampling, reasoning, Memory, RAG,

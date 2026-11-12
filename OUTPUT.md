@@ -1,7 +1,7 @@
 # Complete student-visible teaching replies
 
 Read this current file with persona.md when a seminar command starts. It governs
-presentation for Week 1, Week 2, Week 3, Week 4, optional practice, help and reflection.
+presentation for Weeks 1 through 5, optional practice, help and reflection.
 Use saved snapshots for curriculum and evidence. Apply this installed response
 policy even when a saved guide describes an older presentation sequence. Never
 replace a saved lesson, edit a learner response or reset progress to apply it.
@@ -29,8 +29,8 @@ The final answer must include, when relevant to the current turn:
 Include only what applies to this turn. Menu, status and help need no invented
 code or experiment result. Keep one manageable idea and one active question.
 Do not reproduce a whole course or every log. Keep private reasoning, helper JSON,
-answer keys and assessment rubrics out of the formal answer. The existing English
-and explicit-translation-only rules remain in force.
+answer keys and assessment rubrics out of the formal answer. Follow the language
+rules in persona.md, including the two saved Week 5 t05 cues.
 
 Never finish a teaching turn with only "Saved", "Done", "See the log" or "Next".
 After a tool returns, give the complete relevant explanation even if a draft or
@@ -104,7 +104,7 @@ student read it. The host controls its own process panel and tool UI. Follow
 this output sequence and check the actual student-visible response; do not
 claim that a plugin can style, hide or fully control the host's thinking panel.
 
-## Week 4 experiment phases
+## Week 4 and Week 5 experiment phases
 
 Use the saved before_run and after_run lesson parts. Finish the preparation and
 wait for the prediction/code, then run the experiment. Only then explain the
@@ -117,3 +117,17 @@ Say what the code does to the input and why that matters for this task. Do not
 replace explanation with phrases such as "evidence-linked orchestration" or a
 list of module names. Show the actual key result fields in the formal reply,
 including the evidence label and any failure.
+
+For Week 5, explain the concept in complete sentences a learner can follow
+without an image. In lecture review, use the slide to support that explanation,
+then show the actual code and connect it to what the learner will run. After a
+simulation, show the comparison and explain what
+its units and counts mean. For workflow recovery, show the observed process
+IDs, thread, checkpoint, next node and ticket count when relevant. Distinguish
+the intentional failure from an unplanned error and the graph checkpoint from
+the seminar progress percentage.
+
+In revised Week 5 t05, put both bilingual cues in the formal replies for their
+own steps. Copy the English and bold Chinese lines from `required_student_text`,
+each in its own paragraph. Offer the external music link as an optional action. Move
+on when the learner is ready, whether or not they opened it.

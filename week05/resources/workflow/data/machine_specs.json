@@ -1,0 +1,15 @@
+{
+  "synthetic": true,
+  "version": "classroom-v1",
+  "note": "Teaching references; not real equipment limits",
+  "machines": {
+    "CONV-3": {
+      "temperature_limit_c": 85.0,
+      "unit": "C"
+    },
+    "CONV-7": {
+      "temperature_limit_c": 80.0,
+      "unit": "C"
+    }
+  }
+}

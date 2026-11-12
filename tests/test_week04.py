@@ -94,7 +94,7 @@ class Week4CurriculumTests(Week4Case):
         before = self.files()
         result = catalog(self.workspace)
         self.assertEqual([item['id'] for item in result['courses']],
-                         ['week01', 'week02', 'week03', 'week04'])
+                         ['week01', 'week02', 'week03', 'week04', 'week05'])
         self.assertEqual(self.files(), before)
         lesson = seminar_for(self.workspace, 'week04').lesson
         self.assertEqual(sum(t['weight'] for t in lesson['tasks']), 100)
@@ -360,6 +360,12 @@ class Week4LearningGates(Week4Case):
         self.assertTrue(shown['response_contract']['final_reply_required'])
         self.assertEqual(shown['response_contract']['progress'],
                          {'week': 'week04', 'core_percent': course.status()['core_percent']})
+        exact = self.cli('lesson-step', '--step-id', 't02.one_round')
+        self.assertEqual((exact['step_id'], exact['step']['id']), ('t02.one_round', 't02.one_round'))
+        self.assertTrue(exact['read_only'])
+        waiting = self.cli('lesson-step', '--step-id', 't02.actual_response')
+        self.assertTrue(waiting['needs_run'])
+        self.assertNotIn('observed_result', waiting)
         old = course.revisit('t01')
         self.assertEqual(old['task']['id'], 't01')
         self.assertTrue(old['core_progress_unchanged'])

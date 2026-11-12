@@ -1,4 +1,47 @@
 
+## Week 5 learning route
+
+For Week 5, use the selected session's helper output as the lesson. Reuse
+OUTPUT.md and persona.md from this session. Consult the Week 5 guides when a
+detail is missing. Show both saved route cards. Review uses the relevant
+slide and matching code. Practice opens with the task and its code. Both
+routes take two 50-minute sessions.
+
+After the learner chooses a mode, call study-mode --next-step. Use the returned
+next_step, including foundation_options when present. For an ordinary advance,
+call lesson-next --step-id ID and use the step returned by that call. A short
+multiple-choice checkpoint is saved with lesson-answer --step-id ID --text A
+when the learner actually selects A. Use the chosen letter. For a saved learner
+prediction or code, follow the existing gates before running.
+
+Use run --next-step after preparation. Use its observed_result and next_step
+together in the formal reply. Once the learner answers the task's question and
+the assessment passes, use complete --next-step. Use the status and teaching
+step already returned. Fetch lesson-step separately for a resume with no step,
+an exact read-only lookup, or more source by explicit --code-index. The default
+step supplies the key excerpts with notes. Use extra windows if a learner
+question needs them. A completed result at 100% needs no further step lookup.
+
+Follow the step's presentation order in the formal reply. Every paragraph in
+student_script is for the student in both modes, even if they skip foundations.
+Explain the example, the analogy and what breaks before showing the source.
+Use one next action from the current step. Deliver both t05 bilingual cues
+verbatim with the optional music link. On completion, give the returned
+closing_line before the next step (or before the final progress). Keep the two-hint rule and the learner's own
+explanation after a worked answer. For t08, t09 and the acceptance record,
+reuse the relevant saved run results already in this conversation. Retrieve
+them again only when they are missing or the relevant run has changed.
+
+Week 5 needs Python 3.11+; the simulations use the standard library. Check the
+isolated environment's workflow/requirements.txt imports before the LangGraph
+exercises. No model API key or GPU is required. Lesson progress and the example
+workflow's SQLite checkpoint are separate records. The second session requires
+real evidence from independent Python processes: pause, inspect, typed approve
+and reject, invalid input without advancement, and recovery after an injected
+post-write failure. Use the saved action ID and payload hash, ask the learner
+for each actual decision, and pass the saved JSON with --decision-file. Never
+invent a decision or call a fixture an observation.
+
 ## Week 4 learning route
 
 For week04, read week04/INSTRUCTOR.md and week04/PRESENTATION.md after the learner
@@ -36,7 +79,7 @@ every previous learning session. Do not use the Week 1 setup flow for Week 4.
 # Output delivery for every week
 
 Read the installed `OUTPUT.md` and `persona.md` before lesson content or saved
-guides. The current output policy applies to Week 1, Week 2, Week 3 and Week 4, including
+guides. The current output policy applies to Weeks 1 through 5, including
 resumed older snapshots. Use snapshots for curriculum and evidence; do not edit
 or migrate their records to apply presentation rules.
 
@@ -147,7 +190,7 @@ or explicit migration, never silently replaced with a 0% course. Do not suggest
 a new workspace to bypass a preservation error. A reset requires the student's
 explicit request and a separate backup plan; there is no automatic reset action.
 
-## Two-hint support rule (Week 1, Week 2, Week 3 and Week 4)
+## Two-hint support rule (Weeks 1 through 5)
 
 Apply this rule to conceptual questions, MCQs, prompts and coding exercises when
 the learner says they do not know, asks for help, or gives an answer showing confusion.

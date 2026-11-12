@@ -1,0 +1,14 @@
+{
+  "route": {
+    "body": "if s['status'] in TERMINAL:\n    return 'Finish'\nif s.get('check', {}).get('ready') is True:\n    return 'PrepareApproval' if s['create_ticket'] else 'Finish'\nif s.get('last_error', {}).get('retryable') is True:\n    return 'Retry'\nreturn 'Planner'"
+  },
+  "edges": {
+    "body": "builder.add_conditional_edges('Verify', route_verify, ['Finish', 'PrepareApproval', 'Retry', 'Planner'])\nbuilder.add_conditional_edges('HumanApproval', route_approval, ['ApplyAction', 'Finish'])"
+  },
+  "approval": {
+    "body": "pending = checked_action(s)\nif not isinstance(reply, dict) or type(reply.get('approved')) is not bool:\n    raise ApprovalError('approved must be a JSON boolean')\nif reply.get('action_id') != pending['action_id'] or reply.get('payload_hash') != pending['payload_hash']:\n    raise ApprovalError('Decision does not match the pending action and payload')\nreviewer = reply.get('reviewer')\nif not isinstance(reviewer, str) or not reviewer.strip() or len(reviewer) > 80:\n    raise ApprovalError('A reviewer label is required')\nreturn {'approved': reply['approved'], 'action_id': pending['action_id'], 'payload_hash': pending['payload_hash'], 'reviewer': reviewer.strip()}"
+  },
+  "resume": {
+    "body": "return graph.invoke(Command(resume=decision), config, durability='sync')"
+  }
+}

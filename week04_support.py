@@ -112,6 +112,34 @@ class Week4Mixin(Week3Mixin):
             result['run_id'] = record['runs'][-1]['id']
         return result
 
+    def show_lesson_step(self, step_id, code_offset, code_index):
+        from tutor import require
+        from week03_flow import render_step
+
+        state = self.load()
+        mode = state.get('study_mode')
+        require(mode in {'review', 'practice'}, 'Choose a study mode first.')
+        for task in self.lesson['tasks']:
+            step = next((item for item in steps_for(task, mode) if item['id'] == step_id), None)
+            if step is not None:
+                break
+        else:
+            raise ValueError(f'Unknown step ID in the saved lesson and study mode: {step_id}')
+
+        record = state['tasks'][task['id']]
+        result = {'task': task['id'], 'mode': mode, 'step_id': step_id,
+                  'read_only': True, 'status': self.status(state)}
+        if step.get('phase') == 'after_run':
+            runs = record['runs']
+            if not (runs and runs[-1]['status'] == 'success' and
+                    (record['complete'] or self.usable_run(record))):
+                return dict(result, needs_run=True, title=step['title'], phase='after_run',
+                            run_hint='This part uses actual evidence. Read it again after the task has a successful run.')
+            result['observed_result'] = self.read_result(runs[-1])
+            result['run_id'] = runs[-1]['id']
+        result['step'] = render_step(step, self.teaching_packs(), code_offset, code_index=code_index)
+        return result
+
     def require_current_phase(self, name):
         from tutor import require
         state = self.load(); task = self.current(state)
@@ -302,7 +330,16 @@ class Week4Mixin(Week3Mixin):
         require(path.is_file(), 'The experiment result is missing. Inspect the saved run; do not invent its output.')
         return json.loads(path.read_text(encoding='utf-8'))
 
-    def run(self, interpreter, intro, name=None, prediction=None, live=False):
+    def experiment_arguments(self, task, folder, state, name, live, decision_file):
+        from tutor import require
+        require(decision_file is None, 'Approval files belong to Week 5 workflow tasks.')
+        args = list(task['commands'][0]) if name else ['seminar_step.py', '--task', task['id']]
+        args += ['--output-dir', str(folder), '--reference-dir', str(self.base / 'lecture.snapshot')]
+        if not name and task['id'] == 't02':
+            args += ['--mode', 'live' if live else 'teacher', '--teacher-record', str(self.base / 'teacher-data.snapshot' / 'single_round.json')]
+        return args
+
+    def run(self, interpreter, intro, name=None, prediction=None, live=False, *, decision_file=None):
         from tutor import require, clean_text, now, child, atomic_json, redact
         intro = clean_text(intro)
         with self.lock():
@@ -331,7 +368,10 @@ class Week4Mixin(Week3Mixin):
             require(not live or (not name and task['id'] == 't02'), 'The live switch is available only for the single-round experiment.')
             if is_live:
                 require('approv' in intro.lower() or 'consent' in intro.lower(), 'Record the learner approval for this live API call in the introduction.')
-            run_id = uuid.uuid4().hex; folder = child(self.base, 'runs', run_id); folder.mkdir(parents=True)
+            run_id = uuid.uuid4().hex
+            folder = child(self.base, 'runs', run_id)
+            args = self.experiment_arguments(task, folder, state, name, live, decision_file)
+            folder.mkdir(parents=True)
             run = {'id': run_id, 'task': task['id'], 'status': 'running', 'started_at': now(), 'intro': intro,
                 'prediction': prediction if name else copy.deepcopy(record['predictions'][-1]),
                 'planned_calls': 1 if live else task.get('planned_calls', 0), 'folder': str(folder),
@@ -350,10 +390,6 @@ class Week4Mixin(Week3Mixin):
                         record['path_checks'][mode] = {k: v for k, v in checks.items() if k not in after}
                 record.setdefault('path_run_history', []).append(archive)
             record['runs'].append(run); self.save(state)
-        args = list(task['commands'][0]) if name else ['seminar_step.py', '--task', task['id']]
-        args += ['--output-dir', str(folder), '--reference-dir', str(self.base / 'lecture.snapshot')]
-        if not name and task['id'] == 't02':
-            args += ['--mode', 'live' if live else 'teacher', '--teacher-record', str(self.base / 'teacher-data.snapshot' / 'single_round.json')]
         try:
             result = subprocess.run([python, '-X', 'utf8', *args], cwd=self.resources, capture_output=True,
                 text=True, encoding='utf-8', errors='replace', timeout=240)
@@ -366,7 +402,7 @@ class Week4Mixin(Week3Mixin):
         try:
             data = json.loads(path.read_text(encoding='utf-8'))
             valid = isinstance(data, dict) and data.get('success') is True
-            if valid and not name and task['id'] == 't02':
+            if valid and self.week == 'week04' and not name and task['id'] == 't02':
                 valid = data.get('evidence_kind') == ('live_deepseek' if live else 'recorded_live')
         except (OSError, ValueError):
             data = None; valid = False

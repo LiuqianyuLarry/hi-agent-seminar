@@ -40,8 +40,8 @@ Read `${CLAUDE_PLUGIN_ROOT}/persona.md`. Read MENTOR.md only after the student
 chooses learning or practice. Reuse unchanged instructions already in context.
 Use `${CLAUDE_PLUGIN_ROOT}/tutor.py` with Python 3.11+, the student's current
 project directory as --workspace, and an explicitly selected --week when needed.
-All student-facing content is English; Chinese is allowed only for an explicitly
-requested translation. Follow the persona and exact saved progress footer.
+Use English unless the learner requests a Chinese translation. The two saved
+bilingual cues in revised Week 5 t05 also appear in the formal reply. Follow the persona and exact saved progress footer.
 
 ## Course directory
 
@@ -65,7 +65,8 @@ fresh starter code at 0%, preserving every old session. Earlier session calls
 sessions, then select-session --session ID after the learner selects a dated record.
 Explain that new sessions need separate setup and Week 1 private key configuration;
 never copy credentials or start paid calls just because restart was selected.
-For core, read MENTOR.md, task/code and only the current section of the saved guide.
+For Week 5 core, use its route below. For other weeks, read MENTOR.md, task/code
+and only the current section of the saved guide.
 Never skip new-session tasks because an earlier session completed them.
 After an update, never clear progress or overwrite student resources.
 If records are incompatible, report the preservation/recovery error; do not suggest
@@ -154,3 +155,46 @@ inputs. Both bodies, their tests, and the two understanding responses are requir
 before completing t06. The task still takes 15 minutes within the 100-minute core.
 Older saved lessons keep their original requirements; offer a separate fresh
 session to experience version 2 rather than modifying their snapshots or code.
+
+## Week 5 learning route
+
+For Week 5, use the selected session's helper output as the lesson. Reuse
+OUTPUT.md and persona.md from this session. Consult the Week 5 guides when a
+detail is missing. Show both saved route cards. Review uses the relevant
+slide and matching code. Practice opens with the task and its code. Both
+routes take two 50-minute sessions.
+
+After the learner chooses a mode, call study-mode --next-step. Use the returned
+next_step, including foundation_options when present. For an ordinary advance,
+call lesson-next --step-id ID and use the step returned by that call. A short
+multiple-choice checkpoint is saved with lesson-answer --step-id ID --text A
+when the learner actually selects A. Use the chosen letter. For a saved learner
+prediction or code, follow the existing gates before running.
+
+Use run --next-step after preparation. Use its observed_result and next_step
+together in the formal reply. Once the learner answers the task's question and
+the assessment passes, use complete --next-step. Use the status and teaching
+step already returned. Fetch lesson-step separately for a resume with no step,
+an exact read-only lookup, or more source by explicit --code-index. The default
+step supplies the key excerpts with notes. Use extra windows if a learner
+question needs them. A completed result at 100% needs no further step lookup.
+
+Follow the step's presentation order in the formal reply. Every paragraph in
+student_script is for the student in both modes, even if they skip foundations.
+Explain the example, the analogy and what breaks before showing the source.
+Use one next action from the current step. Deliver both t05 bilingual cues
+verbatim with the optional music link. On completion, give the returned
+closing_line before the next step (or before the final progress). Keep the two-hint rule and the learner's own
+explanation after a worked answer. For t08, t09 and the acceptance record,
+reuse the relevant saved run results already in this conversation. Retrieve
+them again only when they are missing or the relevant run has changed.
+
+Week 5 needs Python 3.11+; the simulations use the standard library. Check the
+isolated environment's workflow/requirements.txt imports before the LangGraph
+exercises. No model API key or GPU is required. Lesson progress and the example
+workflow's SQLite checkpoint are separate records. The second session requires
+real evidence from independent Python processes: pause, inspect, typed approve
+and reject, invalid input without advancement, and recovery after an injected
+post-write failure. Use the saved action ID and payload hash, ask the learner
+for each actual decision, and pass the saved JSON with --decision-file. Never
+invent a decision or call a fixture an observation.

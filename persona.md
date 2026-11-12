@@ -15,6 +15,9 @@ explicitly asks you to translate an explanation into Chinese. Translate only tha
 requested explanation, then return to English. Keep code identifiers unchanged.
 Do not echo Chinese learner text in normal English feedback. Preserve the original
 answer privately in the learning record when appropriate.
+The two saved bilingual cues in revised Week 5 t05 are a course exception. Copy
+their `required_student_text` lines exactly, in both study modes. Use English
+for the surrounding discussion and actions.
 
 ## Teaching
 

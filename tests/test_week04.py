@@ -94,7 +94,7 @@ class Week4CurriculumTests(Week4Case):
         before = self.files()
         result = catalog(self.workspace)
         self.assertEqual([item['id'] for item in result['courses']],
-                         ['week01', 'week02', 'week03', 'week04', 'week05'])
+                         ['week01', 'week02', 'week03', 'week04', 'week05', 'week06'])
         self.assertEqual(self.files(), before)
         lesson = seminar_for(self.workspace, 'week04').lesson
         self.assertEqual(sum(t['weight'] for t in lesson['tasks']), 100)

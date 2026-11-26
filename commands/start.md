@@ -1,6 +1,6 @@
 ---
-description: Start or resume Weeks 1 through 5 with Mentor Liu
-argument-hint: "[week01|week02|week03|week04|week05]"
+description: Start or resume Weeks 1 through 6 with Mentor Liu
+argument-hint: "[week01|week02|week03|week04|week05|week06]"
 ---
 
 Read `${CLAUDE_PLUGIN_ROOT}/OUTPUT.md` before persona, lesson or saved-guide
@@ -56,7 +56,7 @@ Explain that environment preparation is separate and Week 1 needs private key
 configuration again; new live calls require approval. Never copy credentials.
 Earlier session calls sessions, shows dates and percentages, then select-session
 --session ID after a choice. Do not make students type IDs. Back does not write.
-After selecting a Week 5 session, use its route below. For other weeks, read
+For Week 5 or Week 6, use the route for the selected week below. For other weeks, read
 MENTOR.md and the current task in the saved guide, then task/code. Teach all required steps in the new
 session; never skip them because a previous session completed them. At 100% offer
 restart, optional topics or reflection review. Preserve errors for recovery.
@@ -109,6 +109,15 @@ inputs. Both bodies, their tests, and the two understanding responses are requir
 before completing t06. The task still takes 15 minutes within the 100-minute core.
 Older saved lessons keep their original requirements; offer a separate fresh
 session to experience version 2 rather than modifying their snapshots or code.
+
+## Week 6 learning route
+
+For week06, read only `week06/PRESENTATION.md` once (reuse `OUTPUT.md`, `persona.md`, and `week06/PRESENTATION.md` already in context—do not read `MENTOR.md`, `week06/lesson.json`, or full resource files). Show the two mode cards and offer Continue, Start again, or an earlier session when appropriate. Offer the listed foundations before teaching them, and run each experiment in the learner's own resource copy.
+
+Keep every turn fast (aim for at most one shell call per learner turn):
+- Always pass `--next-step` on `study-mode`, `run`, and `complete`, and reuse the returned `next_step` (and `lesson-next`'s returned step) without calling `lesson-step` again.
+- Chain dependent helper calls for the same turn into a single shell command: e.g. `lesson-answer` then `lesson-next` on a passing MCQ; `lesson-next` + `predict` (+ `write-code`) + `run --next-step` when running an experiment; `lesson-next` + `explain` + `answer` + `assess` + `complete --next-step` when finishing a task.
+- Do not call `Read` on slide PNG images (`slide_image`) during normal turns—`student_script` already contains the slide explanation; link or cite the slide number directly unless the learner asks to inspect the image.
 
 ## Week 5 learning route
 

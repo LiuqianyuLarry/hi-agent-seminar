@@ -1,4 +1,8 @@
 
+## Week 6 learning route
+
+For week06, use the selected session's helper and week06/PRESENTATION.md. Show the two mode cards and offer Continue, Start again or an earlier session when appropriate. Use study-mode, run and complete with --next-step. Reuse the returned step. Offer the listed foundations before teaching them. Run each experiment in the learner's own resource copy.
+
 ## Week 5 learning route
 
 For Week 5, use the selected session's helper output as the lesson. Reuse
@@ -79,7 +83,7 @@ every previous learning session. Do not use the Week 1 setup flow for Week 4.
 # Output delivery for every week
 
 Read the installed `OUTPUT.md` and `persona.md` before lesson content or saved
-guides. The current output policy applies to Weeks 1 through 5, including
+guides. The current output policy applies to Weeks 1 through 6, including
 resumed older snapshots. Use snapshots for curriculum and evidence; do not edit
 or migrate their records to apply presentation rules.
 
@@ -190,7 +194,7 @@ or explicit migration, never silently replaced with a 0% course. Do not suggest
 a new workspace to bypass a preservation error. A reset requires the student's
 explicit request and a separate backup plan; there is no automatic reset action.
 
-## Two-hint support rule (Weeks 1 through 5)
+## Two-hint support rule (Weeks 1 through 6)
 
 Apply this rule to conceptual questions, MCQs, prompts and coding exercises when
 the learner says they do not know, asks for help, or gives an answer showing confusion.

@@ -39,7 +39,7 @@ def fingerprint(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def resource_files(root, include_tests=False, include_visuals=False):
+def resource_files(root, include_tests=False, include_visuals=False, include_sql=False):
     excluded = EXCLUDED - ({"tests"} if include_tests else set())
     for base, dirs, files in os.walk(root):
         dirs[:] = sorted(d for d in dirs if d not in excluded and not d.startswith(".")
@@ -51,7 +51,7 @@ def resource_files(root, include_tests=False, include_visuals=False):
                 continue
             if name.lower().startswith(".env") or name.lower() in {"reference.md", "lesson.json", "progress.json", "credentials.json", "secrets.json"}:
                 continue
-            if path.suffix.lower() in ({".py", ".md", ".txt", ".json", ".csv", ".ipynb"} | ({".png", ".html"} if include_visuals else set())):
+            if path.suffix.lower() in ({".py", ".md", ".txt", ".json", ".csv", ".ipynb"} | ({".sql"} if include_sql else set()) | ({".png", ".html"} if include_visuals else set())):
                 yield path
 
 
@@ -317,7 +317,7 @@ class Seminar:
                     "Student files exist without progress. Use a new workspace; these files were not overwritten.")
             source = child(self.root, self.week, "resources")
             require(source.is_dir(), "This lesson has no resource pack.")
-            files = list(resource_files(source, include_tests=self.week in ("week02", "week03", "week04", "week05"), include_visuals=self.week == "week02"))
+            files = list(resource_files(source, include_tests=self.week in ("week02", "week03", "week04", "week05", "week06"), include_visuals=self.week == "week02", include_sql=self.week == "week06"))
             require(files, "Resource pack is empty.")
             self.resources.parent.mkdir(parents=True, exist_ok=True)
             ignore = child(self.base, ".gitignore")
@@ -792,6 +792,7 @@ from week02_support import Week2Mixin
 from week03_support import Week3Mixin
 from week04_support import Week4Mixin
 from week05_support import Week5Mixin
+from week06_support import Week6Mixin
 
 
 class Week2Seminar(Week2Mixin, Seminar):
@@ -810,9 +811,13 @@ class Week5Seminar(Week5Mixin, Seminar):
     pass
 
 
+class Week6Seminar(Week6Mixin, Seminar):
+    pass
+
+
 def seminar_for(workspace, week="week01", root=ROOT, session=None):
     cls = {"week02": Week2Seminar, "week03": Week3Seminar, "week04": Week4Seminar,
-           "week05": Week5Seminar}.get(week, Seminar)
+           "week05": Week5Seminar, "week06": Week6Seminar}.get(week, Seminar)
     return cls(workspace, week, root=root, session=session)
 
 
@@ -862,8 +867,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["list", "start", "restart", "sessions", "select-session", "status", "task", "code", "teach", "predict", "setup", "key-ready", "write-prompt", "run", "results", "explain", "answer", "assess", "complete", "save", "recover", "export", "review-questions", "review-answer", "review", "extension", "run-extension", "explain-extension", "concepts", "concept-choice", "diagram", "write-code", "reference-data", "reference-answer", "reference-assess", "study-mode", "mcp-intro", "revisit", "lesson-step", "lesson-next", "lesson-answer", "lesson-hint", "lesson-solution", "lesson-assess", "support-attempt", "support-hint", "support-solution", "support-answer", "support-assess"])
     parser.add_argument("--live", action="store_true", help="Week 4 only: an explicitly approved single-round live experiment")
-    parser.add_argument("--step-id", help="Read an exact Week 4 or 5 step with lesson-step, or select a step for revisit or a lesson reply")
-    parser.add_argument("--next-step", action="store_true", help="Include the next Week 5 step after study-mode, run or complete")
+    parser.add_argument("--step-id", help="Read an exact Week 4, 5 or 6 step with lesson-step, or select a step for revisit or a lesson reply")
+    parser.add_argument("--next-step", action="store_true", help="Include the next Week 5 or 6 step after study-mode, run or complete")
     parser.add_argument("--code-offset", type=int)
     parser.add_argument("--code-index", type=int)
     parser.add_argument("--study-mode", choices=["review", "practice"], default="review")
@@ -888,22 +893,22 @@ def main():
     seminar = None
     try:
         require(not args.next_step or args.action in transition_actions,
-                "--next-step is only available for Week 5 study-mode, run or complete.")
+                "--next-step is only available for Week 5 or 6 study-mode, run or complete.")
         if args.action == "list":
             result = catalog(args.workspace)
         else:
             week = args.week or catalog(args.workspace)["active_week"] or "week01"
-            require(not args.next_step or week == "week05", "--next-step belongs to Week 5.")
+            require(not args.next_step or week in ("week05", "week06"), "--next-step belongs to Week 5 or 6.")
             require(args.decision_file is None or (week == "week05" and args.action == "run"),
                     "Decision files belong to a Week 5 core run.")
             step_name = args.name
-            if week == "week05" and args.step_id is not None:
+            if week in ("week05", "week06") and args.step_id is not None:
                 require(args.action in lesson_actions or args.action == "revisit",
-                        "--step-id belongs to a Week 5 lesson action or revisit.")
+                        "--step-id belongs to a Week 5 or 6 lesson action or revisit.")
                 if args.action in lesson_actions:
                     require(args.name in (None, args.step_id), "--name and --step-id must match when both are provided.")
                     step_name = args.step_id
-            if week == "week05" and (args.action in checkpoint_actions or args.action == "lesson-next"):
+            if week in ("week05", "week06") and (args.action in checkpoint_actions or args.action == "lesson-next"):
                 require(step_name, "Pass the current step ID with --step-id or --name.")
             code_offset = args.code_offset if args.code_offset is not None else 0
             code_index = args.code_index if args.code_index is not None else 0
@@ -914,17 +919,17 @@ def main():
                 require(args.input_file.stat().st_size <= 80000, "Response file is too large.")
                 args.text = args.input_file.read_text(encoding="utf-8")
             if args.action.startswith("support-"):
-                require(week in ("week04", "week05"), "This saved support action belongs to Week 4 or Week 5.")
+                require(week in ("week04", "week05", "week06"), "This saved support action belongs to Weeks 4 through 6.")
                 result = seminar.support(args.action.split("-", 1)[1], args.name, args.text, args.verdict)
             elif args.action in checkpoint_actions:
-                require(week in ("week03", "week04", "week05"), "This action belongs to Weeks 3 through 5.")
+                require(week in ("week03", "week04", "week05", "week06"), "This action belongs to Weeks 3 through 6.")
                 method = getattr(seminar, args.action.replace('-', '_'))
                 result = method(step_name, args.text, args.verdict) if args.action == 'lesson-assess' else method(step_name, args.text)
             elif args.action in ("lesson-step", "lesson-next"):
-                require(week in ("week03", "week04", "week05"), "This action belongs to Weeks 3 through 5.")
+                require(week in ("week03", "week04", "week05", "week06"), "This action belongs to Weeks 3 through 6.")
                 if args.action == "lesson-next":
                     result = seminar.lesson_next(step_name, args.text)
-                elif week == "week05":
+                elif week in ("week05", "week06"):
                     selected_index = None if args.code_index is None and args.code_offset is None else code_index
                     result = seminar.lesson_step(args.name, code_offset, selected_index, step_id=args.step_id)
                 elif week == "week04" and args.step_id:
@@ -933,7 +938,7 @@ def main():
                     require(args.step_id is None, "Use revisit with --task-id and --step-id for this week.")
                     result = seminar.lesson_step(args.name, code_offset, code_index)
             elif args.action in ("study-mode", "mcp-intro", "revisit"):
-                require(week in ("week03", "week04", "week05") and (args.action != "mcp-intro" or week == "week03"), "This action is unavailable for this week.")
+                require(week in ("week03", "week04", "week05", "week06") and (args.action != "mcp-intro" or week == "week03"), "This action is unavailable for this week.")
                 result = (seminar.study_mode(args.study_mode) if args.action == "study-mode" else
                           seminar.mcp_intro(args.text) if args.action == "mcp-intro" else seminar.revisit(args.task_id, args.step_id, code_offset, code_index))
             elif args.action in ("reference-data", "reference-answer", "reference-assess"):
@@ -956,16 +961,16 @@ def main():
             elif args.action == "setup":
                 result = seminar.setup(args.python or sys.executable, install=args.install) if week == "week02" else seminar.setup(args.python or sys.executable)
             elif args.action in ("concepts", "diagram"):
-                require(week in ("week02", "week03", "week04", "week05") and (args.action != "diagram" or week == "week02"), "This action is unavailable for this week.")
+                require(week in ("week02", "week03", "week04", "week05", "week06") and (args.action != "diagram" or week == "week02"), "This action is unavailable for this week.")
                 result = getattr(seminar, args.action)()
             elif args.action == "concept-choice":
-                require(week in ("week02", "week03", "week04", "week05"), "Concept choices belong to Weeks 2 through 5.")
+                require(week in ("week02", "week03", "week04", "week05", "week06"), "Concept choices belong to Weeks 2 through 6.")
                 result = seminar.concept_choice(args.name, args.choice)
             elif args.action == "write-code":
-                require(week in ("week02", "week03", "week04", "week05"), "Code exercises belong to Weeks 2 through 5.")
+                require(week in ("week02", "week03", "week04", "week05", "week06"), "Code exercises belong to Weeks 2 through 6.")
                 result = seminar.write_code(args.name, args.text)
             elif args.action in ("code", "results"):
-                result = seminar.results(args.name, args.task_id) if week in ("week02", "week05") and args.action == "results" else getattr(seminar, args.action)(args.name)
+                result = seminar.results(args.name, args.task_id) if week in ("week02", "week05", "week06") and args.action == "results" else getattr(seminar, args.action)(args.name)
             elif args.action == "extension":
                 result = seminar.extension(args.name)
             elif args.action in ("run", "run-extension"):

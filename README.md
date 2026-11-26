@@ -1,8 +1,12 @@
 # hi-agent-seminar 2.9.6
 
 An English EEEE4149 teaching plugin for Claude Code, with guided seminars for
-Weeks 1-5. Students make their own attempts, run real experiments with the mentor,
+Weeks 1-6. Students make their own attempts, run real experiments with the mentor,
 and explain the results. Learning records and code stay in the student workspace.
+
+## Week 6: What do the CONV-3 readings let us say?
+
+Use `/hi-agent-seminar:start week06`. Choose a lecture walkthrough with code or go straight to the exercises. Bring the actual row IDs, manual version and source lines back to the engineer. At 50% you have a bounded evidence packet; at 100% you have reviewed the report. Python 3.11+ with SQLite runs the entire core offline. Your previous weeks and earlier sessions use the same saved-progress directory.
 
 ## Week 5: State machines, approval and recovery
 
@@ -146,7 +150,7 @@ outside the plugin/repository, launch Claude Code there, and enter this in chat:
 /hi-agent-seminar:menu
 ```
 
-The menu offers Weeks 1-5 with separate progress and optional topics.
+The menu offers Weeks 1-6 with separate progress and optional topics.
 Use the same student folder every time to resume your learning.
 
 ## Week 2: inside the model
@@ -291,9 +295,9 @@ All commands begin with `/hi-agent-seminar:`.
 | Command | Purpose |
 | --- | --- |
 | `menu` | Browse weeks, saved progress and optional topics; start or continue learning |
-| `start [week01, week02, week03, week04 or week05]` | Start a chosen week or resume the active week |
-| `status [week01, week02, week03, week04 or week05]` | Show saved percentage and next step without advancing |
-| `review [week01, week02, week03, week04 or week05]` | Answer three reflection questions; save answers and a code snapshot locally |
+| `start [week01, week02, week03, week04, week05 or week06]` | Start a chosen week or resume the active week |
+| `status [week01, week02, week03, week04, week05 or week06]` | Show saved percentage and next step without advancing |
+| `review [week01, week02, week03, week04, week05 or week06]` | Answer three reflection questions; save answers and a code snapshot locally |
 | `help` | Show these five commands and usage guidance |
 
 In menu, choose a week, then Optional topics for sampling, reasoning, Memory, RAG,

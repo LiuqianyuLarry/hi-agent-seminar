@@ -36,6 +36,12 @@ if (not week05_slide_manifest.is_file() or hashlib.sha256(week05_slide_manifest.
 else:
     approved_binary.update({f'week05/slides/{name}': digest for name, digest in
                             json.loads(week05_slide_manifest.read_text(encoding='utf-8'))['files'].items()})
+week06_manifest = ROOT / 'week06/slides/SOURCE.json'
+if hashlib.sha256(week06_manifest.read_bytes()).hexdigest() != 'c27b14657465ef894cd5775a7aa002c2e2daca782a3692919002e2588410cb3a':
+    errors.append('Week 6 slide export differs from the reviewed lecture.')
+else:
+    approved_binary.update({'week06/slides/' + name: digest for name, digest in
+                            json.loads(week06_manifest.read_text(encoding='utf-8'))['files'].items()})
 for path in files:
     relative = path.relative_to(ROOT)
     if relative.as_posix() in instructor_only:

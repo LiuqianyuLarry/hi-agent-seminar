@@ -10,7 +10,7 @@
     {
       "name": "hi-agent-seminar",
       "source": "./",
-      "description": "Weeks 1-5 engineering seminars with guided code, agent tools, loops, state machines and saved progress."
+      "description": "Weeks 1-6 engineering seminars with guided code, state machines, context engineering and saved progress."
     }
   ]
 }

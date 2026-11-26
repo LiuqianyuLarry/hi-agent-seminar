@@ -1,0 +1,23 @@
+[
+  {
+    "event_id": "E01",
+    "machine_id": "CONV-3",
+    "ts": "2026-03-01T09:00:00+08:00",
+    "action": "Cleaned external ventilation grille",
+    "outcome": "Visual dust removed; no confirmed cause for future events"
+  },
+  {
+    "event_id": "E02",
+    "machine_id": "CONV-3",
+    "ts": "2026-03-02T09:30:00+08:00",
+    "action": "Recorded inspection request",
+    "outcome": "Pending review; no repair conclusion"
+  },
+  {
+    "event_id": "E03",
+    "machine_id": "CONV-7",
+    "ts": "2026-03-02T09:40:00+08:00",
+    "action": "Checked temperature label",
+    "outcome": "Label readable"
+  }
+]

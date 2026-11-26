@@ -1,0 +1,18 @@
+[
+  {
+    "fault_id": "F01",
+    "machine_id": "CONV-3",
+    "ts": "2026-03-02T10:21:00+08:00",
+    "reported_symptom": "Elevated temperature readings",
+    "confirmation_status": "reported",
+    "root_cause": null
+  },
+  {
+    "fault_id": "F02",
+    "machine_id": "CONV-7",
+    "ts": "2026-03-01T14:00:00+08:00",
+    "reported_symptom": "Sensor communication warning",
+    "confirmation_status": "ruled_out",
+    "root_cause": null
+  }
+]

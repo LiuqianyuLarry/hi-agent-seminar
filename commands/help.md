@@ -22,9 +22,9 @@ has its own setup and percentage. Show exactly these five commands and their use
 | Command | Purpose |
 | --- | --- |
 | /hi-agent-seminar:menu | Browse weeks, saved progress and optional topics |
-| /hi-agent-seminar:start [week01, week02, week03, week04 or week05] | Start or resume the selected week |
-| /hi-agent-seminar:status [week01, week02, week03, week04 or week05] | Show saved progress and the next step |
-| /hi-agent-seminar:review [week01, week02, week03, week04 or week05] | Answer three reflections and save a local code snapshot |
+| /hi-agent-seminar:start [week01, week02, week03, week04, week05 or week06] | Start or resume the selected week |
+| /hi-agent-seminar:status [week01, week02, week03, week04, week05 or week06] | Show saved progress and the next step |
+| /hi-agent-seminar:review [week01, week02, week03, week04, week05 or week06] | Answer three reflections and save a local code snapshot |
 | /hi-agent-seminar:help | Show this guide |
 
 Optional sampling, reasoning, Memory, RAG, workflow/Agent comparison and extra
@@ -67,3 +67,5 @@ without losing their place.
 Week 4 builds an agent loop in two 50-minute sessions. Review follows the lecture story and demonstrations before the coding exercises; practice starts from the exercises. Four coding groups cover observations, verification, stopping and connecting the loop. W4.2 has two short required parts: the goal checklist and exact source-input matching. Students can complete the core using the teacher's genuine recorded API experiment and real local tools, with no GPU or private key. Live DeepSeek practice is optional and requires approval. Earlier progress is preserved.
 
 Week 5 takes two 50-minute sessions. Choose lecture review with matching code or start the exercises directly. Both routes run Crash, Decide and Redo, then pause and recover a CONV-3 approval workflow across separate processes. Week 5 requires no API key or GPU.
+
+Week 6 follows a temperature report from sensor rows to a cited manual passage. Both routes take two 50-minute sessions. The core runs locally with Python and SQLite.

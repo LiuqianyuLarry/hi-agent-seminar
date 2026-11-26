@@ -1,7 +1,7 @@
 # Complete student-visible teaching replies
 
 Read this current file with persona.md when a seminar command starts. It governs
-presentation for Weeks 1 through 5, optional practice, help and reflection.
+presentation for Weeks 1 through 6, optional practice, help and reflection.
 Use saved snapshots for curriculum and evidence. Apply this installed response
 policy even when a saved guide describes an older presentation sequence. Never
 replace a saved lesson, edit a learner response or reset progress to apply it.

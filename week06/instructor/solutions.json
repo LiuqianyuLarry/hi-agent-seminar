@@ -1,0 +1,14 @@
+{
+  "query": {
+    "body": "return (\"SELECT r.reading_id,r.machine_id,r.ts,r.temperature_c,\"\n        \"m.model_code,m.reference_c,m.spec_version \"\n        \"FROM sensor_reading AS r JOIN machine AS m ON r.machine_id=m.machine_id \"\n        \"WHERE r.machine_id=? AND r.ts>=? AND r.ts<? ORDER BY r.ts,r.reading_id\")"
+  },
+  "scope": {
+    "body": "if chunk['machine_id']!=machine_id or chunk['model_code']!=model_code: return False\nif chunk['access']!='public' and role!='teacher': return False\nwhen=utc(as_of)\nreturn utc(chunk['valid_from'])<=when and (chunk['valid_to'] is None or when<utc(chunk['valid_to']))"
+  },
+  "fusion": {
+    "body": "if k<=0: raise ValueError('RRF k must be positive')\nscores={}\nfor ranked_ids in rankings:\n    seen=set()\n    for rank,cid in enumerate(ranked_ids,1):\n        if cid in seen: continue\n        seen.add(cid);scores[cid]=scores.get(cid,0)+1/(k+rank)\nreturn sorted(scores,key=lambda x:(-scores[x],x))"
+  },
+  "packet": {
+    "body": "packet={'rules':RULES,'task':task,'preferences':[m for m in memories if m['kind']=='preference'],\n        'evidence':[],'budget_unit':'utf8_bytes'}\ndropped=[];seen=set()\nif packet_size(packet)>budget_bytes:raise ValueError('Task and mandatory instructions exceed context budget')\nordered=sorted(evidence,key=lambda e:0 if e['type']=='sql' else 1)\nfor item in ordered:\n    if item['id'] in seen:continue\n    seen.add(item['id'])\n    candidate={**packet,'evidence':packet['evidence']+[item]}\n    if packet_size(candidate)<=budget_bytes:packet=candidate\n    elif item['type']=='sql':\n        raise ValueError('Required SQL evidence exceeds budget; aggregate with an explicit query, do not truncate')\n    else:dropped.append({'id':item['id'],'reason':'context_budget'})\nreturn packet,dropped"
+  }
+}

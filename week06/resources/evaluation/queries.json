@@ -1,0 +1,70 @@
+[
+  {
+    "machine_id": "CONV-3",
+    "model_code": "MX-A",
+    "as_of": "2026-03-02T10:25:00+08:00",
+    "id": "reference",
+    "question": "CONV-3 temperature reference threshold",
+    "relevant_units": [
+      "manual_conv3_review_2026#Reference temperature"
+    ]
+  },
+  {
+    "machine_id": "CONV-3",
+    "model_code": "MX-A",
+    "as_of": "2026-03-02T10:25:00+08:00",
+    "id": "review",
+    "question": "What evidence should be retained or requested before interpreting elevated temperature readings?",
+    "relevant_units": [
+      "manual_conv3_review_2026#4.2 Temperature review and evidence"
+    ]
+  },
+  {
+    "machine_id": "CONV-3",
+    "model_code": "MX-A",
+    "as_of": "2026-03-02T10:25:00+08:00",
+    "id": "sample",
+    "question": "Can a high sample fraction establish fault probability or the fraction of time?",
+    "relevant_units": [
+      "manual_conv3_review_2026#Interpretation limits"
+    ]
+  },
+  {
+    "machine_id": "CONV-3",
+    "model_code": "MX-A",
+    "as_of": "2026-03-02T10:25:00+08:00",
+    "id": "wording",
+    "question": "Separate observed facts and missing evidence when writing a temperature review.",
+    "relevant_units": [
+      "note_conv3_review#Review note"
+    ]
+  },
+  {
+    "machine_id": "CONV-3",
+    "model_code": "MX-A",
+    "as_of": "2026-02-20T10:00:00+08:00",
+    "id": "historical",
+    "question": "CONV-3 temperature reference archived edition",
+    "relevant_units": [
+      "manual_conv3_v1#Archived reference"
+    ]
+  },
+  {
+    "machine_id": "CONV-7",
+    "model_code": "MX-B",
+    "as_of": "2026-03-02T10:25:00+08:00",
+    "id": "wrong_machine",
+    "question": "CONV-7 temperature reference threshold",
+    "relevant_units": [
+      "manual_conv7_v1#Temperature review reference threshold"
+    ]
+  },
+  {
+    "machine_id": "CONV-3",
+    "model_code": "MX-A",
+    "as_of": "2026-03-02T10:25:00+08:00",
+    "id": "no_answer",
+    "question": "What is the approved rotor torque calibration factor for CONV-3?",
+    "relevant_units": []
+  }
+]

@@ -1,0 +1,110 @@
+[
+  {
+    "doc_id": "manual_conv3_review_2026",
+    "title": "CONV-3 temperature review manual",
+    "machine_id": "CONV-3",
+    "model_code": "MX-A",
+    "version": "2.1",
+    "valid_from": "2026-03-01T00:00:00Z",
+    "valid_to": null,
+    "access": "public",
+    "path": "documents/manual_conv3_review_2026.md",
+    "sha256": "47b0654ecc3480595dd989129b087d4c2820c15d33b5dd9c0f5bf1ad88fe066b"
+  },
+  {
+    "doc_id": "manual_conv3_v1",
+    "title": "CONV-3 archived temperature reference",
+    "machine_id": "CONV-3",
+    "model_code": "MX-A",
+    "version": "1",
+    "valid_from": "2025-01-01T00:00:00Z",
+    "valid_to": "2026-03-01T00:00:00Z",
+    "access": "public",
+    "path": "documents/manual_conv3_v1.md",
+    "sha256": "f34d13e2c3e55215ad01e61eb4e11d49e76a8139ef96425ae7af6de7bd8cde90"
+  },
+  {
+    "doc_id": "manual_conv7_v1",
+    "title": "CONV-7 temperature review reference threshold",
+    "machine_id": "CONV-7",
+    "model_code": "MX-B",
+    "version": "1",
+    "valid_from": "2025-01-01T00:00:00Z",
+    "valid_to": null,
+    "access": "public",
+    "path": "documents/manual_conv7_v1.md",
+    "sha256": "d7a5eea0d86ca942ab906ce68a88377eeaf328538b1fc40f3f7c027e9b06f1fb"
+  },
+  {
+    "doc_id": "note_conv3_review",
+    "title": "CONV-3 review note",
+    "machine_id": "CONV-3",
+    "model_code": "MX-A",
+    "version": "1",
+    "valid_from": "2026-03-01T00:00:00Z",
+    "valid_to": null,
+    "access": "public",
+    "path": "documents/note_conv3_review.md",
+    "sha256": "60664d5e2e8a1d37fe6648432aa3caf75252fe3fd51ebf63a949806a4ce08ff3"
+  },
+  {
+    "doc_id": "report_conv3_previous",
+    "title": "CONV-3 previous task report",
+    "machine_id": "CONV-3",
+    "model_code": "MX-A",
+    "version": "1",
+    "valid_from": "2026-02-15T00:00:00Z",
+    "valid_to": null,
+    "access": "public",
+    "path": "documents/report_conv3_previous.md",
+    "sha256": "ddbed08ff04cfa55747a4bf4edf61cf7e76c8b46f610b7c39f9eb498b3615e91"
+  },
+  {
+    "doc_id": "manual_conv3_private",
+    "title": "CONV-3 restricted service note",
+    "machine_id": "CONV-3",
+    "model_code": "MX-A",
+    "version": "1",
+    "valid_from": "2026-03-01T00:00:00Z",
+    "valid_to": null,
+    "access": "restricted",
+    "path": "documents/manual_conv3_private.md",
+    "sha256": "aa90ebd8c2a69313ff819a788bffabe9bec2545b42cfbff4c4031278f66eddfe"
+  },
+  {
+    "doc_id": "manual_conv3_future",
+    "title": "CONV-3 future reference draft",
+    "machine_id": "CONV-3",
+    "model_code": "MX-A",
+    "version": "3",
+    "valid_from": "2027-01-01T00:00:00Z",
+    "valid_to": null,
+    "access": "public",
+    "path": "documents/manual_conv3_future.md",
+    "sha256": "31c6e34a70605d2c679daf1c951fadba23f4e1571e876b043667a318a11afae8"
+  },
+  {
+    "doc_id": "manual_conv3_packaging",
+    "title": "CONV-3 shipping packaging",
+    "machine_id": "CONV-3",
+    "model_code": "MX-A",
+    "version": "1",
+    "valid_from": "2026-03-01T00:00:00Z",
+    "valid_to": null,
+    "access": "public",
+    "path": "documents/manual_conv3_packaging.md",
+    "sha256": "3f403a9fa87c787bbb92a2806ea09b4fce6a72be8d59af624b723aa05c25f071"
+  },
+  {
+    "doc_id": "manual_conv7_maintenance",
+    "title": "CONV-7 inspection notes",
+    "machine_id": "CONV-7",
+    "model_code": "MX-B",
+    "version": "1",
+    "valid_from": "2025-01-01T00:00:00Z",
+    "valid_to": null,
+    "access": "public",
+    "path": "documents/manual_conv7_maintenance.md",
+    "sha256": "675dae11ae71439957d926ab7fa339f2fd5e919cea56cb5020323e797c48599d"
+  }
+]

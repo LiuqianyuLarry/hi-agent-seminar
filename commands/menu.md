@@ -65,7 +65,7 @@ fresh starter code at 0%, preserving every old session. Earlier session calls
 sessions, then select-session --session ID after the learner selects a dated record.
 Explain that new sessions need separate setup and Week 1 private key configuration;
 never copy credentials or start paid calls just because restart was selected.
-For Week 5 core, use its route below. For other weeks, read MENTOR.md, task/code
+For Week 5 or Week 6, use the route for the selected week below. For other weeks, read MENTOR.md, task/code
 and only the current section of the saved guide.
 Never skip new-session tasks because an earlier session completed them.
 After an update, never clear progress or overwrite student resources.
@@ -155,6 +155,10 @@ inputs. Both bodies, their tests, and the two understanding responses are requir
 before completing t06. The task still takes 15 minutes within the 100-minute core.
 Older saved lessons keep their original requirements; offer a separate fresh
 session to experience version 2 rather than modifying their snapshots or code.
+
+## Week 6 learning route
+
+For week06, use the selected session's helper and week06/PRESENTATION.md. Show the two mode cards and offer Continue, Start again or an earlier session when appropriate. Use study-mode, run and complete with --next-step. Reuse the returned step. Offer the listed foundations before teaching them. Run each experiment in the learner's own resource copy.
 
 ## Week 5 learning route
 

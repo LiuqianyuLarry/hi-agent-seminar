@@ -1,7 +1,7 @@
 {
   "name": "hi-agent-seminar",
-  "version": "2.9.6",
-  "description": "English engineering seminars with Mentor Liu: Weeks 1-5, lecture review, guided code, agent tools, loops, state machines and saved progress.",
+  "version": "2.10.0",
+  "description": "English engineering seminars, Weeks 1-6, with guided code, evidence checks and saved progress.",
   "author": {
     "name": "EEEE4149 Teaching Team"
   }

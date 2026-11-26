@@ -1,141 +1,12 @@
-# hi-agent-seminar 2.9.6
+# hi-agent-seminar (v2.10.0)
 
-An English EEEE4149 teaching plugin for Claude Code, with guided seminars for
-Weeks 1-6. Students make their own attempts, run real experiments with the mentor,
-and explain the results. Learning records and code stay in the student workspace.
-
-## Week 6: What do the CONV-3 readings let us say?
-
-Use `/hi-agent-seminar:start week06`. Choose a lecture walkthrough with code or go straight to the exercises. Bring the actual row IDs, manual version and source lines back to the engineer. At 50% you have a bounded evidence packet; at 100% you have reviewed the report. Python 3.11+ with SQLite runs the entire core offline. Your previous weeks and earlier sessions use the same saved-progress directory.
-
-## Week 5: State machines, approval and recovery
-
-```text
-/hi-agent-seminar:start week05
-```
-
-Week 5 opens with a note from the instructor and a booking that stops midway.
-The booking example explains why we need a state machine and a checkpoint.
-Redo uses runnable counterexamples
-and two short bilingual cues to connect state updates with external actions.
-Both routes use the same examples.
-The music link is optional. Recent saved Week 5 sessions (lesson versions
-3–6) show the revised explanations as you continue or revisit a step. To
-experience the opening again or replay an older session with the new script,
-choose **Start again from the beginning**. Your saved session stays available.
-
-In the first 50 minutes, run the Crash and Decide simulations, write the route
-and graph edges, and run Redo to separate state updates from duplicate external
-actions. In the second 50 minutes, write the approval validation and resume code,
-pause a CONV-3 report, inspect the saved checkpoint from another process, and
-test approval, rejection and an invalid decision. After an intentional failure
-just after the ticket is written, start another process and verify that recovery
-leaves exactly one ticket.
-
-**Review lecture + code** explains the original lecture slides and shows the
-matching Python directly before each experiment. **Start seminar practice**
-begins with the exercises and explains the code needed for each. Both routes
-use the same local runs, predictions and checks. Optional explanations help
-learners who are new to state machines, SQLite or process restarts.
-
-Python 3.11+ runs the simulations with no extra packages. The workflow exercises
-use the pinned LangGraph and SQLite checkpointer dependencies in
-`week05/resources/workflow/requirements.txt`. Use an isolated environment; no
-API key or GPU is needed. Choose the same learner workspace to resume. Earlier
-weeks keep their progress, code and results in the existing v2 layout.
-
-Version 2.8.2 adds the student Week 4 course and makes its two verification jobs
-separate coding requirements. W4.2A builds the task checklist; W4.2B compares the
-actual calculation arguments with the observed readings and registered limit.
-A same-length list can produce the same summary while using different readings,
-so the exercise tests input matching as well as numerical results. This is a
-student distribution with no teacher preview or answer shortcut.
-
-Week 4 follows a CONV-3 task from one API response to a checked agent loop. Review
-uses the actual lecture pictures and small code examples: see what is missing,
-try a simple loop, observe repeated calls and an early finish, then add the
-execution checks, observation record, verifier and limits. Practice starts with
-the same four coding groups, with two short parts in W4.2. Both routes take 2 x 50 minutes.
-
-Start the Week 4 course in a student workspace outside the plugin:
-
-```text
-/hi-agent-seminar:start week04
-```
-
-Existing Weeks 1-4 records and code stay in place. A saved Week 4 session keeps
-its original lesson and requirements. Choose **Start again from the beginning**
-for a separate session with the revised W4.2; the older session remains available.
-
-Core practice needs Python, Pydantic and pytest, with no GPU or private API key.
-It uses a teacher's saved genuine DeepSeek single-round experiment and real local
-tool executions; injected failures are labelled. Optional live requests need a
-private key and approval. The example agent has no cross-process checkpoint
-recovery yet. This does not affect seminar progress saving.
-
-Version 2.7.1 adds a shared response policy: the complete relevant lesson, code
-explanation, observed results and saved progress belong in the final student-visible
-reply. Helper responses link the current OUTPUT.md policy even when a saved older
-course is resumed. Existing records, lesson snapshots and student code stay in
-place; no reset or migration is needed for this update.
-
-Week 3 covers CONV-3 tools, DeepSeek function calling and MCP in two 50-minute
-sessions. Choose **Review lecture + code** to look at the original PPT pages,
-understand their diagrams and examples, then trace the matching implementation.
-Choose **Start seminar practice** to enter the temperature-tool exercises with
-concept and code explanations as needed. Both routes include the full MCP lesson,
-four short checks between explanations, four coding tasks and observed-output
-reviews. Unfamiliar foundations have optional explanation cards.
-
-Start or resume Week 3 inside Claude Code:
-
-```text
-/hi-agent-seminar:start week03
-```
-
-If a saved course exists, choose **Continue saved progress**, **Start again from
-the beginning**, or **Choose an earlier learning session**. Starting again creates
-separate progress and fresh exercises; earlier work remains available. A started
-course keeps its saved lesson, so choose a new session to study a revised script.
-
-The course uses English unless the student explicitly requests a translation.
-When a learner is stuck, the mentor gives two gradual hints, then offers more
-hints or an answer explanation. After an answer explanation, the learner explains
-the idea in their own words before continuing.
-
-The Week 3 lecture and seminar code use DeepSeek Chat Completions. The OpenAI
-Python package is the compatible client library. Live experiments use a separate
-DeepSeek key and have a stated request budget; keys never belong in chat.
-
-## Earlier updates
-
-Version 2.3.0: Week 2 also supports students without
-CUDA. Complete a real local CPU experiment, analyse the teacher's real paired
-CPU/CUDA measurements and pass a typed understanding check, then continue to 100%.
-Old learning records and lesson snapshots remain intact; no fabricated local GPU
-measurement or automatic completion is introduced. See week02/NO_GPU.md.
-
-Version 2.2.0: menu/start now asks whether to continue saved progress,
-start again from the beginning, or choose an earlier learning session. A repeat
-starts at 0% with fresh exercises in separate session folders; previous progress,
-code and outputs remain available. Each session needs its own environment setup
-and Week 1 private key configuration. No credentials are copied. Only the five
-existing slash commands are exposed. Menu/status use compact summaries and defer
-full teaching-guide loading until a learning mode is selected.
-
-Week 1 and Week 2 now use two progressive hints when a learner is stuck, followed
-by a choice of an answer explanation or more hints. After an answer explanation,
-the learner explains it in their own words before continuing. Support checkpoints
-use existing saved notes; previous learning records remain intact.
+An English **EEEE4149 Advanced Computational Engineering** teaching plugin for Claude Code, covering Weeks 1–6. Mentor Liu guides you through each 2 × 50-minute seminar with real local code, predictions, experiments, and result checks while keeping all learning records and code in your own workspace.
 
 ## Install from GitHub
 
-Install Git, Python 3.11+ and Claude Code, and make sure you can sign in to Claude
-Code and access GitHub. Week 1 experiments use a separate DeepSeek API key and may
-incur API charges. Week 2 uses local PyTorch, requires no API key, and needs its
-packages prepared before class. Never put a key in chat or a GitHub issue.
+**Prerequisites:** Git, Python 3.11+, and Claude Code.
 
-Run these commands in your terminal (PowerShell on Windows), not in Claude chat:
+Run these commands in your terminal (PowerShell on Windows), not inside Claude chat:
 
 ```text
 claude plugin marketplace add LiuqianyuLarry/hi-agent-seminar
@@ -143,247 +14,46 @@ claude plugin install hi-agent-seminar@hi-agent-seminar-marketplace
 claude plugin list
 ```
 
-Restart Claude Code if prompted. Create or open your own student work folder
-outside the plugin/repository, launch Claude Code there, and enter this in chat:
+Create or open your own student work folder **outside** the plugin repository, launch `claude` there, and run:
 
 ```text
 /hi-agent-seminar:menu
 ```
 
-The menu offers Weeks 1-6 with separate progress and optional topics.
-Use the same student folder every time to resume your learning.
-
-## Week 2: inside the model
-
-```text
-/hi-agent-seminar:start week02
-```
-
-Two 50-minute core sessions guide you through character inputs, numerical attention,
-four MiniGPT forward-method exercises, eleven model tests, a CPU/CUDA comparison,
-actual output interpretation and two deliberately injected faults. You can write
-small code attempts in chat; Mentor Liu saves your wording in your student copy.
-
-Before basic concept explanations, choose I understand - continue, Explain briefly,
-or Show an example. Choices save and resume. The lesson links the original
-Transformer figure to logic, equations and actual code, and explains the original
-encoder-decoder figure's differences from this Pre-LN MiniGPT. Open the supplied
-local transformer-map.html when your chat host cannot display the figure inline.
-
-Prepare a Week 2 PyTorch environment before class; see week02/resources/SETUP.md.
-Core measurement uses ONE run per device, ten warm-up updates and 200 timed
-updates. Three repeats and the full Batch sweep are optional in the Week 2 menu.
-Missing CUDA is recorded as unavailable. Students may complete a local CPU run,
-analyse the real teacher CPU/CUDA pair and pass its explanation check to continue.
-No local GPU result or cross-machine speedup is invented.
-
-The progress paths stay at .hi-agent-seminar/v2/week01 and /week02 respectively.
-Starting Week 2 does not reset or replace Week 1's code, answers or measurements.
-No live mentor conversation or classroom CUDA hardware is implied by software tests.
-
 ## Update from GitHub
-
-Run in your terminal:
 
 ```text
 claude plugin marketplace update hi-agent-seminar-marketplace
 claude plugin update hi-agent-seminar@hi-agent-seminar-marketplace
-claude plugin list
 ```
 
-Restart Claude Code, reopen the same student folder and use
-`/hi-agent-seminar:start`. Updating the plugin does not replace learning records.
-For automatic updates, open `/plugin` in Claude Code, select Marketplaces, choose
-hi-agent-seminar-marketplace, then Enable auto-update. Third-party marketplaces
-do not have auto-update enabled by default.
+Restart Claude Code and reopen the same student workspace. Updating the plugin never resets or overwrites saved progress or student code. To experience a newly revised lesson script while keeping older work intact, choose **Start again from the beginning** when entering a week.
 
-If an update says you already have the latest version, check
-`claude plugin marketplace list`: the source must be this GitHub repository,
-not an old local folder. Do not delete learning records or edit the installed
-manifest version to work around an update problem.
+## Seminars (Weeks 1–6)
 
-## Switch from the old local-folder installation
-
-Back up your student workspace first. Use `claude plugin marketplace list` to
-confirm that hi-agent-seminar-marketplace currently points at the old local folder.
-The following removes that marketplace registration AND its installed plugins,
-then reinstalls this plugin from GitHub. Do not do this if the named marketplace
-contains other plugins you need without planning to reinstall those as well.
-It does not delete this seminar's records kept outside the plugin in your student folder.
-
-```text
-claude plugin marketplace remove hi-agent-seminar-marketplace
-claude plugin marketplace add LiuqianyuLarry/hi-agent-seminar
-claude plugin install hi-agent-seminar@hi-agent-seminar-marketplace
-```
-
-Restart Claude Code and continue from the same student workspace.
-
-## Start or resume a seminar
-
-Use a student work folder outside this plugin. You need Claude Code and Python
-3.11 or newer. The teaching conversation uses the model configured in Claude Code;
-the classroom examples use your own DeepSeek API account.
-
-From a terminal in your student folder, load the plugin (replace the path):
-
-```text
-claude --plugin-dir "/absolute/path/to/hi-agent-seminar"
-```
-
-In Claude Code, open the course chooser:
-
-```text
-/hi-agent-seminar:menu
-```
-
-Or start Week 1 directly:
-
-```text
-/hi-agent-seminar:start week01
-```
-
-Mentor Liu prepares a local virtual environment, installs its packages and checks
-imports. You enter your API key yourself in the terminal command it provides.
-Do not put a key in chat. Setup has no graded questions. During Task 4, write your
-prompt in chat; Mentor Liu saves your wording to instructions.txt before running.
-
-## Alternative: install from an extracted local package
-
-The package includes both `.claude-plugin/plugin.json` and a local marketplace.
-With the extracted plugin at its permanent location, run these terminal commands:
-
-```text
-claude plugin marketplace add "/absolute/path/to/hi-agent-seminar"
-claude plugin install hi-agent-seminar@hi-agent-seminar-marketplace
-```
-
-If the marketplace is already registered to this same source folder, update:
-
-```text
-claude plugin update hi-agent-seminar@hi-agent-seminar-marketplace
-```
-
-If it points to another folder, inspect `claude plugin marketplace list` and update
-that source or use the explicit --plugin-dir loading method above. Do not assume
-editing source files changes an already installed cache. Restart the Claude Code
-session after an update. Confirm the installed version with `claude plugin list`.
-
-Replace the whole plugin source folder with the extracted release folder, including
-the hidden .claude-plugin directory. Do not merge it into an old commands folder:
-old command files would remain visible. The correct commands folder contains
-exactly menu.md, start.md, status.md, review.md and help.md. Keep an old folder as
-a backup outside the active plugin path. Do not nest hi-agent-seminar inside itself.
-The ZIP includes its own SHA256SUMS.json; verify-package.py checks the packaged
-file set and hashes to detect missing, extra or modified files after extraction.
-
-On Windows, if PowerShell cannot find claude but it was installed through npm, use:
-
-```powershell
-& "$env:APPDATA\npm\claude.cmd" --version
-& "$env:APPDATA\npm\claude.cmd" plugin update "hi-agent-seminar@hi-agent-seminar-marketplace"
-```
-
-Local loading and manifests follow the
-[Claude Code plugin guide](https://code.claude.com/docs/en/plugins) and
-[manifest reference](https://code.claude.com/docs/en/plugins-reference).
+| Week | Topic | Core Requirements | Start Command |
+| --- | --- | --- | --- |
+| Week 1 | Model APIs, prompts, context & verification | Python 3.11+ & DeepSeek API key | `/hi-agent-seminar:start week01` |
+| Week 2 | Inside the Transformer & MiniGPT | Local PyTorch (CPU or CUDA; see `week02/resources/SETUP.md`) | `/hi-agent-seminar:start week02` |
+| Week 3 | Tools, function calling & MCP | Python 3.11+ & DeepSeek API key (for live calls) | `/hi-agent-seminar:start week03` |
+| Week 4 | Agent loops, verification & failure analysis | Python 3.11+, Pydantic, pytest (no API key or GPU required) | `/hi-agent-seminar:start week04` |
+| Week 5 | State machines, checkpoints, approval & recovery | Python 3.11+ & `week05/resources/workflow/requirements.txt` (no API key or GPU) | `/hi-agent-seminar:start week05` |
+| Week 6 | Context engineering, SQL, CAG/RAG & citation audit | Python 3.11+ & SQLite (fully offline; optional labs in menu) | `/hi-agent-seminar:start week06` |
 
 ## Commands
 
-All commands begin with `/hi-agent-seminar:`.
+All commands use the `/hi-agent-seminar:` prefix:
 
 | Command | Purpose |
 | --- | --- |
-| `menu` | Browse weeks, saved progress and optional topics; start or continue learning |
-| `start [week01, week02, week03, week04, week05 or week06]` | Start a chosen week or resume the active week |
-| `status [week01, week02, week03, week04, week05 or week06]` | Show saved percentage and next step without advancing |
-| `review [week01, week02, week03, week04, week05 or week06]` | Answer three reflection questions; save answers and a code snapshot locally |
-| `help` | Show these five commands and usage guidance |
+| `menu` | Browse Weeks 1–6, saved progress, sessions, and optional topics |
+| `start [week01–week06]` | Start a week or resume an existing session |
+| `status [week01–week06]` | Check saved core percentage and next step without advancing |
+| `review [week01–week06]` | Complete three reflection questions and save a local code snapshot |
+| `help` | Show available commands and usage notes |
 
-In menu, choose a week, then Optional topics for sampling, reasoning, Memory, RAG,
-workflow/Agent comparison and extra cases. Each topic shows its own saved status.
-Browsing and short concept recaps do not start experiments or change progress.
-Practice requires the selected week's environment and your prediction and approval.
-Weeks 1 and 3 need private API-key setup for live calls; Week 2 runs locally.
-Optional progress does not change the core percentage.
+## Good to Know
 
-Confirmed learning steps save automatically. Ask Mentor Liu in chat to save a
-pause note or export an existing learning report; no extra slash command is needed.
-The review command always means three reflections plus a code snapshot.
-Version 2.8.2 resumes existing v2 progress in the same workspace; it does not reset it.
-
-Course selection and multiple-choice checks use genuine AskUserQuestion selectors
-when available in the host. Open questions and reflections remain ordinary typed
-chat. If that host lacks the selector tool, the mentor explains the limitation and
-offers lettered choices. It does not present text boxes as clickable controls.
-
-## Updates keep learning records
-
-Plugin files and student records are separate. Update only the plugin folder;
-keep the student workspace and both folders below. The v2 directory name is a
-permanent storage namespace and does not change with the plugin version.
-
-```text
-.hi-agent-seminar/v2/week01/
-  progress.json          Teaching steps, predictions, answers, feedback and runs
-  progress.backup.json   Previous valid save
-  lesson.snapshot.json  Course definition pinned for this learner
-  TEACHING.snapshot.md  Teaching notes pinned for this learner, when available
-  setup/                Environment setup receipts
-  runs/                 Actual experiment records, stdout and CSV files
-  reviews/              Reflection answers and bounded code snapshots
-  exports/              Learning reports
-hi-agent-seminar-work/v2/week01/resources/
-                        Student copy of the examples and prompt file
-```
-
-Next time, open the same student folder and start the course again to resume v2.
-Completed tasks, answers, prompt edits, run artifacts, reflections, optional topics
-and pause notes remain in place. Existing compatible v2 records get a course
-snapshot on their first resume in 2.0.2. New course material in later releases
-applies to new learners; started courses keep their original task definitions,
-weights and student code. Updating does not automatically replace learner files.
-The helper preserves incompatible/corrupt records and stops for recovery or a
-compatible migration instead of resetting them. Legacy v1-only records are also
-detected and preserved, but require migration; they are not silently converted.
-Records deleted before this release cannot be recreated by an update.
-Moving to another computer requires copying the student workspace as well as the
-plugin. Progress is local, not cloud-synced; the Python environment may need repair
-after a move. Keep backups of the whole workspace, not just progress.json.
-The footer uses saved completion, not elapsed time. Its sequence is
-0, 8, 15, 30, 40, 50, 62, 74, 86, 93, 100%. Optional extensions do not change it.
-Each student should use their own work folder. There is no Feishu submission or
-cloud sync. You can pause midway through a task or a reflection review.
-
-## Files for instructors
-
-- `persona.md`: Mentor Liu's English persona and response layout.
-- `MENTOR.md`: required teaching order and helper instructions.
-- `week01/lesson.json`: tasks, terms, code anchors, questions and private rubrics.
-- `week01/TEACHING.md`: response trees, explanations and practical teaching notes.
-- `week01/INSTRUCTOR.md`: 2 x 50-minute timing and classroom guidance.
-- `week01/SOURCES.md`: slide/handout/code alignment.
-- `week02/TEACHING.md`: beginner concept cards, diagram mapping and two-session guide.
-- `week02/lesson.json`: Week 2 tasks, code targets, questions and optional topics.
-- `week02/resources/`: student TODOs, data, tests, local adapter and visual guide.
-- `FEEDBACK_CHANGES.md`: mapping from the supplied test feedback to changes.
-- `VERIFICATION.md`: performed checks and remaining host-interaction limits.
-- `PUBLISHING.md`: release checklist, version bumps and integrity checks.
-
-This public repository includes lesson definitions and mentor assessment criteria.
-They are not secret exam material. Learner records are local and are not sent to
-GitHub. Avoid attaching private logs or credentials when reporting a problem.
-
-The helper enforces task order and stores evidence. The conversational explanation
-and open-answer assessment still come from the mentor. Do not present completion
-as certification that an engineering diagnosis or machine action is safe.
-
-## Recovery
-
-An empty leftover resources directory is reused. Existing nonempty student files
-without a progress record are not overwritten. Preserve the folder and recover
-its matching record instead of replacing the student's work.
-For an interrupted run/setup, verify the old process stopped, then let the mentor
-use recover with the recorded ID. Do not rerun a pending process blindly. A stale
-lock can be removed after its helper has stopped. Do not delete progress to fix it.
-API errors retain their real records. There is no fabricated successful fallback.
+- **Two learning modes:** Choose **Review lecture + code** to revisit lecture diagrams alongside Python, or **Start seminar practice** to jump straight into the exercises with explanations on demand. Both reach 100% core progress in two 50-minute sessions; optional extensions are tracked separately.
+- **Local progress & privacy:** Records and student code are stored locally in your workspace under `.hi-agent-seminar/v2/` and `hi-agent-seminar-work/v2/`—nothing is uploaded to GitHub. Never paste API keys into chat or GitHub issues.
+- **For instructors & maintainers:** See `PUBLISHING.md` for release and integrity checks (`prepare-release.py` / `verify-package.py`), `VERIFICATION.md` for test coverage, and `persona.md` / `MENTOR.md` / `OUTPUT.md` for teaching rules.
